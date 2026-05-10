@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Cadastro - Bolão</title>
+    <style>
+        .error { color: red; }
+        .success { color: green; }
+        .hint { font-size: 0.8em; color: gray; }
+    </style>
+</head>
+<body>
+    <h2>Cadastro de Usuário</h2>
+
+    <!-- Bloco para exibir mensagens de erro/sucesso -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="{{ category }}">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <form method="POST" action="/cadastro">
+        <div>
+            <label>Usuário:</label>
+            <input type="text" name="username" required>
+        </div>
+        <div>
+            <label>Senha:</label>
+            <input type="password" name="password" required>
+            <p class="hint">A senha deve ter pelo menos 8 caracteres, 1 número e 1 caractere especial.</p>
+        </div>
+        <div>
+            <label>Confirmar Senha:</label>
+            <input type="password" name="confirm_password" required>
+        </div>
+        <button type="submit">Cadastrar</button>
+    </form>
+    
+    <br>
+    <a href="/">Voltar para o Login</a>
+</body>
+</html>
