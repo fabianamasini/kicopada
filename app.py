@@ -1,7 +1,7 @@
 import os
 from dotenv import load_dotenv
 from flask import Flask, render_template, request, redirect, url_for, flash
-from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.security import generate_password_hash
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from functools import wraps
 from models import db, User
@@ -54,8 +54,6 @@ with app.app_context():
         db.session.commit()
         print('Usuário default Admin criado com sucesso.')
 
-# TODO: Se o usuario ja estiver logado, a rota / deve ir pra home
-# TODO: [BUG] Está logando com a senha errada :T
 ### App routes ###
 @app.route('/', methods=['GET', 'POST'])
 def login():
@@ -65,7 +63,7 @@ def login():
     if request.method == 'POST':
         username = request.form.get('username')
         password = request.form.get('password')
-
+        username = username.strip() if username else ''
         if not username:
             flash('O nome de usuário é obrigatório.', 'error')
             return redirect(url_for('login'))
@@ -75,27 +73,18 @@ def login():
 
         user = User.query.filter_by(username=username).first()
 
-        # 2. Check if user exists AND if password is correct
-        if user and user.check_password(password):
-            login_user(user)
-            # app.logger.info(f"User {email} logged in successfully")
-            return redirect(url_for('home'))
-        
-        # 3. Handle wrong password or missing user
-        else:
-            # app.logger.warning(f"Failed login attempt for {email}")
-            flash('Invalid email or password.') # Direct feedback to user
+        if user is None:
+            flash('Usuário não encontrado.', 'error')
             return redirect(url_for('login'))
 
-        # if not user and user.check_password(password):
-        #     flash('Credenciais incorretas.', 'error')
-        #     return redirect(url_for('login'))
-        # # elif not password:
-        # #     flash('Senha incorreta.', 'error')
-        # #     return redirect(url_for('login'))
+        if not user.check_password(password):
+            flash('Senha incorreta.', 'error')
+            return redirect(url_for('login'))
 
-        # login_user(user)
-        # return redirect(url_for('home'))
+        # Credenciais corretas
+        login_user(user)
+        flash('Login realizado com sucesso.', 'success')
+        return redirect(url_for('home'))
         
     return render_template('login.html')
 
