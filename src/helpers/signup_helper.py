@@ -1,8 +1,7 @@
 import re
 
 class SignupHelper:
-
-    def is_password_strong(password):
+    def is_password_strong(self, password):
         if len(password) < 8:
             return False
         if not re.search(r"\d", password): # Pelo menos 1 número

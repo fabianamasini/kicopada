@@ -55,6 +55,7 @@ with app.app_context():
         print('Usuário default Admin criado com sucesso.')
 
 # TODO: Se o usuario ja estiver logado, a rota / deve ir pra home
+# TODO: [BUG] Está logando com a senha errada :T
 ### App routes ###
 @app.route('/', methods=['GET', 'POST'])
 def login():
@@ -121,7 +122,7 @@ def logout():
 @app.route('/home')
 @login_required
 def home():
-    return render_template('home.html') # Crie este HTML depois com os menus
+    return render_template('home.html')
 
 # Admin required route
 @app.route('/create_match')
