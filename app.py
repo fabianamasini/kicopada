@@ -7,31 +7,31 @@ from models import db, User
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///bolao.db'
-app.config['SECRET_KEY'] = 'chave_super_secreta_para_sessoes' # Necessário para usar flash e login
+app.config['SECRET_KEY'] = 'e59aa8041cb2c6df6c48ec2ab693b242'
 
 db.init_app(app)
 
-# --- CONFIGURAÇÃO DO FLASK-LOGIN ---
+# Login manager
 login_manager = LoginManager()
 login_manager.init_app(app)
-login_manager.login_view = 'login' # Redireciona pra cá se tentar acessar rota protegida
-login_manager.login_message = "Por favor, faça login para acessar esta página."
+login_manager.login_view = 'login'
+login_manager.login_message = 'Faça login para acessar esta página.'
 
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
 
-# --- DECORATOR PARA ROTAS DE ADMIN ---
+# Admin routes
 def admin_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
         if not current_user.is_authenticated or not current_user.is_admin:
-            flash("Acesso negado. Apenas administradores.", "error")
-            return redirect(url_for('dashboard'))
+            flash('Acesso negado. Usuário não autorizado.', 'error')
+            return redirect(url_for('home'))
         return f(*args, **kwargs)
     return decorated_function
 
-# --- INICIALIZAÇÃO DO BANCO E CRIAR ADMIN ---
+# DB Init
 with app.app_context():
     db.create_all()
     # Verifica se o admin já existe
@@ -57,7 +57,7 @@ def is_password_strong(password):
 @app.route('/', methods=['GET', 'POST'])
 def login():
     if current_user.is_authenticated:
-        return redirect(url_for('dashboard'))
+        return redirect(url_for('home'))
 
     if request.method == 'POST':
         username = request.form.get('username')
@@ -76,14 +76,14 @@ def login():
             return redirect(url_for('login'))
 
         login_user(user)
-        return redirect(url_for('dashboard'))
+        return redirect(url_for('home'))
         
     return render_template('login.html')
 
 @app.route('/cadastro', methods=['GET', 'POST'])
 def cadastro():
     if current_user.is_authenticated:
-        return redirect(url_for('dashboard'))
+        return redirect(url_for('home'))
 
     if request.method == 'POST':
         username = request.form.get('username')
@@ -115,10 +115,10 @@ def logout():
     return redirect(url_for('login'))
 
 # Rota genérica apenas para logged in users
-@app.route('/dashboard')
+@app.route('/home')
 @login_required
-def dashboard():
-    return render_template('dashboard.html') # Crie este HTML depois com os menus
+def home():
+    return render_template('home.html') # Crie este HTML depois com os menus
 
 # Apenas Admin pode acessar
 @app.route('/create_match')
