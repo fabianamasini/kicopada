@@ -49,7 +49,7 @@ with app.app_context():
     # Verifica se o admin já existe
     if not User.query.filter_by(username=os.getenv('ADMIN_USER')).first():
         hashed_password = generate_password_hash(os.getenv('ADMIN_PASSWORD'))
-        admin_user = User(username=os.getenv('ADMIN_USER'), password=hashed_password, is_admin=True)
+        admin_user = User(username=os.getenv('ADMIN_USER'), password_hash=hashed_password, is_admin=True)
         db.session.add(admin_user)
         db.session.commit()
         print('Usuário default Admin criado com sucesso.')
@@ -75,15 +75,27 @@ def login():
 
         user = User.query.filter_by(username=username).first()
 
-        if not user:
-            flash('Usuário não encontrado.', 'error')
-            return redirect(url_for('login'))
-        elif not password:
-            flash('Senha incorreta.', 'error')
+        # 2. Check if user exists AND if password is correct
+        if user and user.check_password(password):
+            login_user(user)
+            # app.logger.info(f"User {email} logged in successfully")
+            return redirect(url_for('home'))
+        
+        # 3. Handle wrong password or missing user
+        else:
+            # app.logger.warning(f"Failed login attempt for {email}")
+            flash('Invalid email or password.') # Direct feedback to user
             return redirect(url_for('login'))
 
-        login_user(user)
-        return redirect(url_for('home'))
+        # if not user and user.check_password(password):
+        #     flash('Credenciais incorretas.', 'error')
+        #     return redirect(url_for('login'))
+        # # elif not password:
+        # #     flash('Senha incorreta.', 'error')
+        # #     return redirect(url_for('login'))
+
+        # login_user(user)
+        # return redirect(url_for('home'))
         
     return render_template('login.html')
 
@@ -105,7 +117,7 @@ def signup():
             flash('A senha deve ter no mínimo 8 caracteres, contendo pelo menos 1 número e 1 caractere especial.', 'error')
         else:
             hashed_password = generate_password_hash(password)
-            new_user = User(username=username, password=hashed_password, is_admin=False)
+            new_user = User(username=username, password_hash=hashed_password, is_admin=False)
             db.session.add(new_user)
             db.session.commit()
             flash('Cadastro realizado com sucesso.', 'success')
