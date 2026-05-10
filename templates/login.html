@@ -1,37 +1,41 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Kicopada</title>
-    <style>
-        .error { color: red; }
-        .success { color: green; }
-    </style>
+  <title>Kicopada</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}">
 </head>
 <body>
-    <h2>Login</h2>
+    <div class="auth-container">
+      <div class="card">
+        <div class="brand">
+          <h1>Kicopada</h1>
+          <p class="hint">Entre com sua conta</p>
+        </div>
 
-    <!-- Bloco para exibir mensagens de erro/sucesso -->
-    {% with messages = get_flashed_messages(with_categories=true) %}
-      {% if messages %}
-        {% for category, message in messages %}
-          <div class="{{ category }}">{{ message }}</div>
-        {% endfor %}
-      {% endif %}
-    {% endwith %}
+        <!-- Bloco para exibir mensagens de erro/sucesso -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            {% for category, message in messages %}
+              <div class="flash {{ category }}">{{ message }}</div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
 
-    <form method="POST" action="/">
-        <div>
+        <form method="POST" action="/">
             <label>Usuário:</label>
-            <input type="text" name="username">
-        </div>
-        <div>
+            <input type="text" name="username" autocomplete="username">
+
             <label>Senha:</label>
-            <input type="password" name="password">
+            <input type="password" name="password" autocomplete="current-password">
+
+            <button type="submit">Login</button>
+        </form>
+
+        <div class="meta">
+          <a class="secondary" href="/signup">Não tem uma conta? Cadastre-se</a>
+          <span></span>
         </div>
-        <button type="submit">Login</button>
-    </form>
-    
-    <br>
-    <a href="/signup">Não tem uma conta? Cadastre-se</a>
+      </div>
+    </div>
 </body>
 </html>
