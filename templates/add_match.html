@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+
+{% block title %}Cadastrar jogo{% endblock %}
+
+{% block content %}
+    <div class="topbar">
+        <h1>Cadastrar jogo</h1>
+        <div></div>
+    </div>
+
+    <div class="card">
+        <form method="POST" action="/add_match">
+            <div class="form-row">
+                <div class="col">
+                    <label>Time A:</label>
+                    <input type="text" name="team_a" autocomplete="team_a">
+                </div>
+                <div class="col-narrow">
+                    <label>Resultado A:</label>
+                    <input type="number" name="score_a" min="0" step="1">
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="col">
+                    <label>Time B:</label>
+                    <input type="text" name="team_b" autocomplete="team_b">
+                </div>
+                <div class="col-narrow">
+                    <label>Resultado B:</label>
+                    <input type="number" name="score_b" min="0" step="1">
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="col">
+                    <label>Data do jogo:</label>
+                    <input type="datetime-local" name="match_date" autocomplete="match_date">
+                </div>
+                <div class="col">
+                    <label>Fase:</label>
+                    <select name="round">
+                      {% for p in phases %}
+                        <option value="{{ p }}">{{ p }}</option>
+                      {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <button type="submit">Cadastrar</button>
+        </form>
+    </div>
+{% endblock %}
