@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>{% block title %}Kicopada{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
+  {% block head %}{% endblock %}
+</head>
+<body>
+  <div class="layout">
+    {% block sidebar %}
+    <aside class="sidebar">
+      <div class="brand">Kicopada</div>
+      <nav class="nav">
+        <a href="/" class="{% if request.path == '/' %}active{% endif %}">Home</a>
+        <a href="/matches" class="{% if request.path.startswith('/matches') %}active{% endif %}">Cadastrar jogo</a>
+      </nav>
+    </aside>
+    {% endblock %}
+
+    <section class="content">
+      {% include '_header.html' %}
+
+      {# Centralized flash messages: displayed on the current page and consumed here #}
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, message in messages %}
+            <div class="flash {{ category }}">{{ message }}</div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+
+      {% block content %}{% endblock %}
+    </section>
+  </div>
+
+  {% block scripts %}{% endblock %}
+</body>
+</html>

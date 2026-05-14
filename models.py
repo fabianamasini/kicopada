@@ -24,7 +24,7 @@ class Match(db.Model):
     team_a = db.Column(db.String(50), nullable=False)
     team_b = db.Column(db.String(50), nullable=False)
     date = db.Column(db.String(20))
-    phase = db.Column(db.String(50))
+    round = db.Column(db.String(50))
     score_a = db.Column(db.Integer, nullable=True)
     score_b = db.Column(db.Integer, nullable=True)
 

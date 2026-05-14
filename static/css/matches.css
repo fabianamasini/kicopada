@@ -54,12 +54,10 @@ button[type="submit"]{
   color:white;
   font-weight:600;
   cursor:pointer;
-  width:100%;
 }
 button[type="submit"]:hover{opacity:0.95}
 .meta{display:flex;justify-content:space-between;align-items:center;margin-top:8px}
 a.secondary{color:var(--muted);text-decoration:none;font-size:0.95rem}
-.auth-container{display:flex;justify-content:center}
 .flash{padding:10px;border-radius:8px;font-size:0.95rem}
 .error{background:#fff1f0;color:#9b1c1c;border:1px solid rgba(155,28,28,0.08)}
 .success{background:#f0fff4;color:#144620;border:1px solid rgba(20,70,32,0.06)}

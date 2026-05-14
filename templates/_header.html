@@ -1,0 +1,14 @@
+<div class="topbar">
+  <div>
+    <h2 style="margin:0">{% block page_title %}{% endblock %}</h2>
+  </div>
+  <div class="topbar-actions">
+    {% if current_user.is_authenticated %}
+      <span class="username">Olá, {{ current_user.username }}</span>
+      <a href="{{ url_for('logout') }}" class="btn-logout">Logout</a>
+    {% else %}
+      <a href="/" class="link-muted">Login</a>
+      <a href="/signup" class="link-muted">Signup</a>
+    {% endif %}
+  </div>
+</div>

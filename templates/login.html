@@ -1,10 +1,17 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <title>Kicopada</title>
+{% extends 'base.html' %}
+
+{% block title %}Login - Kicopada{% endblock %}
+
+{% block head %}
   <link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}">
-</head>
-<body>
+{% endblock %}
+
+{% block sidebar %}{% endblock %}
+
+{% block page_title %}Login{% endblock %}
+
+{% block content %}
+  <div style="display:flex;justify-content:center;align-items:center;margin-top:20px">
     <div class="auth-container">
       <div class="card">
         <div class="brand">
@@ -12,14 +19,7 @@
           <p class="hint">Entre com sua conta</p>
         </div>
 
-        <!-- Bloco para exibir mensagens de erro/sucesso -->
-        {% with messages = get_flashed_messages(with_categories=true) %}
-          {% if messages %}
-            {% for category, message in messages %}
-              <div class="flash {{ category }}">{{ message }}</div>
-            {% endfor %}
-          {% endif %}
-        {% endwith %}
+        <!-- Flashes are handled centrally in base.html -->
 
         <form method="POST" action="/">
             <label>Usuário:</label>
@@ -37,5 +37,5 @@
         </div>
       </div>
     </div>
-</body>
-</html>
+  </div>
+{% endblock %}

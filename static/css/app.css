@@ -1,0 +1,53 @@
+/* Shared layout styles for main app pages */
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;font-family:Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;background:#f3f4f6;color:#0f172a}
+.layout{display:flex;min-height:100vh}
+.sidebar{width:220px;background:linear-gradient(180deg,#0f172a,#111827);color:#e6eef6;padding:20px;flex-shrink:0}
+.sidebar .brand{font-weight:700;font-size:18px;margin-bottom:14px;color:#fff}
+.nav{display:flex;flex-direction:column;gap:6px}
+.nav a{display:block;color:#cbd5e1;padding:10px;border-radius:8px;text-decoration:none;font-weight:600}
+.nav a:hover{background:rgba(255,255,255,0.03);color:#fff}
+.nav a.active{background:linear-gradient(90deg,#ff6b6b,#ff8a65);color:#fff;box-shadow:0 6px 14px rgba(203,67,53,0.12)}
+.content{flex:1;padding:28px}
+.topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}
+.card{background:#fff;border-radius:12px;padding:20px;box-shadow:0 6px 20px rgba(2,6,23,0.06)}
+h1{margin:0 0 8px 0}
+.card form{display:flex;flex-direction:column;gap:12px}
+.card label{font-size:0.95rem;color:#0f172a}
+.card input[type="text"], .card input[type="datetime-local"], .card input[type="number"], .card textarea, .card select{width:100%;padding:10px;border-radius:8px;border:1px solid #e6e9ee;font-size:1rem}
+.card button[type="submit"]{padding:10px 14px;border-radius:8px;border:0;background:linear-gradient(90deg,#ff6b6b,#ff8a65);color:#fff;font-weight:600;cursor:pointer;align-self:flex-start}
+
+/* Form row helpers to place fields side-by-side */
+.form-row{display:flex;gap:12px;align-items:center}
+.form-row .col{flex:1}
+.form-row .col-narrow{width:120px}
+.form-row .col input, .form-row .col select, .form-row .col textarea{width:100%}
+
+@media (max-width:720px){
+  .form-row{flex-direction:column}
+  .form-row .col-narrow{width:100%}
+}
+
+/* Estilização personalizada para input de data/hora */
+.card input[type="date"]{
+  /* espaço extra à direita para o ícone */
+  padding:10px 40px 10px 12px;
+  background-color:#fff;
+  background-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%239ca3af' d='M7 2h2v2h6V2h2v4H7V2zM5 7h14v13H5z'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;
+  background-position:right 10px center;
+  background-size:20px 20px;
+  -webkit-appearance:none;
+  appearance:none;
+}
+.card input[type="datetime-local"]:focus{outline:none;box-shadow:0 0 0 4px rgba(255,107,107,0.08);border-color:#ff6b6b}
+.topbar .username{color:#000000;background:transparent;padding:6px 8px;margin-right:8px}
+.topbar-actions{display:flex;align-items:center;gap:8px}
+.btn-logout{background:linear-gradient(90deg,#ff6b6b,#ff8a65);color:#fff;padding:8px 10px;border-radius:8px;text-decoration:none;font-weight:600}
+.link-muted{color:#6b7280;text-decoration:none;padding:6px 8px}
+@media (max-width:880px){
+  .layout{flex-direction:column}
+  .sidebar{width:100%;display:flex;flex-direction:row;gap:12px;overflow:auto}
+  .nav{flex-direction:row}
+  .nav a{white-space:nowrap}
+}
