@@ -34,4 +34,12 @@ class Prediction(db.Model):
     match_id = db.Column(db.Integer, db.ForeignKey('match.id'))
     pred_a = db.Column(db.Integer)
     pred_b = db.Column(db.Integer)
+
+class Teams(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(50), nullable=False)
+    group = db.Column(db.String(10))
+    points = db.Column(db.Integer, default=0)
+    disqualified = db.Column(db.Boolean, default=False)
+
     

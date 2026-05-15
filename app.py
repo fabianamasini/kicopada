@@ -4,7 +4,7 @@ from flask import Flask, render_template, request, redirect, url_for, flash
 from werkzeug.security import generate_password_hash
 from flask_login import LoginManager, logout_user, login_required, current_user
 from functools import wraps
-from models import db, User
+from models import db, User, Match
 from src.utils import phases
 from src.helpers.login_helper import LoginHelper
 from src.helpers.signup_helper import SignupHelper
@@ -100,8 +100,10 @@ def home():
     return render_template('home.html')
 
 @app.route('/matches', methods=['GET'])
+@login_required
 def matches():
-    return render_template('matches.html')
+    all_matches = Match.query.order_by(Match.date.desc()).all()
+    return render_template('matches.html', matches=all_matches)
 
 # Admin required route
 @app.route('/add_match', methods=['GET', 'POST'])
@@ -116,6 +118,11 @@ def create_match():
                                             score_b = request.form.get('score_b'))
 
     return render_template('add_match.html', phases=phases)
+
+@app.route('/delete_match/<int:match_id>', methods=['POST'])
+@admin_required
+def delete_match(match_id):
+    return matches_helper.delete_match(match_id)
 
 if __name__ == '__main__':
     app.run(debug=True)

@@ -28,7 +28,7 @@ class MatchesHelper:
             flash('O placar do time B deve ser um número.', 'error')
             return redirect(url_for('create_match'))
         
-        match = Match.query.filter_by(team_a=team_a, team_b=team_b, match_date=match_date).first()
+        match = Match.query.filter_by(team_a=team_a, team_b=team_b, date=match_date).first()
         if match:
             flash('Este jogo já está cadastrado.', 'error')
             return redirect(url_for('create_match'))
@@ -43,3 +43,14 @@ class MatchesHelper:
             db.session.commit()
 
             flash('Jogo cadastrado com sucesso.', 'success')
+            return redirect(url_for('matches'))
+
+    def delete_match(self, match_id):
+        match = Match.query.get(match_id)
+        if match:
+            db.session.delete(match)
+            db.session.commit()
+            flash('Partida excluída com sucesso.', 'success')
+        else:
+            flash('Partida não encontrada.', 'error')
+        return redirect(url_for('matches'))

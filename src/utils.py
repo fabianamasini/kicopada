@@ -1,7 +1,12 @@
-phases = [
-        'Fase de Grupos',
-        'Oitavas de Final',
-        'Quartas de Final',
-        'Semifinal',
-        'Final'
-    ]
+phases = [ 'Fase de Grupos', 'Oitavas de Final', 'Quartas de Final', 'Semifinal', 'Final']
+
+teams = {'Canadá': 'B', 'EUA': 'D', 'México': 'A', 'África do Sul': 'A', 'Alemanha': 'E',
+    'Arábia Saudita': 'H', 'Argélia': 'J', 'Argentina': 'J', 'Austrália': 'D', 'Áustria': 'J',
+    'Bélgica': 'G', 'Bósnia e Herzegovina': 'B', 'Brasil': 'C', 'Cabo Verde': 'H', 'Catar': 'B',
+    'Colômbia': 'K', 'Costa do Marfim': 'E', 'Croácia': 'L', 'Curaçau': 'E', 'Egito': 'G', 'Equador': 'E',
+    'Escócia': 'C', 'Espanha': 'H', 'França': 'I', 'Gana': 'L', 'Haiti': 'C', 'Holanda': 'F', 'Inglaterra': 'L',
+    'Iraque': 'I', 'Japão': 'F', 'Jordânia': 'J', 'Marrocos': 'C', 'Noruega': 'I', 'Nova Zelândia': 'G',
+    'Panamá': 'L', 'Paraguai': 'D', 'Portugal': 'K', 'RD do Congo': 'K', 'Coreia do Sul': 'A',
+    'Irã': 'G', 'Senegal': 'I', 'Suécia': 'F', 'Suíça': 'B', 'Tchéquia': 'A', 'Tunísia': 'F',
+    'Turquia': 'D', 'Uruguai': 'H', 'Uzbequistão': 'K'
+}
