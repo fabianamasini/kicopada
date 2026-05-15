@@ -13,7 +13,11 @@
             <div class="form-row">
                 <div class="col">
                     <label>Time A:</label>
-                    <input type="text" name="team_a" autocomplete="team_a">
+                    <select name="team_a">
+                        {% for t in teams %}
+                            <option value="{{ t }}">{{ t }}</option>
+                      {% endfor %}
+                    </select>
                 </div>
                 <div class="col-narrow">
                     <label>Resultado A:</label>
@@ -24,7 +28,11 @@
             <div class="form-row">
                 <div class="col">
                     <label>Time B:</label>
-                    <input type="text" name="team_b" autocomplete="team_b">
+                    <select name="team_b">
+                        {% for t in teams %}
+                            <option value="{{ t }}">{{ t }}</option>
+                      {% endfor %}
+                    </select>
                 </div>
                 <div class="col-narrow">
                     <label>Resultado B:</label>

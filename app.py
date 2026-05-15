@@ -4,8 +4,8 @@ from flask import Flask, render_template, request, redirect, url_for, flash
 from werkzeug.security import generate_password_hash
 from flask_login import LoginManager, logout_user, login_required, current_user
 from functools import wraps
-from models import db, User, Match
-from src.utils import phases
+from models import db, User, Teams, Match
+from src.utils import phases, teams
 from src.helpers.login_helper import LoginHelper
 from src.helpers.signup_helper import SignupHelper
 from src.helpers.matches_helper import MatchesHelper
@@ -64,6 +64,13 @@ with app.app_context():
         db.session.commit()
         print('Usuário default Admin criado com sucesso.')
 
+    for team_name, team_group in teams.items():
+        if not Teams.query.filter_by(name=team_name).first():
+            new_team = Teams(name=team_name, group=team_group)
+            db.session.add(new_team)
+            db.session.commit()
+            print(f'Time {team_name} criado com sucesso.')
+
 ### App routes ###
 @app.route('/', methods=['GET', 'POST'])
 def login():
@@ -116,8 +123,10 @@ def create_match():
                                             round = request.form.get('round'),
                                             score_a = request.form.get('score_a'),
                                             score_b = request.form.get('score_b'))
+    
+    teams_list = [team[0] for team in Teams.query.with_entities(Teams.name).order_by(Teams.name.asc()).all()]
 
-    return render_template('add_match.html', phases=phases)
+    return render_template('add_match.html', phases=phases, teams=teams_list)
 
 @app.route('/delete_match/<int:match_id>', methods=['POST'])
 @admin_required

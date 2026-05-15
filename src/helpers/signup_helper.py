@@ -16,10 +16,13 @@ class SignupHelper:
     def signup(self, username, password, confirm_password):
         if User.query.filter_by(username=username).first():
             flash('Nome de usuário já existe.', 'error')
+            return redirect(url_for('signup'))
         elif password != confirm_password:
             flash('As senhas devem ser iguais.', 'error')
+            return redirect(url_for('signup'))
         elif not self.__is_password_strong(password):
             flash('A senha deve ter no mínimo 8 caracteres, contendo pelo menos 1 número e 1 caractere especial.', 'error')
+            return redirect(url_for('signup'))
         else:
             hashed_password = generate_password_hash(password)
             new_user = User(username=username, password_hash=hashed_password, is_admin=False)
