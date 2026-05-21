@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+
+{% block title %}Cadastrar jogo{% endblock %}
+
+{% block content %}
+    <div class="topbar">
+        <h1>Cadastrar jogo</h1>
+        <div></div>
+    </div>
+
+    <div class="card">
+        <form action="{{ url_for('create_match') }}" method="POST">
+            <div class="form-row">
+                <div class="col">
+                    <label for="team_a">Time A</label>
+                    <select name="team_a" id="team_a" required>
+                        <option value="" disabled selected>Selecione o Time A</option>
+                        {% for t in teams %}
+                            <option value="{{ t }}">{{ t }}</option>
+                      {% endfor %}
+                    </select>
+                </div>
+                <div class="col-narrow" style="text-align: center; align-self: flex-end; padding-bottom: 10px; font-weight: bold;">VS</div>
+                <div class="col">
+                    <label for="team_b">Time B</label>
+                    <select name="team_b" id="team_b" required>
+                        <option value="" disabled selected>Selecione o Time B</option>
+                        {% for t in teams %}
+                            <option value="{{ t }}">{{ t }}</option>
+                      {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="col">
+                    <label for="match_date">Data e Hora</label>
+                    <input type="datetime-local" name="match_date" id="match_date" required>
+                </div>
+                <div class="col">
+                    <label for="round">Fase</label>
+                    <select name="round" id="round" required>
+                      <option value="" disabled selected>Selecione a fase</option>
+                      {% for p in phases %}
+                        <option value="{{ p }}">{{ p }}</option>
+                      {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="col">
+                    <label for="score_a">Placar Time A (opcional)</label>
+                    <input type="number" name="score_a" id="score_a" min="0" step="1">
+                </div>
+                <div class="col">
+                    <label for="score_b">Placar Time B (opcional)</label>
+                    <input type="number" name="score_b" id="score_b" min="0" step="1">
+                </div>
+            </div>
+
+            <div style="margin-top: 20px; display: flex; gap: 12px;">
+                <button type="submit">Cadastrar Jogo</button>
+                <a href="{{ url_for('matches') }}" class="link-muted" style="align-self: center;">Cancelar</a>
+            </div>
+        </form>
+    </div>
+{% endblock %}

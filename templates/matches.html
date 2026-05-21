@@ -1,53 +1,64 @@
 {% extends 'base.html' %}
 
-{% block title %}Cadastrar jogo{% endblock %}
+{% block title %}Partidas - Kicopada{% endblock %}
+
+{% block page_title %}Partidas{% endblock %}
 
 {% block content %}
     <div class="topbar">
-        <h1>Cadastrar jogo</h1>
-        <div></div>
+        <h1>Partidas</h1>
+        {% if current_user.is_admin %}
+            <div class="topbar-actions">
+                <a href="{{ url_for('create_match') }}" style="text-decoration: none; background-color: #28a745; color: white; padding: 8px 16px; border-radius: 4px; font-size: 14px;">+ Cadastrar Jogo</a>
+            </div>
+        {% endif %}
     </div>
 
     <div class="card">
-        <form method="POST" action="/matches">
-            <div class="form-row">
-                <div class="col">
-                    <label>Time A:</label>
-                    <input type="text" name="team_a" autocomplete="team_a">
-                </div>
-                <div class="col-narrow">
-                    <label>Resultado A:</label>
-                    <input type="number" name="score_a" min="0" step="1">
-                </div>
-            </div>
-
-            <div class="form-row">
-                <div class="col">
-                    <label>Time B:</label>
-                    <input type="text" name="team_b" autocomplete="team_b">
-                </div>
-                <div class="col-narrow">
-                    <label>Resultado B:</label>
-                    <input type="number" name="score_b" min="0" step="1">
-                </div>
-            </div>
-
-            <div class="form-row">
-                <div class="col">
-                    <label>Data do jogo:</label>
-                    <input type="datetime-local" name="match_date" autocomplete="match_date">
-                </div>
-                <div class="col">
-                    <label>Fase:</label>
-                    <select name="round">
-                      {% for p in phases %}
-                        <option value="{{ p }}">{{ p }}</option>
-                      {% endfor %}
-                    </select>
-                </div>
-            </div>
-
-            <button type="submit">Cadastrar</button>
-        </form>
+        {% if matches %}
+            <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
+                <thead>
+                    <tr style="text-align: left; border-bottom: 2px solid #eee;">
+                        <th style="padding: 12px 8px;">Data</th>
+                        <th style="padding: 12px 8px;">Fase</th>
+                        <th style="padding: 12px 8px;">Confronto</th>
+                        <th style="padding: 12px 8px; text-align: center;">Placar</th>
+                        {% if current_user.is_admin %}
+                            <th style="padding: 12px 8px; text-align: center;">Ações</th>
+                        {% endif %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for match in matches %}
+                        <tr style="border-bottom: 1px solid #eee;">
+                            <td style="padding: 12px 8px;">{{ match.date }}</td>
+                            <td style="padding: 12px 8px;">{{ match.round }}</td>
+                            <td style="padding: 12px 8px;"><strong>{{ match.team_a }}</strong> vs <strong>{{ match.team_b }}</strong></td>
+                            <td style="padding: 12px 8px; text-align: center;">
+                                {% if match.score_a is not none and match.score_b is not none %}
+                                    <span style="background: #f0f0f0; padding: 4px 10px; border-radius: 4px; font-weight: bold;">{{ match.score_a }} x {{ match.score_b }}</span>
+                                {% else %}
+                                    <span style="color: #999; font-style: italic;">Agendado</span>
+                                {% endif %}
+                            </td>
+                            {% if current_user.is_admin %}
+                                <td style="padding: 12px 8px; text-align: center;">
+                                    <div style="display: flex; gap: 12px; justify-content: center; align-items: center;">
+                                        <a href="{{ url_for('edit_match', match_id=match.id) }}" style="color: #4f46e5; text-decoration: none; font-size: 14px; font-weight: 600;">Editar</a>
+                                        <form action="{{ url_for('delete_match', match_id=match.id) }}" method="POST" style="display: inline; margin: 0;" onsubmit="return confirm('Tem certeza que deseja excluir esta partida?');">
+                                            <button type="submit" style="background: none; border: none; color: #dc3545; cursor: pointer; font-size: 14px; font-weight: 600; padding: 0; font-family: inherit;">
+                                                Deletar
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            {% endif %}
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p style="text-align: center; color: #666; padding: 20px;">Nenhuma partida cadastrada no momento.</p>
+        {% endif %}
     </div>
 {% endblock %}

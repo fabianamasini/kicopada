@@ -2,15 +2,20 @@ import os
 from dotenv import load_dotenv
 from flask import Flask, render_template, request, redirect, url_for, flash
 from werkzeug.security import generate_password_hash
-from flask_login import LoginManager, login_user, logout_user, login_required, current_user
+from flask_login import LoginManager, logout_user, login_required, current_user
 from functools import wraps
-from models import db, User, Match
+from models import db, User, Teams, Match
+from src.utils import phases, teams
+from src.helpers.login_helper import LoginHelper
 from src.helpers.signup_helper import SignupHelper
+from src.helpers.matches_helper import MatchesHelper
 
 ### App initialization ###
 load_dotenv()
 
+login_helper = LoginHelper()
 signup_helper = SignupHelper()
+matches_helper = MatchesHelper()
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('SQLALCHEMY_DATABASE_URI')
@@ -59,6 +64,13 @@ with app.app_context():
         db.session.commit()
         print('Usuário default Admin criado com sucesso.')
 
+    for team_name, team_group in teams.items():
+        if not Teams.query.filter_by(name=team_name).first():
+            new_team = Teams(name=team_name, group=team_group)
+            db.session.add(new_team)
+            db.session.commit()
+            print(f'Time {team_name} criado com sucesso.')
+
 ### App routes ###
 @app.route('/', methods=['GET', 'POST'])
 def login():
@@ -66,30 +78,8 @@ def login():
         return redirect(url_for('home'))
 
     if request.method == 'POST':
-        username = request.form.get('username')
-        password = request.form.get('password')
-        username = username.strip() if username else ''
-        if not username:
-            flash('O nome de usuário é obrigatório.', 'error')
-            return redirect(url_for('login'))
-        if not password:
-            flash('A senha é obrigatória.', 'error')
-            return redirect(url_for('login'))
-
-        user = User.query.filter_by(username=username).first()
-
-        if user is None:
-            flash('Usuário não encontrado.', 'error')
-            return redirect(url_for('login'))
-
-        if not user.check_password(password):
-            flash('Senha incorreta.', 'error')
-            return redirect(url_for('login'))
-
-        # Credenciais corretas
-        login_user(user)
-        flash('Login realizado com sucesso.', 'success')
-        return redirect(url_for('home'))
+        return login_helper.login(username = request.form.get('username'), 
+                                  password = request.form.get('password'))
         
     return render_template('login.html')
 
@@ -99,23 +89,9 @@ def signup():
         return redirect(url_for('home'))
 
     if request.method == 'POST':
-        username = request.form.get('username')
-        password = request.form.get('password')
-        confirm_password = request.form.get('confirm_password')
-
-        if User.query.filter_by(username=username).first():
-            flash('Nome de usuário já existe.', 'error')
-        elif password != confirm_password:
-            flash('As senhas devem ser iguais.', 'error')
-        elif not signup_helper.is_password_strong(password):
-            flash('A senha deve ter no mínimo 8 caracteres, contendo pelo menos 1 número e 1 caractere especial.', 'error')
-        else:
-            hashed_password = generate_password_hash(password)
-            new_user = User(username=username, password_hash=hashed_password, is_admin=False)
-            db.session.add(new_user)
-            db.session.commit()
-            flash('Cadastro realizado com sucesso.', 'success')
-            return redirect(url_for('login'))
+        return signup_helper.signup(username = request.form.get('username'),
+                                    password = request.form.get('password'),
+                                    confirm_password = request.form.get('confirm_password'))
 
     return render_template('signup.html')
 
@@ -130,65 +106,48 @@ def logout():
 def home():
     return render_template('home.html')
 
+@app.route('/matches', methods=['GET'])
+@login_required
+def matches():
+    all_matches = Match.query.order_by(Match.date.desc()).all()
+    return render_template('matches.html', matches=all_matches)
+
 # Admin required route
-@app.route('/matches', methods=['GET', 'POST'])
+@app.route('/add_match', methods=['GET', 'POST'])
 @admin_required
 def create_match():
-    phases = [
-        'Fase de Grupos',
-        'Oitavas de Final',
-        'Quartas de Final',
-        'Semifinal',
-        'Final'
-    ]
-
     if request.method == 'POST':
-        team_a = request.form.get('team_a')
-        team_b = request.form.get('team_b')
-        match_date = request.form.get('match_date')
-        round = request.form.get('round')
-        score_a = request.form.get('score_a')
-        score_b = request.form.get('score_b')
+        return matches_helper.add_new_match(team_a = request.form.get('team_a'),
+                                            team_b = request.form.get('team_b'),
+                                            match_date = request.form.get('match_date'),
+                                            round = request.form.get('round'),
+                                            score_a = request.form.get('score_a'),
+                                            score_b = request.form.get('score_b'))
+    
+    teams_list = [team[0] for team in Teams.query.with_entities(Teams.name).order_by(Teams.name.asc()).all()]
 
-        if not team_a:
-            flash('O time A é obrigatório.', 'error')
-            return redirect(url_for('create_match'))
-        if not team_b:
-            flash('O time B é obrigatório.', 'error')
-            return redirect(url_for('create_match'))
-        if team_a == team_b:
-            flash('Os times A e B devem ser diferentes.', 'error')
-            return redirect(url_for('create_match'))
-        if not match_date:
-            flash('A data do jogo é obrigatória.', 'error')
-            return redirect(url_for('create_match'))
-        if not round:
-            flash('A fase do jogo é obrigatória.', 'error')
-            return redirect(url_for('create_match'))
-        if score_a and not score_a.isdigit():
-            flash('O placar do time A deve ser um número.', 'error')
-            return redirect(url_for('create_match'))
-        if score_b and not score_b.isdigit():
-            flash('O placar do time B deve ser um número.', 'error')
-            return redirect(url_for('create_match'))
-        
-        match = Match.query.filter_by(team_a=team_a, team_b=team_b, match_date=match_date).first()
-        if match:
-            flash('Este jogo já está cadastrado.', 'error')
-            return redirect(url_for('create_match'))
-        else:
-            new_match = Match(team_a=team_a,
-                              team_b=team_b,
-                              date=match_date,
-                              round=round,
-                              score_a=int(score_a) if score_a else None,
-                              score_b=int(score_b) if score_b else None)
-            db.session.add(new_match)
-            db.session.commit()
+    return render_template('add_match.html', phases=phases, teams=teams_list)
 
-            flash('Jogo cadastrado com sucesso.', 'success')
+@app.route('/delete_match/<int:match_id>', methods=['POST'])
+@admin_required
+def delete_match(match_id):
+    return matches_helper.delete_match(match_id)
 
-    return render_template('matches.html', phases=phases)
+@app.route('/edit_match/<int:match_id>', methods=['GET', 'POST'])
+@admin_required
+def edit_match(match_id):
+    if request.method == 'POST':
+        return matches_helper.edit_match(match_id, 
+                                          team_a=request.form.get('team_a'),
+                                          team_b=request.form.get('team_b'),
+                                          match_date=request.form.get('match_date'),
+                                          round=request.form.get('round'),
+                                          score_a=request.form.get('score_a'),
+                                          score_b=request.form.get('score_b'))
+    else:
+        match = Match.query.get(match_id)
+        teams_list = [team[0] for team in Teams.query.with_entities(Teams.name).order_by(Teams.name.asc()).all()]
+        return render_template('edit_match.html', match=match, phases=phases, teams=teams_list)
 
 if __name__ == '__main__':
     app.run(debug=True)

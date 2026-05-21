@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+
+{% block title %}Editar Partida - Kicopada{% endblock %}
+
+{% block page_title %}Editar Partida{% endblock %}
+
+{% block content %}
+<div class="card">
+    <form action="{{ url_for('edit_match', match_id=match.id) }}" method="POST">
+        <div class="form-row">
+            <div class="col">
+                <label for="team_a">Time A</label>
+                <select name="team_a" id="team_a" required>
+                    {% for team in teams %}
+                        <option value="{{ team }}" {% if match.team_a == team %}selected{% endif %}>{{ team }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-narrow" style="text-align: center; align-self: flex-end; padding-bottom: 10px; font-weight: bold;">VS</div>
+            <div class="col">
+                <label for="team_b">Time B</label>
+                <select name="team_b" id="team_b" required>
+                    {% for team in teams %}
+                        <option value="{{ team }}" {% if match.team_b == team %}selected{% endif %}>{{ team }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="col">
+                <label for="match_date">Data e Hora</label>
+                <input type="datetime-local" name="match_date" id="match_date" value="{{ match.date }}" required>
+            </div>
+            <div class="col">
+                <label for="round">Fase</label>
+                <select name="round" id="round" required>
+                    {% for phase in phases %}
+                        <option value="{{ phase }}" {% if match.round == phase %}selected{% endif %}>{{ phase }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="col">
+                <label for="score_a">Placar Time A (opcional)</label>
+                <input type="number" name="score_a" id="score_a" value="{{ match.score_a if match.score_a is not none else '' }}">
+            </div>
+            <div class="col">
+                <label for="score_b">Placar Time B (opcional)</label>
+                <input type="number" name="score_b" id="score_b" value="{{ match.score_b if match.score_b is not none else '' }}">
+            </div>
+        </div>
+
+        <div style="margin-top: 20px; display: flex; gap: 12px;">
+            <button type="submit">Salvar Alterações</button>
+            <a href="{{ url_for('matches') }}" class="link-muted" style="align-self: center;">Cancelar</a>
+        </div>
+    </form>
+</div>
+{% endblock %}
