@@ -54,3 +54,18 @@ class MatchesHelper:
         else:
             flash('Partida não encontrada.', 'error')
         return redirect(url_for('matches'))
+    
+    def edit_match(self, match_id, team_a, team_b, match_date, round, score_a=None, score_b=None):
+        match = Match.query.get(match_id)
+        if match:
+            match.team_a = team_a
+            match.team_b = team_b
+            match.date = match_date
+            match.round = round
+            match.score_a = int(score_a) if score_a else None
+            match.score_b = int(score_b) if score_b else None
+            db.session.commit()
+            flash('Partida atualizada com sucesso.', 'success')
+        else:
+            flash('Partida não encontrada.', 'error')
+        return redirect(url_for('matches'))

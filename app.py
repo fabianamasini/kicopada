@@ -133,5 +133,21 @@ def create_match():
 def delete_match(match_id):
     return matches_helper.delete_match(match_id)
 
+@app.route('/edit_match/<int:match_id>', methods=['GET', 'POST'])
+@admin_required
+def edit_match(match_id):
+    if request.method == 'POST':
+        return matches_helper.edit_match(match_id, 
+                                          team_a=request.form.get('team_a'),
+                                          team_b=request.form.get('team_b'),
+                                          match_date=request.form.get('match_date'),
+                                          round=request.form.get('round'),
+                                          score_a=request.form.get('score_a'),
+                                          score_b=request.form.get('score_b'))
+    else:
+        match = Match.query.get(match_id)
+        teams_list = [team[0] for team in Teams.query.with_entities(Teams.name).order_by(Teams.name.asc()).all()]
+        return render_template('edit_match.html', match=match, phases=phases, teams=teams_list)
+
 if __name__ == '__main__':
     app.run(debug=True)
