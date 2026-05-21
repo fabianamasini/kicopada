@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+{% block title %}Editar palpite - Kicopada{% endblock %}
+
+{% block page_title %}Editar Palpite{% endblock %}
+
+{% block content %}
+<div class="card">
+    <form action="{{ url_for('edit_guess', guess_id=guess.id) }}" method="POST">
+        <div class="form-row">
+            <div class="col">
+                <label>Jogo</label>
+                <div style="padding: 10px; background: #f8fafc; border-radius: 8px; border: 1px solid #e6e9ee; font-weight: 600;">
+                    {{ guess.match.team_a }} vs {{ guess.match.team_b }}
+                </div>
+            </div>
+        </div>
+
+        <div class="form-row" style="margin-top: 10px;">
+            <div class="col">
+                <label for="pred_a">Placar {{ guess.match.team_a }}</label>
+                <input type="number" name="pred_a" id="pred_a" min="0" step="1" value="{{ guess.pred_a }}" required>
+            </div>
+            <div class="col">
+                <label for="pred_b">Placar {{ guess.match.team_b }}</label>
+                <input type="number" name="pred_b" id="pred_b" min="0" step="1" value="{{ guess.pred_b }}" required>
+            </div>
+        </div>
+
+        <div style="margin-top: 20px; display: flex; gap: 12px;">
+            <button type="submit">Salvar Alterações</button>
+            <a href="{{ url_for('guesses') }}" class="link-muted" style="align-self: center;">Cancelar</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

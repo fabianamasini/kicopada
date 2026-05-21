@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+
+{% block title %}Cadastrar palpite{% endblock %}
+
+{% block content %}
+    <div class="topbar">
+        <h1>Cadastrar palpite</h1>
+        <div></div>
+    </div>
+
+    <div class="card">
+        <form action="{{ url_for('create_guess') }}" method="POST">
+            <div class="form-row">
+                <div class="col">
+                    <label for="match">Jogo</label>
+                    <select name="match_id" id="match" required>
+                        <option value="" disabled selected>Selecione o jogo</option>
+                        {% for m in matches %}
+                            {% if m.is_editable() %}
+                                <option value="{{ m.id }}">{{ m.team_a }} vs {{ m.team_b }} ({{ m.date }})</option>
+                            {% endif %}
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="col">
+                    <label for="pred_a">Placar Time A</label>
+                    <input type="number" name="pred_a" id="pred_a" min="0" step="1" required>
+                </div>
+                <div class="col">
+                    <label for="pred_b">Placar Time B</label>
+                    <input type="number" name="pred_b" id="pred_b" min="0" step="1" required>
+                </div>
+            </div>
+
+            <div style="margin-top: 20px; display: flex; gap: 12px;">
+                <button type="submit">Cadastrar Palpite</button>
+                <a href="{{ url_for('guesses') }}" class="link-muted" style="align-self: center;">Cancelar</a>
+            </div>
+        </form>
+    </div>
+{% endblock %}

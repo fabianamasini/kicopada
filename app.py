@@ -4,11 +4,12 @@ from flask import Flask, render_template, request, redirect, url_for, flash
 from werkzeug.security import generate_password_hash
 from flask_login import LoginManager, logout_user, login_required, current_user
 from functools import wraps
-from models import db, User, Teams, Match
+from models import db, User, Teams, Match, Guesses
 from src.utils import phases, teams
 from src.helpers.login_helper import LoginHelper
 from src.helpers.signup_helper import SignupHelper
 from src.helpers.matches_helper import MatchesHelper
+from src.helpers.guesses_helper import GuessesHelper
 
 ### App initialization ###
 load_dotenv()
@@ -16,6 +17,7 @@ load_dotenv()
 login_helper = LoginHelper()
 signup_helper = SignupHelper()
 matches_helper = MatchesHelper()
+guesses_helper = GuessesHelper()
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('SQLALCHEMY_DATABASE_URI')
@@ -111,6 +113,45 @@ def home():
 def matches():
     all_matches = Match.query.order_by(Match.date.desc()).all()
     return render_template('matches.html', matches=all_matches)
+
+@app.route('/guesses', methods=['GET'])
+@login_required
+def guesses():
+    all_curr_user_guesses = guesses_helper.get_user_guesses(current_user.id)
+    return render_template('guesses.html', guesses=all_curr_user_guesses)
+
+@app.route('/add_guess', methods=['GET', 'POST'])
+@login_required
+def create_guess():
+    if request.method == 'POST':
+        return guesses_helper.add_new_guess(match_id = request.form.get('match_id'),
+                                            user_id = current_user.id,
+                                            pred_a = request.form.get('pred_a'),
+                                            pred_b = request.form.get('pred_b'))
+
+    matches_list = Match.query.order_by(Match.date.desc()).all()
+
+    return render_template('add_guess.html', matches=matches_list)
+
+@app.route('/delete_guess/<int:guess_id>', methods=['POST'])
+@login_required
+def delete_guess(guess_id):
+    return guesses_helper.delete_guess(guess_id, current_user.id)
+
+@app.route('/edit_guess/<int:guess_id>', methods=['GET', 'POST'])
+@login_required
+def edit_guess(guess_id):
+    if request.method == 'POST':
+        return guesses_helper.edit_guess(guess_id,
+                                         user_id=current_user.id,
+                                         pred_a=request.form.get('pred_a'),
+                                         pred_b=request.form.get('pred_b'))
+    
+    guess = Guesses.query.filter_by(id=guess_id, user_id=current_user.id).first()
+    if not guess:
+        flash('Palpite não encontrado.', 'error')
+        return redirect(url_for('guesses'))
+    return render_template('edit_guess.html', guess=guess)
 
 # Admin required route
 @app.route('/add_match', methods=['GET', 'POST'])

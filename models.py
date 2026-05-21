@@ -1,3 +1,4 @@
+from datetime import datetime
 from flask_login import UserMixin
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -28,12 +29,26 @@ class Match(db.Model):
     score_a = db.Column(db.Integer, nullable=True)
     score_b = db.Column(db.Integer, nullable=True)
 
-class Prediction(db.Model):
+    def is_editable(self):
+        """Retorna True se o palpite ainda pode ser feito (até 23:59 do dia anterior ao jogo)."""
+        if not self.date:
+            return False
+        try:
+            # Considera o início do dia do jogo (00:00:00) como o limite
+            match_date = datetime.strptime(self.date[:10], "%Y-%m-%d")
+            return datetime.now() < match_date
+        except (ValueError, TypeError):
+            return False
+
+class Guesses(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     match_id = db.Column(db.Integer, db.ForeignKey('match.id'))
     pred_a = db.Column(db.Integer)
     pred_b = db.Column(db.Integer)
+
+    user = db.relationship('User', backref=db.backref('guesses', lazy=True))
+    match = db.relationship('Match', backref=db.backref('guesses', lazy=True))
 
 class Teams(db.Model):
     id = db.Column(db.Integer, primary_key=True)
