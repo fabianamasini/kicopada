@@ -1,4 +1,4 @@
-phases = [ 'Fase de Grupos', 'Oitavas de Final', 'Quartas de Final', 'Semifinal', 'Final']
+phases = ['Fase de Grupos', '16-avos de Final', 'Oitavas de Final', 'Quartas de Final', 'Semifinal', 'Final']
 
 teams = {'Canadá': 'B', 'EUA': 'D', 'México': 'A', 'África do Sul': 'A', 'Alemanha': 'E',
     'Arábia Saudita': 'H', 'Argélia': 'J', 'Argentina': 'J', 'Austrália': 'D', 'Áustria': 'J',

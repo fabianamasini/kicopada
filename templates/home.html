@@ -11,6 +11,31 @@
   </div>
 
   <div class="card">
-    <p>Welcome to the Home Page!</p>
+    <h2>🏆 Ranking Geral</h2>
+    <div style="overflow-x: auto;">
+        <table class="ranking-table">
+            <thead>
+                <tr>
+                    <th class="pos">#</th>
+                    <th>Usuário</th>
+                    <th class="pts">Pontos</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in ranking %}
+                <tr class="{{ 'is-current-user' if user.id == current_user.id else '' }}">
+                    <td class="pos">{{ loop.index }}º</td>
+                    <td>
+                        {{ user.username }}
+                        {% if user.id == current_user.id %}
+                            <span style="font-size: 0.75rem; color: #ff6b6b; font-weight: bold;">(Você)</span>
+                        {% endif %}
+                    </td>
+                    <td class="pts">{{ user.points }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
   </div>
 {% endblock %}

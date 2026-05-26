@@ -32,7 +32,14 @@
                             <td style="padding: 12px 8px;"><strong>{{ guess.match.team_a }}</strong> vs <strong>{{ guess.match.team_b }}</strong></td>
                             <td style="padding: 12px 8px; text-align: center;">
                                 {% if guess.pred_a is not none and guess.pred_b is not none %}
-                                    <span style="background: #f0f0f0; padding: 4px 10px; border-radius: 4px; font-weight: bold;">{{ guess.pred_a }} x {{ guess.pred_b }}</span>
+                                    <div style="background: #f0f0f0; padding: 4px 10px; border-radius: 4px; font-weight: bold; display: inline-block; min-width: 60px;">
+                                        {{ guess.pred_a }} x {{ guess.pred_b }}
+                                        {% if guess.match.is_knockout and guess.penalty_pred_a is not none %}
+                                            <div style="font-size: 0.75rem; color: #6b7280; font-weight: normal; margin-top: 2px; border-top: 1px solid #d1d5db; padding-top: 2px;">
+                                                {{ guess.penalty_pred_a }} x {{ guess.penalty_pred_b }} (P)
+                                            </div>
+                                        {% endif %}
+                                    </div>
                                 {% else %}
                                     <span style="color: #999; font-style: italic;">Sem palpite</span>
                                 {% endif %}

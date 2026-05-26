@@ -27,10 +27,50 @@
             </div>
         </div>
 
+        {% if guess.match.is_knockout %}
+        <div id="knockout-section">
+            <div class="card" style="margin-top: 15px; border: 1px dashed #ff6b6b;">
+                <div class="form-row">
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: bold;">
+                        <input type="checkbox" id="check-penalty" name="decided_by_penalty" 
+                            {% if guess.penalty_pred_a is not none %}checked{% endif %}
+                            onchange="togglePenaltyFields(this.checked)">
+                        🏆 Decidido nos Pênaltis?
+                    </label>
+                </div>
+
+                <div id="penalty-inputs" style="display: {% if guess.penalty_pred_a is not none %}flex{% else %}none{% endif %}; gap: 12px; margin-top: 10px;">
+                    <div class="col">
+                        <label>Pênaltis {{ guess.match.team_a }}</label>
+                        <input type="number" name="penalty_a" value="{% if guess.penalty_pred_a is not none %}{{ guess.penalty_pred_a }}{% endif %}" placeholder="0">
+                    </div>
+                    <div class="col">
+                        <label>Pênaltis {{ guess.match.team_b }}</label>
+                        <input type="number" name="penalty_b" value="{% if guess.penalty_pred_b is not none %}{{ guess.penalty_pred_b }}{% endif %}" placeholder="0">
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
         <div style="margin-top: 20px; display: flex; gap: 12px;">
             <button type="submit">Salvar Alterações</button>
             <a href="{{ url_for('guesses') }}" class="link-muted" style="align-self: center;">Cancelar</a>
         </div>
     </form>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function togglePenaltyFields(isChecked) {
+    const container = document.getElementById('penalty-inputs');
+    if (container) {
+        container.style.display = isChecked ? 'flex' : 'none';
+        if (!isChecked) {
+            container.querySelectorAll('input').forEach(i => i.value = '');
+        }
+    }
+}
+</script>
 {% endblock %}

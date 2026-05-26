@@ -28,6 +28,10 @@ class Match(db.Model):
     round = db.Column(db.String(50))
     score_a = db.Column(db.Integer, nullable=True)
     score_b = db.Column(db.Integer, nullable=True)
+    winner = db.Column(db.String(1), nullable=True) # 'A' ou 'B' para mata-mata
+    penalty_score_a = db.Column(db.Integer, nullable=True)
+    penalty_score_b = db.Column(db.Integer, nullable=True)
+    is_knockout = db.Column(db.Boolean, default=False)
 
     def is_editable(self):
         """Retorna True se o palpite ainda pode ser feito (até 23:59 do dia anterior ao jogo)."""
@@ -46,6 +50,10 @@ class Guesses(db.Model):
     match_id = db.Column(db.Integer, db.ForeignKey('match.id'))
     pred_a = db.Column(db.Integer)
     pred_b = db.Column(db.Integer)
+    winner_pred = db.Column(db.String(1), nullable=True) # 'A' ou 'B' para mata-mata
+    penalty_pred_a = db.Column(db.Integer, nullable=True)
+    penalty_pred_b = db.Column(db.Integer, nullable=True)
+    is_knockout = db.Column(db.Boolean, default=False)
 
     user = db.relationship('User', backref=db.backref('guesses', lazy=True))
     match = db.relationship('Match', backref=db.backref('guesses', lazy=True))

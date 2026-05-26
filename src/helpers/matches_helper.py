@@ -1,4 +1,4 @@
-from models import db, Match
+from models import db, Match, Guesses
 from flask import flash, redirect, url_for
 
 class MatchesHelper:
@@ -33,12 +33,14 @@ class MatchesHelper:
             flash('Este jogo já está cadastrado.', 'error')
             return redirect(url_for('create_match'))
         else:
+            is_knockout = round != 'Fase de Grupos'
             new_match = Match(team_a=team_a,
                               team_b=team_b,
                               date=match_date,
                               round=round,
                               score_a=int(score_a) if score_a else None,
-                              score_b=int(score_b) if score_b else None)
+                              score_b=int(score_b) if score_b else None,
+                              is_knockout=is_knockout)
             db.session.add(new_match)
             db.session.commit()
 
@@ -48,9 +50,10 @@ class MatchesHelper:
     def delete_match(self, match_id):
         match = Match.query.get(match_id)
         if match:
+            Guesses.query.filter_by(match_id=match_id).delete()
             db.session.delete(match)
             db.session.commit()
-            flash('Partida excluída com sucesso.', 'success')
+            flash('Partida e todos os palpites associados foram excluídos com sucesso.', 'success')
         else:
             flash('Partida não encontrada.', 'error')
         return redirect(url_for('matches'))
@@ -62,6 +65,7 @@ class MatchesHelper:
             match.team_b = team_b
             match.date = match_date
             match.round = round
+            match.is_knockout = round != 'Fase de Grupos'
             match.score_a = int(score_a) if score_a else None
             match.score_b = int(score_b) if score_b else None
             db.session.commit()

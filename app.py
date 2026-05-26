@@ -5,6 +5,7 @@ from werkzeug.security import generate_password_hash
 from flask_login import LoginManager, logout_user, login_required, current_user
 from functools import wraps
 from models import db, User, Teams, Match, Guesses
+from sqlalchemy.orm import joinedload
 from src.utils import phases, teams
 from src.helpers.login_helper import LoginHelper
 from src.helpers.signup_helper import SignupHelper
@@ -106,7 +107,8 @@ def logout():
 @app.route('/home')
 @login_required
 def home():
-    return render_template('home.html')
+    ranking = User.query.order_by(User.points.desc(), User.username.asc()).all()
+    return render_template('home.html', ranking=ranking)
 
 @app.route('/matches', methods=['GET'])
 @login_required
@@ -127,7 +129,10 @@ def create_guess():
         return guesses_helper.add_new_guess(match_id = request.form.get('match_id'),
                                             user_id = current_user.id,
                                             pred_a = request.form.get('pred_a'),
-                                            pred_b = request.form.get('pred_b'))
+                                            pred_b = request.form.get('pred_b'),
+                                            winner_pred = request.form.get('winner_pred'),
+                                            penalty_a = request.form.get('penalty_a'),
+                                            penalty_b = request.form.get('penalty_b'))
 
     matches_list = Match.query.order_by(Match.date.desc()).all()
 
@@ -145,12 +150,20 @@ def edit_guess(guess_id):
         return guesses_helper.edit_guess(guess_id,
                                          user_id=current_user.id,
                                          pred_a=request.form.get('pred_a'),
-                                         pred_b=request.form.get('pred_b'))
-    
-    guess = Guesses.query.filter_by(id=guess_id, user_id=current_user.id).first()
+                                         pred_b=request.form.get('pred_b'),
+                                         winner_pred=request.form.get('winner_pred'),
+                                         penalty_a=request.form.get('penalty_a'),
+                                         penalty_b=request.form.get('penalty_b'))
+
+    guess = Guesses.query.filter_by(id=guess_id, user_id=current_user.id).options(joinedload(Guesses.match)).first()
     if not guess:
         flash('Palpite não encontrado.', 'error')
         return redirect(url_for('guesses'))
+    
+    if not guess.match.is_editable():
+        flash('O prazo para editar este palpite expirou.', 'error')
+        return redirect(url_for('guesses'))
+        
     return render_template('edit_guess.html', guess=guess)
 
 # Admin required route
@@ -172,19 +185,30 @@ def create_match():
 @app.route('/delete_match/<int:match_id>', methods=['POST'])
 @admin_required
 def delete_match(match_id):
-    return matches_helper.delete_match(match_id)
+    # Captura os IDs dos usuários que tinham palpites nesta partida para recalcular o ranking depois
+    user_ids = [g.user_id for g in Guesses.query.filter_by(match_id=match_id).all()]
+
+    response = matches_helper.delete_match(match_id)
+
+    # Recalcula a pontuação de todos os usuários afetados
+    for uid in set(user_ids):
+        guesses_helper.update_user_points(uid)
+
+    return response
 
 @app.route('/edit_match/<int:match_id>', methods=['GET', 'POST'])
 @admin_required
 def edit_match(match_id):
     if request.method == 'POST':
-        return matches_helper.edit_match(match_id, 
+        response = matches_helper.edit_match(match_id, 
                                           team_a=request.form.get('team_a'),
                                           team_b=request.form.get('team_b'),
                                           match_date=request.form.get('match_date'),
                                           round=request.form.get('round'),
                                           score_a=request.form.get('score_a'),
                                           score_b=request.form.get('score_b'))
+        guesses_helper.update_all_scores_for_match(match_id)
+        return response
     else:
         match = Match.query.get(match_id)
         teams_list = [team[0] for team in Teams.query.with_entities(Teams.name).order_by(Teams.name.asc()).all()]
