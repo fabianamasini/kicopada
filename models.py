@@ -65,4 +65,13 @@ class Teams(db.Model):
     points = db.Column(db.Integer, default=0)
     disqualified = db.Column(db.Boolean, default=False)
 
+class Odds(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    match_id = db.Column(db.Integer, db.ForeignKey('match.id'))
+    team_a_odds = db.Column(db.Float, nullable=False)
+    team_b_odds = db.Column(db.Float, nullable=False)
+    draw_odds = db.Column(db.Float, nullable=False)
+
+    match = db.relationship('Match', backref=db.backref('odds', uselist=False))
+
     

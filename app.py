@@ -7,16 +7,15 @@ from functools import wraps
 from models import db, User, Teams, Match, Guesses
 from sqlalchemy.orm import joinedload
 from src.utils import phases, teams
-from src.helpers.login_helper import LoginHelper
-from src.helpers.signup_helper import SignupHelper
+from src.controllers.auth import AuthController
+from src.controllers.signup import SignupController
 from src.helpers.matches_helper import MatchesHelper
 from src.helpers.guesses_helper import GuessesHelper
 
 ### App initialization ###
 load_dotenv()
 
-login_helper = LoginHelper()
-signup_helper = SignupHelper()
+auth = AuthController()
 matches_helper = MatchesHelper()
 guesses_helper = GuessesHelper()
 
@@ -75,34 +74,20 @@ with app.app_context():
             print(f'Time {team_name} criado com sucesso.')
 
 ### App routes ###
+### Auth ###
 @app.route('/', methods=['GET', 'POST'])
 def login():
-    if current_user.is_authenticated:
-        return redirect(url_for('home'))
-
-    if request.method == 'POST':
-        return login_helper.login(username = request.form.get('username'), 
-                                  password = request.form.get('password'))
-        
-    return render_template('login.html')
-
-@app.route('/signup', methods=['GET', 'POST'])
-def signup():
-    if current_user.is_authenticated:
-        return redirect(url_for('home'))
-
-    if request.method == 'POST':
-        return signup_helper.signup(username = request.form.get('username'),
-                                    password = request.form.get('password'),
-                                    confirm_password = request.form.get('confirm_password'))
-
-    return render_template('signup.html')
+    return auth.login(request, current_user)
 
 @app.route('/logout')
 @login_required
 def logout():
-    logout_user()
-    return redirect(url_for('login'))
+    return auth.logout()
+
+### Signup ###
+@app.route('/signup', methods=['GET', 'POST'])
+def signup():
+    return SignupController().signup(request, current_user)
 
 @app.route('/home')
 @login_required
