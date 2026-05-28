@@ -10,3 +10,7 @@ class UserController:
     def get_user_by_username(self, username):
         user = User.query.filter_by(username=username).first()
         return user
+    
+    def get_ranked_users(self):
+        ranking = User.query.order_by(User.points.desc(), User.username.asc()).all()
+        return ranking
