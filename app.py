@@ -97,7 +97,8 @@ def signup():
 @login_required
 def home():
     ranking = user_controller.get_ranked_users()
-    return render_template('home.html', ranking=ranking)
+    next_match = matches_controller.get_next_match()
+    return render_template('home.html', ranking=ranking, next_match=next_match)
 
 @app.route('/matches', methods=['GET'])
 @login_required

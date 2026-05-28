@@ -1,7 +1,40 @@
-from models import db, User, Match, Guesses
+from models import db, User, Match, Guesses, Odds
 from sqlalchemy.orm import joinedload
 
 class ScoringController:
+
+    def calculate_odds_for_match(self, match_id):
+        """Calcula as odds para uma partida específica com base nos palpites dos usuários.
+
+        Odd = 1 + ((y - x) / (y - 1))
+
+        y = numero total de palpites para aquela partida
+        x = numero de palpites para aquele time
+        
+        """
+        guesses = Guesses.query.filter_by(match_id=match_id).all()
+        total_guesses = len(guesses)
+
+        if total_guesses <= 1:
+            return 2.0, 2.0, 2.0  # Odds padrão se houver poucos palpites para evitar divisão por zero
+
+        count_a = sum(1 for g in guesses if g.pred_a > g.pred_b)
+        count_b = sum(1 for g in guesses if g.pred_b > g.pred_a)
+        count_draw = sum(1 for g in guesses if g.pred_a == g.pred_b)
+
+        odds_a = 1 + ((total_guesses - count_a)/(total_guesses - 1))
+        odds_b = 1 + ((total_guesses - count_b)/(total_guesses - 1))
+        odds_draw = 1 + ((total_guesses - count_draw)/(total_guesses - 1))
+
+        odds = Odds.query.filter_by(match_id=match_id).first()
+        if not odds:
+            odds = Odds(match_id=match_id, team_a_odds=odds_a, team_b_odds=odds_b, draw_odds=odds_draw)
+            db.session.add(odds)
+        else:
+            odds.team_a_odds = odds_a
+            odds.team_b_odds = odds_b
+            odds.draw_odds = odds_draw
+        db.session.commit()
 
     def group_phase_result(self, score_a, score_b, pred_a, pred_b):
         """"
