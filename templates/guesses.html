@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+
+{% block title %}Palpites - Kicopada{% endblock %}
+
+{% block page_title %}Palpites{% endblock %}
+
+{% block content %}
+    <div class="topbar">
+        <h1>Palpites</h1>
+        <div class="topbar-actions">
+            <a href="{{ url_for('create_guess') }}" style="text-decoration: none; background-color: #28a745; color: white; padding: 8px 16px; border-radius: 4px; font-size: 14px;">+ Cadastrar Palpite</a>
+        </div>
+    </div>
+
+    <div class="card">
+        {% if guesses %}
+            <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
+                <thead>
+                    <tr style="text-align: left; border-bottom: 2px solid #eee;">
+                        <th style="padding: 12px 8px;">Data</th>
+                        <th style="padding: 12px 8px;">Fase</th>
+                        <th style="padding: 12px 8px;">Confronto</th>
+                        <th style="padding: 12px 8px; text-align: center;">Palpite</th>
+                        <th style="padding: 12px 8px; text-align: center;">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for guess in guesses %}
+                        <tr style="border-bottom: 1px solid #eee;">
+                            <td style="padding: 12px 8px;">{{ guess.match.date }}</td>
+                            <td style="padding: 12px 8px;">{{ guess.match.round }}</td>
+                            <td style="padding: 12px 8px;"><strong>{{ guess.match.team_a }}</strong> vs <strong>{{ guess.match.team_b }}</strong></td>
+                            <td style="padding: 12px 8px; text-align: center;">
+                                {% if guess.pred_a is not none and guess.pred_b is not none %}
+                                    <div style="background: #f0f0f0; padding: 4px 10px; border-radius: 4px; font-weight: bold; display: inline-block; min-width: 60px;">
+                                        {{ guess.pred_a }} x {{ guess.pred_b }}
+                                        {% if guess.match.is_knockout and guess.penalty_pred_a is not none %}
+                                            <div style="font-size: 0.75rem; color: #6b7280; font-weight: normal; margin-top: 2px; border-top: 1px solid #d1d5db; padding-top: 2px;">
+                                                {{ guess.penalty_pred_a }} x {{ guess.penalty_pred_b }} (P)
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                {% else %}
+                                    <span style="color: #999; font-style: italic;">Sem palpite</span>
+                                {% endif %}
+                            </td>
+                            <td style="padding: 12px 8px; text-align: center;">
+                                <div style="display: flex; gap: 12px; justify-content: center; align-items: center;">
+                                    {% if guess.match.is_editable() %}
+                                        <a href="{{ url_for('edit_guess', guess_id=guess.id) }}" style="color: #4f46e5; text-decoration: none; font-size: 14px; font-weight: 600;">Editar</a>
+                                        <form action="{{ url_for('delete_guess', guess_id=guess.id) }}" method="POST" style="display: inline; margin: 0;" onsubmit="return confirm('Tem certeza que deseja excluir este palpite?');">
+                                            <button type="submit" style="background: none; border: none; color: #dc3545; cursor: pointer; font-size: 14px; font-weight: 600; padding: 0; font-family: inherit;">
+                                                Deletar
+                                            </button>
+                                        </form>
+                                    {% else %}
+                                        <span style="color: #94a3b8; font-size: 12px; font-style: italic;">Prazo encerrado</span>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p>Nenhum palpite registrado.</p>
+        {% endif %}
+    </div>
+{% endblock %}

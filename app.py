@@ -4,18 +4,24 @@ from flask import Flask, render_template, request, redirect, url_for, flash
 from werkzeug.security import generate_password_hash
 from flask_login import LoginManager, logout_user, login_required, current_user
 from functools import wraps
-from models import db, User, Teams, Match
+from models import db, User, Teams, Match, Guesses
+from sqlalchemy.orm import joinedload
 from src.utils import phases, teams
-from src.helpers.login_helper import LoginHelper
-from src.helpers.signup_helper import SignupHelper
-from src.helpers.matches_helper import MatchesHelper
+from src.controllers.auth import AuthController
+from src.controllers.user import UserController
+from src.controllers.signup import SignupController
+from src.controllers.matches import MatchesController
+from src.controllers.guesses import GuessesController
+from src.controllers.scoring import ScoringController
 
 ### App initialization ###
 load_dotenv()
 
-login_helper = LoginHelper()
-signup_helper = SignupHelper()
-matches_helper = MatchesHelper()
+auth_controller = AuthController()
+user_controller = UserController()
+matches_controller = MatchesController()
+guesses_controller = GuessesController()
+scoring_controller = ScoringController()
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('SQLALCHEMY_DATABASE_URI')
@@ -72,52 +78,81 @@ with app.app_context():
             print(f'Time {team_name} criado com sucesso.')
 
 ### App routes ###
+### Auth ###
 @app.route('/', methods=['GET', 'POST'])
 def login():
-    if current_user.is_authenticated:
-        return redirect(url_for('home'))
-
-    if request.method == 'POST':
-        return login_helper.login(username = request.form.get('username'), 
-                                  password = request.form.get('password'))
-        
-    return render_template('login.html')
-
-@app.route('/signup', methods=['GET', 'POST'])
-def signup():
-    if current_user.is_authenticated:
-        return redirect(url_for('home'))
-
-    if request.method == 'POST':
-        return signup_helper.signup(username = request.form.get('username'),
-                                    password = request.form.get('password'),
-                                    confirm_password = request.form.get('confirm_password'))
-
-    return render_template('signup.html')
+    return auth_controller.login(request, current_user)
 
 @app.route('/logout')
 @login_required
 def logout():
-    logout_user()
-    return redirect(url_for('login'))
+    return auth_controller.logout()
+
+### Signup ###
+@app.route('/signup', methods=['GET', 'POST'])
+def signup():
+    return SignupController().signup(request, current_user)
 
 @app.route('/home')
 @login_required
 def home():
-    return render_template('home.html')
+    ranking = user_controller.get_ranked_users()
+    return render_template('home.html', ranking=ranking)
 
 @app.route('/matches', methods=['GET'])
 @login_required
 def matches():
-    all_matches = Match.query.order_by(Match.date.desc()).all()
+    all_matches = matches_controller.get_all_matches()
     return render_template('matches.html', matches=all_matches)
+
+@app.route('/guesses', methods=['GET'])
+@login_required
+def guesses():
+    user_guesses = guesses_controller.get_user_guesses(current_user.id)
+    return render_template('guesses.html', guesses=user_guesses)
+
+@app.route('/add_guess', methods=['GET', 'POST'])
+@login_required
+def create_guess():
+    if request.method == 'POST':
+        return guesses_controller.add_guess(request, current_user)
+    matches_list = matches_controller.get_all_matches()
+    return render_template('add_guess.html', matches=matches_list)
+
+@app.route('/delete_guess/<int:guess_id>', methods=['POST'])
+@login_required
+def delete_guess(guess_id):
+    return guesses_controller.delete_guess(guess_id, current_user.id)
+
+@app.route('/edit_guess/<int:guess_id>', methods=['GET', 'POST'])
+@login_required
+def edit_guess(guess_id):
+    if request.method == 'POST':
+        return guesses_controller.edit_guess(guess_id,
+                                             user_id=current_user.id,
+                                             pred_a=request.form.get('pred_a'),
+                                             pred_b=request.form.get('pred_b'),
+                                             winner_pred=request.form.get('winner_pred'),
+                                         penalty_a=request.form.get('penalty_a'),
+                                         penalty_b=request.form.get('penalty_b'))
+
+    guess = Guesses.query.filter_by(id=guess_id, user_id=current_user.id).options(joinedload(Guesses.match)).first()
+    if not guess:
+        flash('Palpite não encontrado.', 'error')
+        return redirect(url_for('guesses'))
+    
+    if not guess.match.is_editable():
+        flash('O prazo para editar este palpite expirou.', 'error')
+        return redirect(url_for('guesses'))
+        
+    return render_template('edit_guess.html', guess=guess)
 
 # Admin required route
 @app.route('/add_match', methods=['GET', 'POST'])
 @admin_required
 def create_match():
     if request.method == 'POST':
-        return matches_helper.add_new_match(team_a = request.form.get('team_a'),
+        return matches_controller.add_new_match(team_a = request.form.get('team_a'),
                                             team_b = request.form.get('team_b'),
                                             match_date = request.form.get('match_date'),
                                             round = request.form.get('round'),
@@ -131,19 +166,30 @@ def create_match():
 @app.route('/delete_match/<int:match_id>', methods=['POST'])
 @admin_required
 def delete_match(match_id):
-    return matches_helper.delete_match(match_id)
+    # Captura os IDs dos usuários que tinham palpites nesta partida para recalcular o ranking depois
+    user_ids = [g.user_id for g in Guesses.query.filter_by(match_id=match_id).all()]
+
+    response = matches_controller.delete_match(match_id)
+
+    # Recalcula a pontuação de todos os usuários afetados
+    for uid in set(user_ids):
+        guesses_controller.update_user_points(uid)
+
+    return response
 
 @app.route('/edit_match/<int:match_id>', methods=['GET', 'POST'])
 @admin_required
 def edit_match(match_id):
     if request.method == 'POST':
-        return matches_helper.edit_match(match_id, 
+        response = matches_controller.edit_match(match_id, 
                                           team_a=request.form.get('team_a'),
                                           team_b=request.form.get('team_b'),
                                           match_date=request.form.get('match_date'),
                                           round=request.form.get('round'),
                                           score_a=request.form.get('score_a'),
                                           score_b=request.form.get('score_b'))
+        scoring_controller.update_all_scores_for_match(match_id)
+        return response
     else:
         match = Match.query.get(match_id)
         teams_list = [team[0] for team in Teams.query.with_entities(Teams.name).order_by(Teams.name.asc()).all()]

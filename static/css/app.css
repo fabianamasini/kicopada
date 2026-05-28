@@ -51,3 +51,16 @@ h1{margin:0 0 8px 0}
   .nav{flex-direction:row}
   .nav a{white-space:nowrap}
 }
+
+/* Estilos para a Tabela de Ranking */
+.ranking-section { margin-top: 24px; }
+.ranking-table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 12px; overflow: hidden; margin-top: 15px; }
+.ranking-table th, .ranking-table td { padding: 14px 20px; text-align: left; border-bottom: 1px solid #f1f5f9; }
+.ranking-table th { background: #f8fafc; color: #64748b; font-size: 0.8rem; text-transform: uppercase; font-weight: 700; }
+.ranking-table tr:last-child td { border-bottom: none; }
+.ranking-table tr:hover { background: #f8fafc; }
+.ranking-table .pos { font-weight: 700; color: #1e293b; width: 40px; }
+.ranking-table .pts { font-weight: 700; color: #ff6b6b; text-align: right; }
+.ranking-table th.pts { text-align: right; }
+.ranking-table .is-current-user { background: #fff1f2; }
+.ranking-table .is-current-user td { border-bottom-color: #fecaca; }

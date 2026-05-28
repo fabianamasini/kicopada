@@ -1,10 +1,15 @@
-from models import db, Match
+from models import db, Match, Guesses
 from flask import flash, redirect, url_for
 
-class MatchesHelper:
-    def get_user_matches(self, user_id):
-        return Match.query.filter((Match.player1_id == user_id) | (Match.player2_id == user_id)).all()
+class MatchesController:
+    def get_all_matches(self):
+        all_matches = Match.query.order_by(Match.date.desc()).all()
+        return all_matches
     
+    def get_match_by_id(self, match_id):
+        match = Match.query.get(match_id)
+        return match
+
     def add_new_match(self, team_a, team_b, match_date, round, score_a=None, score_b=None):
         if not team_a:
             flash('O time A é obrigatório.', 'error')
@@ -33,24 +38,27 @@ class MatchesHelper:
             flash('Este jogo já está cadastrado.', 'error')
             return redirect(url_for('create_match'))
         else:
+            is_knockout = round != 'Fase de Grupos'
             new_match = Match(team_a=team_a,
                               team_b=team_b,
                               date=match_date,
                               round=round,
                               score_a=int(score_a) if score_a else None,
-                              score_b=int(score_b) if score_b else None)
+                              score_b=int(score_b) if score_b else None,
+                              is_knockout=is_knockout)
             db.session.add(new_match)
             db.session.commit()
 
             flash('Jogo cadastrado com sucesso.', 'success')
-            return redirect(url_for('matches'))
-
+            return redirect(url_for('matches'))    
+        
     def delete_match(self, match_id):
         match = Match.query.get(match_id)
         if match:
+            Guesses.query.filter_by(match_id=match_id).delete()
             db.session.delete(match)
             db.session.commit()
-            flash('Partida excluída com sucesso.', 'success')
+            flash('Partida e todos os palpites associados foram excluídos com sucesso.', 'success')
         else:
             flash('Partida não encontrada.', 'error')
         return redirect(url_for('matches'))
@@ -62,6 +70,7 @@ class MatchesHelper:
             match.team_b = team_b
             match.date = match_date
             match.round = round
+            match.is_knockout = round != 'Fase de Grupos'
             match.score_a = int(score_a) if score_a else None
             match.score_b = int(score_b) if score_b else None
             db.session.commit()
@@ -69,3 +78,5 @@ class MatchesHelper:
         else:
             flash('Partida não encontrada.', 'error')
         return redirect(url_for('matches'))
+
+
