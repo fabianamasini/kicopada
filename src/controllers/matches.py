@@ -16,6 +16,11 @@ class MatchesController:
         now_str = datetime.now().strftime("%Y-%m-%d")
         return Match.query.filter(Match.date >= now_str).order_by(Match.date.asc()).first()
 
+    def get_upcoming_matches(self):
+        """Retorna as próximas partidas programadas a partir de agora."""
+        now_str = datetime.now().strftime("%Y-%m-%d")
+        return Match.query.filter(Match.date >= now_str).order_by(Match.date.asc()).all()
+
     def add_new_match(self, team_a, team_b, match_date, round, score_a=None, score_b=None):
         if not team_a:
             flash('O time A é obrigatório.', 'error')

@@ -10,32 +10,71 @@
     <div></div>
   </div>
 
-  <div class="card">
-    <h2>🏆 Ranking Geral</h2>
-    <div style="overflow-x: auto;">
-        <table class="ranking-table">
-            <thead>
-                <tr>
-                    <th class="pos">#</th>
-                    <th>Usuário</th>
-                    <th class="pts">Pontos</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for user in ranking %}
-                <tr class="{{ 'is-current-user' if user.id == current_user.id else '' }}">
-                    <td class="pos">{{ loop.index }}º</td>
-                    <td>
-                        {{ user.username }}
-                        {% if user.id == current_user.id %}
-                            <span style="font-size: 0.75rem; color: #ff6b6b; font-weight: bold;">(Você)</span>
-                        {% endif %}
-                    </td>
-                    <td class="pts">{{ user.points }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+  <div class="home-content-layout">
+    <div class="card">
+      <h2>Ranking Geral</h2>
+      <div style="overflow-x: auto;">
+          <table class="ranking-table">
+              <thead>
+                  <tr>
+                      <th class="pos">#</th>
+                      <th>Usuário</th>
+                      <th class="pts">Pontos</th>
+                  </tr>
+              </thead>
+              <tbody>
+                  {% for user in ranking %}
+                  <tr class="{{ 'is-current-user' if user.id == current_user.id else '' }}">
+                      <td class="pos">{{ loop.index }}º</td>
+                      <td>
+                          {{ user.username }}
+                          {% if user.id == current_user.id %}
+                              <span style="font-size: 0.75rem; color: #ff6b6b; font-weight: bold;">(Você)</span>
+                          {% endif %}
+                      </td>
+                      <td class="pts">{{ user.points }}</td>
+                  </tr>
+                  {% endfor %}
+              </tbody>
+          </table>
+      </div>
+    </div>
+    <div class="card odds-section">
+      <h2>Próximos Jogos e Odds</h2>
+          <table class="odds-table">
+      <thead>
+          <tr>
+              <th class="match-info">Partida</th>
+              <th>Data</th>
+              <th>Vitória A</th>
+              <th>Empate</th>
+              <th>Vitória B</th>
+          </tr>
+      </thead>
+      <tbody>
+          {% for match in upcoming_matches %}
+          <tr>
+              <td class="match-info">{{ match.team_a }} vs {{ match.team_b }}</td>
+              <td>{{ match.date }}</td>
+              <td>
+                  {% if match.odds %}
+                      <span class="odd-value">{{ "%.2f"|format(match.odds.team_a_odds) }}</span>
+                  {% else %}<span class="no-odds">N/A</span>{% endif %}
+              </td>
+              <td>
+                  {% if match.odds %}
+                      <span class="odd-value">{{ "%.2f"|format(match.odds.draw_odds) }}</span>
+                  {% else %}<span class="no-odds">N/A</span>{% endif %}
+              </td>
+              <td>
+                  {% if match.odds %}
+                      <span class="odd-value">{{ "%.2f"|format(match.odds.team_b_odds) }}</span>
+                  {% else %}<span class="no-odds">N/A</span>{% endif %}
+              </td>
+          </tr>
+          {% endfor %}
+      </tbody>
+  </table>
     </div>
   </div>
 {% endblock %}
