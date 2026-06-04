@@ -1,4 +1,4 @@
-from models import db, User, Match, Guesses, Odds
+from models import db, User, Guesses, Odds
 from sqlalchemy.orm import joinedload
 
 class ScoringController:
@@ -109,15 +109,24 @@ class ScoringController:
             return 1
         return 0
 
-    def calculate_score_for_guess(self, guess_id):
+    def calculate_score_for_guess(self, guess):
         """
         Calcula e atualiza a pontuação de um palpite específico e a pontuação total do usuário.
         """
-        guess = Guesses.query.get(guess_id)
-        if guess:
-            self.update_user_points(guess.user_id)
+        guess = Guesses.query.get(guess.id)
+        odds = Odds.query.filter_by(match_id=guess.match_id).first()
 
-    def update_user_points(self, user_id):
+        if guess.pred_a > guess.pred_b:
+            match_odds = odds.team_a_odds if odds else 2.0
+        elif guess.pred_b > guess.pred_a:
+            match_odds = odds.team_b_odds if odds else 2.0
+        else:
+            match_odds = odds.draw_odds if odds else 2.0
+
+        if guess:
+            self.update_user_points(guess.user_id, match_odds)
+
+    def update_user_points(self, user_id, odds):
         """Recalcula a pontuação total de um usuário com base em todos os seus palpites."""
         user = User.query.get(user_id)
         if user:
@@ -127,16 +136,16 @@ class ScoringController:
             for g in user_guesses:
                 if g.match.score_a is not None and g.match.score_b is not None:
                     if not g.match.is_knockout:
-                        total_points += self.group_phase_result(
+                        total_points += (self.group_phase_result(
                             g.match.score_a, g.match.score_b, g.pred_a, g.pred_b
-                        )
+                        ) * odds)
                     else:
-                        total_points += self.knockout_phase_result(
+                        total_points += (self.knockout_phase_result(
                             g.match.score_a, g.match.score_b, g.pred_a, g.pred_b,
                             g.match.winner, g.winner_pred,
                             g.match.penalty_score_a, g.match.penalty_score_b,
                             g.penalty_pred_a, g.penalty_pred_b
-                        )
+                        ) * odds)
             
             user.points = total_points
             db.session.commit()

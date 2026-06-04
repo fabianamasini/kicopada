@@ -55,8 +55,8 @@ class GuessesController:
         db.session.add(new_guess)
         db.session.commit()
 
-        # self.scoring.calculate_score_for_guess(new_guess.id)
         self.scoring.calculate_odds_for_match(match_id)
+        self.scoring.calculate_score_for_guess(new_guess.id)
 
         flash('Palpite cadastrado com sucesso.', 'success')
         return redirect(url_for('guesses'))
@@ -98,8 +98,8 @@ class GuessesController:
         guess.penalty_pred_b = int(penalty_b) if penalty_b else None
         db.session.commit()
         
-        # self.scoring.calculate_score_for_guess(guess.id) # Chamada para a função de cálculo de pontuação
         self.scoring.calculate_odds_for_match(guess.match_id) # Atualiza as odds para a partida
+        self.scoring.calculate_score_for_guess(guess) # Chamada para a função de cálculo de pontuação
         flash('Palpite atualizado com sucesso.', 'success')
         return redirect(url_for('guesses'))
 
