@@ -1,5 +1,6 @@
 from models import db, Match, Guesses
 from flask import flash, redirect, url_for
+from datetime import datetime
 
 class MatchesController:
     def get_all_matches(self):
@@ -9,6 +10,16 @@ class MatchesController:
     def get_match_by_id(self, match_id):
         match = Match.query.get(match_id)
         return match
+
+    def get_next_match(self):
+        """Retorna a próxima partida programada a partir de agora."""
+        now_str = datetime.now().strftime("%Y-%m-%d")
+        return Match.query.filter(Match.date >= now_str).order_by(Match.date.asc()).first()
+
+    def get_upcoming_matches(self):
+        """Retorna as próximas partidas programadas a partir de agora."""
+        now_str = datetime.now().strftime("%Y-%m-%d")
+        return Match.query.filter(Match.date >= now_str).order_by(Match.date.asc()).all()
 
     def add_new_match(self, team_a, team_b, match_date, round, score_a=None, score_b=None):
         if not team_a:
@@ -78,5 +89,3 @@ class MatchesController:
         else:
             flash('Partida não encontrada.', 'error')
         return redirect(url_for('matches'))
-
-

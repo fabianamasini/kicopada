@@ -1,7 +1,40 @@
-from models import db, User, Match, Guesses
+from models import db, User, Guesses, Odds
 from sqlalchemy.orm import joinedload
 
 class ScoringController:
+
+    def calculate_odds_for_match(self, match_id):
+        """Calcula as odds para uma partida específica com base nos palpites dos usuários.
+
+        Odd = 1 + ((y - x) / (y - 1))
+
+        y = numero total de palpites para aquela partida
+        x = numero de palpites para aquele time
+        
+        """
+        guesses = Guesses.query.filter_by(match_id=match_id).all()
+        total_guesses = len(guesses)
+
+        if total_guesses <= 1:
+            return 2.0, 2.0, 2.0  # Odds padrão se houver poucos palpites para evitar divisão por zero
+
+        count_a = sum(1 for g in guesses if g.pred_a > g.pred_b)
+        count_b = sum(1 for g in guesses if g.pred_b > g.pred_a)
+        count_draw = sum(1 for g in guesses if g.pred_a == g.pred_b)
+
+        odds_a = 1 + ((total_guesses - count_a)/(total_guesses - 1))
+        odds_b = 1 + ((total_guesses - count_b)/(total_guesses - 1))
+        odds_draw = 1 + ((total_guesses - count_draw)/(total_guesses - 1))
+
+        odds = Odds.query.filter_by(match_id=match_id).first()
+        if not odds:
+            odds = Odds(match_id=match_id, team_a_odds=odds_a, team_b_odds=odds_b, draw_odds=odds_draw)
+            db.session.add(odds)
+        else:
+            odds.team_a_odds = odds_a
+            odds.team_b_odds = odds_b
+            odds.draw_odds = odds_draw
+        db.session.commit()
 
     def group_phase_result(self, score_a, score_b, pred_a, pred_b):
         """"
@@ -76,15 +109,24 @@ class ScoringController:
             return 1
         return 0
 
-    def calculate_score_for_guess(self, guess_id):
+    def calculate_score_for_guess(self, guess):
         """
         Calcula e atualiza a pontuação de um palpite específico e a pontuação total do usuário.
         """
-        guess = Guesses.query.get(guess_id)
-        if guess:
-            self.update_user_points(guess.user_id)
+        guess = Guesses.query.get(guess.id)
+        odds = Odds.query.filter_by(match_id=guess.match_id).first()
 
-    def update_user_points(self, user_id):
+        if guess.pred_a > guess.pred_b:
+            match_odds = odds.team_a_odds if odds else 2.0
+        elif guess.pred_b > guess.pred_a:
+            match_odds = odds.team_b_odds if odds else 2.0
+        else:
+            match_odds = odds.draw_odds if odds else 2.0
+
+        if guess:
+            self.update_user_points(guess.user_id, match_odds)
+
+    def update_user_points(self, user_id, odds):
         """Recalcula a pontuação total de um usuário com base em todos os seus palpites."""
         user = User.query.get(user_id)
         if user:
@@ -94,16 +136,16 @@ class ScoringController:
             for g in user_guesses:
                 if g.match.score_a is not None and g.match.score_b is not None:
                     if not g.match.is_knockout:
-                        total_points += self.group_phase_result(
+                        total_points += (self.group_phase_result(
                             g.match.score_a, g.match.score_b, g.pred_a, g.pred_b
-                        )
+                        ) * odds)
                     else:
-                        total_points += self.knockout_phase_result(
+                        total_points += (self.knockout_phase_result(
                             g.match.score_a, g.match.score_b, g.pred_a, g.pred_b,
                             g.match.winner, g.winner_pred,
                             g.match.penalty_score_a, g.match.penalty_score_b,
                             g.penalty_pred_a, g.penalty_pred_b
-                        )
+                        ) * odds)
             
             user.points = total_points
             db.session.commit()

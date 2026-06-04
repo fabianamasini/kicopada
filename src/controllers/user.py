@@ -12,5 +12,5 @@ class UserController:
         return user
     
     def get_ranked_users(self):
-        ranking = User.query.order_by(User.points.desc(), User.username.asc()).all()
+        ranking = User.query.filter_by(is_admin=False).order_by(User.points.desc(), User.username.asc()).all()
         return ranking
