@@ -56,7 +56,7 @@ class GuessesController:
         db.session.commit()
 
         self.scoring.calculate_odds_for_match(match_id)
-        self.scoring.calculate_score_for_guess(new_guess.id)
+        self.scoring.calculate_score_for_guess(new_guess)
 
         flash('Palpite cadastrado com sucesso.', 'success')
         return redirect(url_for('guesses'))
@@ -70,8 +70,10 @@ class GuessesController:
                 
             db.session.delete(guess)
             db.session.commit()
-            self.scoring.update_user_points(user_id)
+
+            # Recalcular Odds
             self.scoring.calculate_odds_for_match(guess.match_id)
+            self.scoring.update_user_points(user_id)
             flash('Palpite excluído com sucesso.', 'success')
         else:
             flash('Palpite não encontrado ou acesso negado.', 'error')

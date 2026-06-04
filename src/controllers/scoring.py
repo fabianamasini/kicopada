@@ -114,19 +114,22 @@ class ScoringController:
         Calcula e atualiza a pontuação de um palpite específico e a pontuação total do usuário.
         """
         guess = Guesses.query.get(guess.id)
+        if guess:
+            self.update_user_points(guess.user_id)
+
+    def get_odds_for_guess(self, guess):
         odds = Odds.query.filter_by(match_id=guess.match_id).first()
+        if not odds:
+            return 2.0 
 
         if guess.pred_a > guess.pred_b:
-            match_odds = odds.team_a_odds if odds else 2.0
+            return odds.team_a_odds
         elif guess.pred_b > guess.pred_a:
-            match_odds = odds.team_b_odds if odds else 2.0
+            return odds.team_b_odds
         else:
-            match_odds = odds.draw_odds if odds else 2.0
+            return odds.draw_odds
 
-        if guess:
-            self.update_user_points(guess.user_id, match_odds)
-
-    def update_user_points(self, user_id, odds):
+    def update_user_points(self, user_id):
         """Recalcula a pontuação total de um usuário com base em todos os seus palpites."""
         user = User.query.get(user_id)
         if user:
@@ -135,6 +138,8 @@ class ScoringController:
             
             for g in user_guesses:
                 if g.match.score_a is not None and g.match.score_b is not None:
+                    odds = self.get_odds_for_guess(g)
+
                     if not g.match.is_knockout:
                         total_points += (self.group_phase_result(
                             g.match.score_a, g.match.score_b, g.pred_a, g.pred_b
