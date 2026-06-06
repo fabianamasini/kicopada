@@ -27,7 +27,7 @@
                 <tbody>
                     {% for guess in guesses %}
                         <tr style="border-bottom: 1px solid #eee;">
-                            <td style="padding: 12px 8px;">{{ guess.match.date }}</td>
+                            <td style="padding: 12px 8px;">{{ guess.match.formatted_date }}</td>
                             <td style="padding: 12px 8px;">{{ guess.match.round }}</td>
                             <td style="padding: 12px 8px;"><strong>{{ guess.match.team_a }}</strong> vs <strong>{{ guess.match.team_b }}</strong></td>
                             <td style="padding: 12px 8px; text-align: center;">

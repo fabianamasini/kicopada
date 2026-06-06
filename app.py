@@ -1,12 +1,13 @@
 import os
-from dotenv import load_dotenv
-from flask import Flask, render_template, request, redirect, url_for, flash
-from werkzeug.security import generate_password_hash
-from flask_login import LoginManager, logout_user, login_required, current_user
+import locale
 from functools import wraps
-from models import db, User, Teams, Match, Guesses
-from sqlalchemy.orm import joinedload
+from dotenv import load_dotenv
 from src.utils import phases, teams
+from sqlalchemy.orm import joinedload
+from models import db, User, Teams, Match, Guesses
+from werkzeug.security import generate_password_hash
+from flask_login import LoginManager, login_required, current_user
+from flask import Flask, render_template, request, redirect, url_for, flash
 from src.controllers.auth import AuthController
 from src.controllers.user import UserController
 from src.controllers.signup import SignupController
@@ -28,6 +29,15 @@ app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('SQLALCHEMY_DATABASE_URI')
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
 
 db.init_app(app)
+
+# Set locale for date formatting
+try:
+    locale.setlocale(locale.LC_TIME, 'pt_BR.UTF-8')
+except locale.Error:
+    try:
+        locale.setlocale(locale.LC_TIME, 'pt_BR')
+    except locale.Error:
+        print("Warning: Could not set locale to pt_BR. Date formatting might not be in Portuguese.")
 
 # Login manager
 login_manager = LoginManager()
