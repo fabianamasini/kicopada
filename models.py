@@ -1,5 +1,6 @@
 from datetime import datetime
 from flask_login import UserMixin
+import locale
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 
@@ -43,6 +44,17 @@ class Match(db.Model):
             return datetime.now() < match_date
         except (ValueError, TypeError):
             return False
+
+    @property
+    def formatted_date(self):
+        """Retorna a data e hora da partida formatada para exibição no front-end."""
+        if not self.date:
+            return "Data Indisponível"
+        try:
+            dt_object = datetime.strptime(self.date, "%Y-%m-%dT%H:%M")
+            return dt_object.strftime("%A, %d/%m/%Y às %Hh%M")
+        except (ValueError, TypeError):
+            return self.date
 
 class Guesses(db.Model):
     id = db.Column(db.Integer, primary_key=True)
