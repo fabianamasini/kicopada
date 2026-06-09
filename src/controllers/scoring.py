@@ -3,6 +3,18 @@ from sqlalchemy.orm import joinedload
 
 class ScoringController:
 
+    def __calculate_odd(self, total, count):
+        if total <= 0:
+            return 1.0
+        if total == 1:
+            return 1.0 if count == 1 else 2.0
+        if count <= 0:
+            return 2.0
+        
+        odd = 1 + ((total - count) / (total - 1))
+        return max(1.0, min(2.0, odd))
+
+
     def calculate_odds_for_match(self, match_id):
         """Calcula as odds para uma partida específica com base nos palpites dos usuários.
 
@@ -15,16 +27,13 @@ class ScoringController:
         guesses = Guesses.query.filter_by(match_id=match_id).all()
         total_guesses = len(guesses)
 
-        if total_guesses <= 1:
-            return 2.0, 2.0, 2.0  # Odds padrão se houver poucos palpites para evitar divisão por zero
-
         count_a = sum(1 for g in guesses if g.pred_a > g.pred_b)
         count_b = sum(1 for g in guesses if g.pred_b > g.pred_a)
         count_draw = sum(1 for g in guesses if g.pred_a == g.pred_b)
 
-        odds_a = 1 + ((total_guesses - count_a)/(total_guesses - 1))
-        odds_b = 1 + ((total_guesses - count_b)/(total_guesses - 1))
-        odds_draw = 1 + ((total_guesses - count_draw)/(total_guesses - 1))
+        odds_a = self.__calculate_odd(total_guesses, count_a)
+        odds_b = self.__calculate_odd(total_guesses, count_b)
+        odds_draw = self.__calculate_odd(total_guesses, count_draw)
 
         odds = Odds.query.filter_by(match_id=match_id).first()
         if not odds:
@@ -39,8 +48,8 @@ class ScoringController:
     def group_phase_result(self, score_a, score_b, pred_a, pred_b):
         """"
         Calcula a pontuação para um palpite na fase de grupos, considerando o resultado exato e o saldo de gols.
-         - 10 pontos para o resultado exato (placar correto)
-         - 5 pontos para o saldo de gols correto (diferença entre os placares)
+         - 1000 pontos para o resultado exato (placar correto)
+         - 500 pontos para o saldo de gols correto (diferença entre os placares)
          - 0 pontos para qualquer outro resultado
 
          Params:
@@ -61,11 +70,11 @@ class ScoringController:
             return -1
 
         if score_a == pred_a and score_b == pred_b:
-            return 10
+            return 1000
         elif real_diff == pred_diff:
-            return 5
+            return 500
         elif sign(real_diff) == sign(pred_diff):
-            return 2
+            return 200
         return 0
     
     def knockout_phase_result(self, score_a, score_b, pred_a, pred_b, winner_real, winner_pred, pen_a=None, pen_b=None, p_pen_a=None, p_pen_b=None):
@@ -94,19 +103,19 @@ class ScoringController:
 
         # Regras hierárquicas
         if cx_eq_c and pred_a == score_a and pred_b == score_b:
-            return 15
+            return 1500
         elif cx_eq_c and saldo_palpite == saldo_real:
-            return 8
+            return 800
         elif cx_eq_c and fdd_palpite == fdd_real:
-            return 6
+            return 600
         elif cx_eq_c:
-            return 5
+            return 500
         elif pred_a == score_a and pred_b == score_b:
-            return 2
+            return 200
         elif saldo_palpite == saldo_real:
-            return 1
+            return 100
         elif fdd_palpite == fdd_real:
-            return 1
+            return 100
         return 0
 
     def calculate_score_for_guess(self, guess):
@@ -152,7 +161,7 @@ class ScoringController:
                             g.penalty_pred_a, g.penalty_pred_b
                         ) * odds)
             
-            user.points = total_points
+            user.points = int(total_points + 0.5)
             db.session.commit()
 
     def update_all_scores_for_match(self, match_id):

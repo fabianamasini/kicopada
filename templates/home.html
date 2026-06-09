@@ -57,17 +57,17 @@
               <td class="match-info">{{ match.team_a }} vs {{ match.team_b }}</td>
               <td>{{ match.formatted_date }}</td>
               <td>
-                  {% if match.odds %}
+                  {% if not match.is_editable() and match.odds %}
                       <span class="odd-value">{{ "%.2f"|format(match.odds.team_a_odds) }}</span>
                   {% else %}<span class="no-odds">N/A</span>{% endif %}
               </td>
               <td>
-                  {% if match.odds %}
+                  {% if not match.is_editable() and match.odds %}
                       <span class="odd-value">{{ "%.2f"|format(match.odds.draw_odds) }}</span>
                   {% else %}<span class="no-odds">N/A</span>{% endif %}
               </td>
               <td>
-                  {% if match.odds %}
+                  {% if not match.is_editable() and match.odds %}
                       <span class="odd-value">{{ "%.2f"|format(match.odds.team_b_odds) }}</span>
                   {% else %}<span class="no-odds">N/A</span>{% endif %}
               </td>
