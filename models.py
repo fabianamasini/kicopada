@@ -35,13 +35,13 @@ class Match(db.Model):
     is_knockout = db.Column(db.Boolean, default=False)
 
     def is_editable(self):
-        """Retorna True se o palpite ainda pode ser feito (até 23:59 do dia anterior ao jogo)."""
+        """Retorna True se o palpite ainda pode ser feito (até as 03:00 da manhã do dia do jogo)."""
         if not self.date:
             return False
         try:
-            # Considera o início do dia do jogo (00:00:00) como o limite
-            match_date = datetime.strptime(self.date[:10], "%Y-%m-%d")
-            return datetime.now() < match_date
+            # Define o limite como 03:00 AM do dia do jogo
+            limit_time = datetime.strptime(self.date[:10], "%Y-%m-%d").replace(hour=3, minute=0)
+            return datetime.now() < limit_time
         except (ValueError, TypeError):
             return False
 
