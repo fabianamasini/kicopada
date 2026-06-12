@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 from models import db, Guesses
+import pytz
 from .matches import MatchesController
 from .scoring import ScoringController
 from flask import flash, redirect, url_for
@@ -12,9 +13,17 @@ class GuessesController:
     def get_user_guesses(self, user_id):
         guesses = Guesses.query.filter_by(user_id=user_id).options(joinedload(Guesses.match)).all()
 
-        now = datetime.now()
-        today_str = now.strftime("%Y-%m-%d")
-        limit_previous = now - timedelta(days=1)
+        # Define o fuso horário de São Paulo
+        saopaulo_tz = pytz.timezone('America/Sao_Paulo')
+        
+        # Obtém a data e hora atual no fuso horário de São Paulo
+        now_saopaulo = datetime.now(saopaulo_tz)
+        
+        # today_str deve refletir "hoje" no fuso horário de São Paulo
+        today_str = now_saopaulo.strftime("%Y-%m-%d")
+        
+        # limit_previous deve ser calculado com base no fuso horário de São Paulo
+        limit_previous_saopaulo = now_saopaulo - timedelta(days=1)
 
         active_guesses = []
         previous_guesses = []
@@ -25,8 +34,12 @@ class GuessesController:
                 continue
 
             try:
-                match_dt = datetime.strptime(g.match.date, "%Y-%m-%dT%H:%M")
-                if match_dt < limit_previous:
+                # Converte a data da partida para um objeto datetime e o torna timezone-aware (São Paulo)
+                match_dt_naive = datetime.strptime(g.match.date, "%Y-%m-%dT%H:%M")
+                match_dt_saopaulo = saopaulo_tz.localize(match_dt_naive)
+
+                # Compara datetimes cientes do fuso horário
+                if match_dt_saopaulo < limit_previous_saopaulo:
                     previous_guesses.append(g)
                 else:
                     active_guesses.append(g)

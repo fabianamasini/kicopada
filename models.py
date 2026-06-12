@@ -1,6 +1,7 @@
 from datetime import datetime
 from flask_login import UserMixin
 import locale
+import pytz
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 
@@ -35,24 +36,40 @@ class Match(db.Model):
     is_knockout = db.Column(db.Boolean, default=False)
 
     def is_editable(self):
-        """Retorna True se o palpite ainda pode ser feito (até as 03:00 da manhã do dia do jogo)."""
+        """Retorna True se o palpite ainda pode ser feito (até as 03:00 da manhã do dia do jogo, no fuso horário de São Paulo)."""
         if not self.date:
             return False
         try:
-            # Define o limite como 03:00 AM do dia do jogo
-            limit_time = datetime.strptime(self.date[:10], "%Y-%m-%d").replace(hour=3, minute=0)
-            return datetime.now() < limit_time
+            # Define o fuso horário de São Paulo
+            saopaulo_tz = pytz.timezone('America/Sao_Paulo')
+
+            # Obtém a data e hora atual no fuso horário de São Paulo
+            now_saopaulo = datetime.now(saopaulo_tz)
+
+            # Converte a data da partida para um objeto datetime e o torna timezone-aware (São Paulo)
+            # Primeiro, parse a string da data (que é naive)
+            match_dt_naive = datetime.strptime(self.date, "%Y-%m-%dT%H:%M")
+            # Em seguida, localize-o para o fuso horário de São Paulo
+            match_dt_saopaulo = saopaulo_tz.localize(match_dt_naive)
+
+            # Define o limite como 03:00 AM do dia do jogo no fuso horário de São Paulo
+            # Usamos a data da partida, mas com o horário de corte
+            limit_time_saopaulo = saopaulo_tz.localize(datetime.strptime(self.date[:10], "%Y-%m-%d")).replace(hour=3, minute=0)
+
+            return now_saopaulo < limit_time_saopaulo
         except (ValueError, TypeError):
             return False
 
     @property
     def formatted_date(self):
-        """Retorna a data e hora da partida formatada para exibição no front-end."""
+        """Retorna a data e hora da partida formatada para exibição no front-end, no fuso horário de São Paulo."""
         if not self.date:
             return "Data Indisponível"
         try:
-            dt_object = datetime.strptime(self.date, "%Y-%m-%dT%H:%M")
-            return dt_object.strftime("%A, %d/%m/%Y às %Hh%M")
+            saopaulo_tz = pytz.timezone('America/Sao_Paulo')
+            dt_object_naive = datetime.strptime(self.date, "%Y-%m-%dT%H:%M")
+            dt_object_saopaulo = saopaulo_tz.localize(dt_object_naive)
+            return dt_object_saopaulo.strftime("%A, %d/%m/%Y às %Hh%M")
         except (ValueError, TypeError):
             return self.date
 
