@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta
 from models import db, Guesses
 from .matches import MatchesController
 from .scoring import ScoringController
@@ -10,8 +11,36 @@ class GuessesController:
 
     def get_user_guesses(self, user_id):
         guesses = Guesses.query.filter_by(user_id=user_id).options(joinedload(Guesses.match)).all()
-        return guesses
-    
+
+        now = datetime.now()
+        today_str = now.strftime("%Y-%m-%d")
+        limit_previous = now - timedelta(days=1)
+
+        active_guesses = []
+        previous_guesses = []
+
+        for g in guesses:
+            if not g.match.date:
+                active_guesses.append(g)
+                continue
+
+            try:
+                match_dt = datetime.strptime(g.match.date, "%Y-%m-%dT%H:%M")
+                if match_dt < limit_previous:
+                    previous_guesses.append(g)
+                else:
+                    active_guesses.append(g)
+            except (ValueError, TypeError):
+                active_guesses.append(g)
+
+        # Ordenação Active: Jogos de hoje primeiro, depois por data decrescente
+        active_guesses.sort(key=lambda x: (x.match.date[:10] == today_str, x.match.date), reverse=True)
+
+        # Ordenação Previous: Data decrescente (mais recentes primeiro)
+        previous_guesses.sort(key=lambda x: x.match.date, reverse=True)
+
+        return {'active': active_guesses, 'previous': previous_guesses}
+
     def get_guess_by_id(self, user_id, match_id):
         return Guesses.query.filter_by(user_id=user_id, match_id=int(match_id)).first()
     
@@ -104,5 +133,3 @@ class GuessesController:
         self.scoring.calculate_score_for_guess(guess) # Chamada para a função de cálculo de pontuação
         flash('Palpite atualizado com sucesso.', 'success')
         return redirect(url_for('guesses'))
-
-

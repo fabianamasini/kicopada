@@ -119,8 +119,8 @@ def matches():
 @app.route('/guesses', methods=['GET'])
 @login_required
 def guesses():
-    user_guesses = guesses_controller.get_user_guesses(current_user.id)
-    return render_template('guesses.html', guesses=user_guesses)
+    categorized_guesses = guesses_controller.get_user_guesses(current_user.id)
+    return render_template('guesses.html', active_guesses=categorized_guesses['active'], previous_guesses=categorized_guesses['previous'])
 
 @app.route('/add_guess', methods=['GET', 'POST'])
 @login_required

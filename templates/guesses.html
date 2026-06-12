@@ -12,58 +12,116 @@
         </div>
     </div>
 
-    <div class="card">
-        {% if guesses %}
-            <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
-                <thead>
-                    <tr style="text-align: left; border-bottom: 2px solid #eee;">
-                        <th style="padding: 12px 8px;">Data</th>
-                        <th style="padding: 12px 8px;">Fase</th>
-                        <th style="padding: 12px 8px;">Confronto</th>
-                        <th style="padding: 12px 8px; text-align: center;">Palpite</th>
-                        <th style="padding: 12px 8px; text-align: center;">Ações</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for guess in guesses %}
-                        <tr style="border-bottom: 1px solid #eee;">
-                            <td style="padding: 12px 8px;">{{ guess.match.formatted_date }}</td>
-                            <td style="padding: 12px 8px;">{{ guess.match.round }}</td>
-                            <td style="padding: 12px 8px;"><strong>{{ guess.match.team_a }}</strong> vs <strong>{{ guess.match.team_b }}</strong></td>
-                            <td style="padding: 12px 8px; text-align: center;">
-                                {% if guess.pred_a is not none and guess.pred_b is not none %}
-                                    <div style="background: #f0f0f0; padding: 4px 10px; border-radius: 4px; font-weight: bold; display: inline-block; min-width: 60px;">
-                                        {{ guess.pred_a }} x {{ guess.pred_b }}
-                                        {% if guess.match.is_knockout and guess.penalty_pred_a is not none %}
-                                            <div style="font-size: 0.75rem; color: #6b7280; font-weight: normal; margin-top: 2px; border-top: 1px solid #d1d5db; padding-top: 2px;">
-                                                {{ guess.penalty_pred_a }} x {{ guess.penalty_pred_b }} (P)
-                                            </div>
+    <div class="tabs-container">
+        <div class="tabs-header">
+            <button class="tab-button active" onclick="openTab(event, 'active-guesses')">Próximos Jogos</button>
+            <button class="tab-button" onclick="openTab(event, 'previous-guesses')">Palpites Anteriores</button>
+        </div>
+
+        <!-- Aba: Palpites Atuais e Futuros -->
+        <div id="active-guesses" class="tab-content active">
+            <div class="card">
+                {% if active_guesses %}
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <thead>
+                            <tr style="text-align: left; border-bottom: 2px solid #eee;">
+                                <th style="padding: 12px 8px;">Data</th>
+                                <th style="padding: 12px 8px;">Fase</th>
+                                <th style="padding: 12px 8px;">Confronto</th>
+                                <th style="padding: 12px 8px; text-align: center;">Palpite</th>
+                                <th style="padding: 12px 8px; text-align: center;">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for guess in active_guesses %}
+                                <tr style="border-bottom: 1px solid #eee;">
+                                    <td style="padding: 12px 8px;">{{ guess.match.formatted_date }}</td>
+                                    <td style="padding: 12px 8px;">{{ guess.match.round }}</td>
+                                    <td style="padding: 12px 8px;"><strong>{{ guess.match.team_a }}</strong> vs <strong>{{ guess.match.team_b }}</strong></td>
+                                    <td style="padding: 12px 8px; text-align: center;">
+                                        <div style="background: #f0f0f0; padding: 4px 10px; border-radius: 4px; font-weight: bold; display: inline-block; min-width: 60px;">
+                                            {{ guess.pred_a }} x {{ guess.pred_b }}
+                                            {% if guess.match.is_knockout and guess.penalty_pred_a is not none %}
+                                                <div style="font-size: 0.75rem; color: #6b7280; font-weight: normal; margin-top: 2px; border-top: 1px solid #d1d5db; padding-top: 2px;">
+                                                    {{ guess.penalty_pred_a }} x {{ guess.penalty_pred_b }} (P)
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                    <td style="padding: 12px 8px; text-align: center;">
+                                        <div style="display: flex; gap: 12px; justify-content: center; align-items: center;">
+                                            {% if guess.match.is_editable() %}
+                                                <a href="{{ url_for('edit_guess', guess_id=guess.id) }}" style="color: #4f46e5; text-decoration: none; font-size: 14px; font-weight: 600;">Editar</a>
+                                                <form action="{{ url_for('delete_guess', guess_id=guess.id) }}" method="POST" style="display: inline; margin: 0;" onsubmit="return confirm('Tem certeza que deseja excluir este palpite?');">
+                                                    <button type="submit" style="background: none; border: none; color: #dc3545; cursor: pointer; font-size: 14px; font-weight: 600; padding: 0; font-family: inherit;">Deletar</button>
+                                                </form>
+                                            {% else %}
+                                                <span style="color: #94a3b8; font-size: 12px; font-style: italic;">Prazo encerrado</span>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                {% else %}
+                    <p style="text-align: center; color: #64748b; padding: 20px;">Você não possui palpites para os próximos jogos.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Aba: Palpites Anteriores -->
+        <div id="previous-guesses" class="tab-content">
+            <div class="card">
+                {% if previous_guesses %}
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <thead>
+                            <tr style="text-align: left; border-bottom: 2px solid #eee;">
+                                <th style="padding: 12px 8px;">Data</th>
+                                <th style="padding: 12px 8px;">Confronto</th>
+                                <th style="padding: 12px 8px; text-align: center;">Seu Palpite</th>
+                                <th style="padding: 12px 8px; text-align: center;">Resultado Real</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for guess in previous_guesses %}
+                                <tr style="border-bottom: 1px solid #eee; background-color: #fcfcfc;">
+                                    <td style="padding: 12px 8px; color: #64748b;">{{ guess.match.formatted_date }}</td>
+                                    <td style="padding: 12px 8px;">{{ guess.match.team_a }} vs {{ guess.match.team_b }}</td>
+                                    <td style="padding: 12px 8px; text-align: center; font-weight: 600;">{{ guess.pred_a }} x {{ guess.pred_b }}</td>
+                                    <td style="padding: 12px 8px; text-align: center;">
+                                        {% if guess.match.score_a is not none %}
+                                            <span style="background: #e2e8f0; padding: 2px 8px; border-radius: 4px;">{{ guess.match.score_a }} x {{ guess.match.score_b }}</span>
+                                        {% else %}
+                                            <span style="color: #94a3b8; font-style: italic;">Aguardando...</span>
                                         {% endif %}
-                                    </div>
-                                {% else %}
-                                    <span style="color: #999; font-style: italic;">Sem palpite</span>
-                                {% endif %}
-                            </td>
-                            <td style="padding: 12px 8px; text-align: center;">
-                                <div style="display: flex; gap: 12px; justify-content: center; align-items: center;">
-                                    {% if guess.match.is_editable() %}
-                                        <a href="{{ url_for('edit_guess', guess_id=guess.id) }}" style="color: #4f46e5; text-decoration: none; font-size: 14px; font-weight: 600;">Editar</a>
-                                        <form action="{{ url_for('delete_guess', guess_id=guess.id) }}" method="POST" style="display: inline; margin: 0;" onsubmit="return confirm('Tem certeza que deseja excluir este palpite?');">
-                                            <button type="submit" style="background: none; border: none; color: #dc3545; cursor: pointer; font-size: 14px; font-weight: 600; padding: 0; font-family: inherit;">
-                                                Deletar
-                                            </button>
-                                        </form>
-                                    {% else %}
-                                        <span style="color: #94a3b8; font-size: 12px; font-style: italic;">Prazo encerrado</span>
-                                    {% endif %}
-                                </div>
-                            </td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        {% else %}
-            <p>Nenhum palpite registrado.</p>
-        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                {% else %}
+                    <p style="text-align: center; color: #64748b; padding: 20px;">Nenhum palpite anterior encontrado.</p>
+                {% endif %}
+            </div>
+        </div>
     </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function openTab(evt, tabName) {
+    var i, tabcontent, tablinks;
+    tabcontent = document.getElementsByClassName("tab-content");
+    for (i = 0; i < tabcontent.length; i++) {
+        tabcontent[i].classList.remove("active");
+    }
+    tablinks = document.getElementsByClassName("tab-button");
+    for (i = 0; i < tablinks.length; i++) {
+        tablinks[i].classList.remove("active");
+    }
+    document.getElementById(tabName).classList.add("active");
+    evt.currentTarget.classList.add("active");
+}
+</script>
 {% endblock %}
