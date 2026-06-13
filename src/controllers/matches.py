@@ -8,6 +8,11 @@ class MatchesController:
         all_matches = Match.query.order_by(Match.date.desc()).all()
         return all_matches
 
+    def get_available_matches_for_user(self, user_id):
+        """Retorna partidas que o usuário ainda não palpitou, ordenadas por data crescente."""
+        guessed_ids = db.session.query(Guesses.match_id).filter(Guesses.user_id == user_id)
+        return Match.query.filter(~Match.id.in_(guessed_ids)).order_by(Match.date.asc()).all()
+
     def get_categorized_matches(self):
         """Retorna partidas divididas entre ativas e anteriores com ordenação específica."""
         matches = Match.query.all()
