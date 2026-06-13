@@ -73,6 +73,18 @@ class Match(db.Model):
         except (ValueError, TypeError):
             return self.date
 
+    @property
+    def date_header(self):
+        """Retorna a data formatada para cabeçalho de grupo na Home (ex: DOMINGO 14/06)."""
+        if not self.date:
+            return ""
+        try:
+            # Extrai a data da string ISO (YYYY-MM-DD)
+            dt = datetime.strptime(self.date[:10], "%Y-%m-%d")
+            return dt.strftime("%A %d/%m").upper()
+        except (ValueError, TypeError):
+            return ""
+
 class Guesses(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
