@@ -45,17 +45,28 @@
       <thead>
           <tr>
               <th class="match-info">Partida</th>
-              <th>Data</th>
+              <th>Hora</th>
               <th>Vitória A</th>
               <th>Empate</th>
               <th>Vitória B</th>
           </tr>
       </thead>
       <tbody>
+          {% set current_day = namespace(val=None) %}
           {% for match in upcoming_matches %}
+          {% set day_header = match.date_header %}
+          
+          {% if day_header != current_day.val %}
+            {% set current_day.val = day_header %}
+            <tr class="date-group-header">
+              <td colspan="5" style="text-align: left; background-color: #f8fafc; font-weight: bold; padding: 10px 16px; color: #475569; border-bottom: 2px solid #e2e8f0; font-size: 0.85rem;">
+                {{ day_header }}
+              </td>
+            </tr>
+          {% endif %}
           <tr>
               <td class="match-info">{{ match.team_a }} vs {{ match.team_b }}</td>
-              <td>{{ match.formatted_date }}</td>
+              <td>{{ match.date[11:16] }}h</td>
               <td>
                   {% if not match.is_editable() and match.odds %}
                       <span class="odd-value">{{ "%.2f"|format(match.odds.team_a_odds) }}</span>

@@ -15,7 +15,10 @@
       <nav class="nav">
         <a href="/" class="{% if request.path == '/' %}active{% endif %}">Home</a>
         <a href="/matches" class="{% if request.path.startswith('/matches') %}active{% endif %}">Partidas</a>
-        <a href="/guesses" class="{% if request.path.startswith('/guesses') %}active{% endif %}">Palpites</a>
+        <a href="/guesses" class="{% if request.path.startswith('/guesses') %}active{% endif %}">Meus palpites</a>
+        {% if current_user.is_authenticated and current_user.is_admin %}
+          <a href="/all_guesses" class="{% if request.path.startswith('/all_guesses') %}active{% endif %}">Todos os Palpites</a>
+        {% endif %}
       </nav>
     </aside>
     {% endblock %}

@@ -96,3 +96,30 @@ h1{margin:0 0 8px 0}
 .odds-table .odd-value { font-family: 'Courier New', Courier, monospace; color: #2563eb; font-weight: 700; background: #eff6ff; padding: 4px 8px; border-radius: 4px; }
 .odds-table tr:hover { background: #fdfdfd; }
 .odds-table .no-odds { color: #94a3b8; font-size: 0.85rem; font-style: italic; }
+
+/* Estilos para Abas de Palpites */
+.tabs-container { margin-top: 20px; }
+.tabs-header { display: flex; gap: 10px; border-bottom: 2px solid #e2e8f0; margin-bottom: 20px; }
+.tab-button { 
+    padding: 10px 20px; 
+    border: none; 
+    background: none; 
+    cursor: pointer; 
+    font-weight: 600; 
+    color: #64748b; 
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px;
+    transition: all 0.2s;
+}
+.tab-button:hover { color: #0f172a; }
+.tab-button.active { 
+    color: #ff6b6b; 
+    border-bottom-color: #ff6b6b; 
+}
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+
+.match-today-highlight {
+    border-left: 4px solid #ff6b6b;
+    background-color: #fffafb;
+}

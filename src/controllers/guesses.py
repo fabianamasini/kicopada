@@ -1,4 +1,6 @@
+from datetime import datetime, timedelta
 from models import db, Guesses
+import pytz
 from .matches import MatchesController
 from .scoring import ScoringController
 from flask import flash, redirect, url_for
@@ -10,8 +12,48 @@ class GuessesController:
 
     def get_user_guesses(self, user_id):
         guesses = Guesses.query.filter_by(user_id=user_id).options(joinedload(Guesses.match)).all()
-        return guesses
-    
+
+        # Define o fuso horário de São Paulo
+        saopaulo_tz = pytz.timezone('America/Sao_Paulo')
+        
+        # Obtém a data e hora atual no fuso horário de São Paulo
+        now_saopaulo = datetime.now(saopaulo_tz)
+        
+        # today_str deve refletir "hoje" no fuso horário de São Paulo
+        today_str = now_saopaulo.strftime("%Y-%m-%d")
+        
+        # limit_previous deve ser calculado com base no fuso horário de São Paulo
+        limit_previous_saopaulo = now_saopaulo - timedelta(days=1)
+
+        active_guesses = []
+        previous_guesses = []
+
+        for g in guesses:
+            if not g.match.date:
+                active_guesses.append(g)
+                continue
+
+            try:
+                # Converte a data da partida para um objeto datetime e o torna timezone-aware (São Paulo)
+                match_dt_naive = datetime.strptime(g.match.date, "%Y-%m-%dT%H:%M")
+                match_dt_saopaulo = saopaulo_tz.localize(match_dt_naive)
+
+                # Compara datetimes cientes do fuso horário
+                if match_dt_saopaulo < limit_previous_saopaulo:
+                    previous_guesses.append(g)
+                else:
+                    active_guesses.append(g)
+            except (ValueError, TypeError):
+                active_guesses.append(g)
+        
+        # Ordenação Active: Jogos de hoje primeiro, depois os mais próximos para os mais futuros
+        active_guesses.sort(key=lambda x: (x.match.date[:10] != today_str, x.match.date))
+
+        # Ordenação Previous: Data decrescente (mais recentes primeiro)
+        previous_guesses.sort(key=lambda x: x.match.date, reverse=True)
+
+        return {'active': active_guesses, 'previous': previous_guesses}
+
     def get_guess_by_id(self, user_id, match_id):
         return Guesses.query.filter_by(user_id=user_id, match_id=int(match_id)).first()
     
@@ -104,5 +146,3 @@ class GuessesController:
         self.scoring.calculate_score_for_guess(guess) # Chamada para a função de cálculo de pontuação
         flash('Palpite atualizado com sucesso.', 'success')
         return redirect(url_for('guesses'))
-
-
