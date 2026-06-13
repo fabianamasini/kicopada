@@ -14,51 +14,119 @@
         {% endif %}
     </div>
 
-    <div class="card">
-        {% if matches %}
-            <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
-                <thead>
-                    <tr style="text-align: left; border-bottom: 2px solid #eee;">
-                        <th style="padding: 12px 8px;">Data</th>
-                        <th style="padding: 12px 8px;">Fase</th>
-                        <th style="padding: 12px 8px;">Confronto</th>
-                        <th style="padding: 12px 8px; text-align: center;">Placar</th>
-                        {% if current_user.is_admin %}
-                            <th style="padding: 12px 8px; text-align: center;">Ações</th>
-                        {% endif %}
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for match in matches %}
-                        <tr style="border-bottom: 1px solid #eee;">
-                            <td style="padding: 12px 8px;">{{ match.formatted_date }}</td>
-                            <td style="padding: 12px 8px;">{{ match.round }}</td>
-                            <td style="padding: 12px 8px;"><strong>{{ match.team_a }}</strong> vs <strong>{{ match.team_b }}</strong></td>
-                            <td style="padding: 12px 8px; text-align: center;">
-                                {% if match.score_a is not none and match.score_b is not none %}
-                                    <span style="background: #f0f0f0; padding: 4px 10px; border-radius: 4px; font-weight: bold;">{{ match.score_a }} x {{ match.score_b }}</span>
-                                {% else %}
-                                    <span style="color: #999; font-style: italic;">Agendado</span>
+    <div class="tabs-container">
+        <div class="tabs-header">
+            <button class="tab-button active" onclick="openTab(event, 'active-matches')">Próximos Jogos</button>
+            <button class="tab-button" onclick="openTab(event, 'previous-matches')">Partidas Anteriores</button>
+        </div>
+
+        <!-- Aba: Próximos Jogos -->
+        <div id="active-matches" class="tab-content active">
+            <div class="card">
+                {% if active_matches %}
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <thead>
+                            <tr style="text-align: left; border-bottom: 2px solid #eee;">
+                                <th style="padding: 12px 8px;">Data</th>
+                                <th style="padding: 12px 8px;">Fase</th>
+                                <th style="padding: 12px 8px;">Confronto</th>
+                                <th style="padding: 12px 8px; text-align: center;">Placar</th>
+                                {% if current_user.is_admin %}
+                                    <th style="padding: 12px 8px; text-align: center;">Ações</th>
                                 {% endif %}
-                            </td>
-                            {% if current_user.is_admin %}
-                                <td style="padding: 12px 8px; text-align: center;">
-                                    <div style="display: flex; gap: 12px; justify-content: center; align-items: center;">
-                                        <a href="{{ url_for('edit_match', match_id=match.id) }}" style="color: #4f46e5; text-decoration: none; font-size: 14px; font-weight: 600;">Editar</a>
-                                        <form action="{{ url_for('delete_match', match_id=match.id) }}" method="POST" style="display: inline; margin: 0;" onsubmit="return confirm('Tem certeza que deseja excluir esta partida?');">
-                                            <button type="submit" style="background: none; border: none; color: #dc3545; cursor: pointer; font-size: 14px; font-weight: 600; padding: 0; font-family: inherit;">
-                                                Deletar
-                                            </button>
-                                        </form>
-                                    </div>
-                                </td>
-                            {% endif %}
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        {% else %}
-            <p style="text-align: center; color: #666; padding: 20px;">Nenhuma partida cadastrada no momento.</p>
-        {% endif %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for match in active_matches %}
+                                <tr style="border-bottom: 1px solid #eee;">
+                                    <td style="padding: 12px 8px;">{{ match.formatted_date }}</td>
+                                    <td style="padding: 12px 8px;">{{ match.round }}</td>
+                                    <td style="padding: 12px 8px;"><strong>{{ match.team_a }}</strong> vs <strong>{{ match.team_b }}</strong></td>
+                                    <td style="padding: 12px 8px; text-align: center;">
+                                        {% if match.score_a is not none and match.score_b is not none %}
+                                            <span style="background: #f0f0f0; padding: 4px 10px; border-radius: 4px; font-weight: bold;">{{ match.score_a }} x {{ match.score_b }}</span>
+                                        {% else %}
+                                            <span style="color: #999; font-style: italic;">Agendado</span>
+                                        {% endif %}
+                                    </td>
+                                    {% if current_user.is_admin %}
+                                        <td style="padding: 12px 8px; text-align: center;">
+                                            <div style="display: flex; gap: 12px; justify-content: center; align-items: center;">
+                                                <a href="{{ url_for('edit_match', match_id=match.id) }}" style="color: #4f46e5; text-decoration: none; font-size: 14px; font-weight: 600;">Editar</a>
+                                                <form action="{{ url_for('delete_match', match_id=match.id) }}" method="POST" style="display: inline; margin: 0;" onsubmit="return confirm('Tem certeza que deseja excluir esta partida?');">
+                                                    <button type="submit" style="background: none; border: none; color: #dc3545; cursor: pointer; font-size: 14px; font-weight: 600; padding: 0; font-family: inherit;">Deletar</button>
+                                                </form>
+                                            </div>
+                                        </td>
+                                    {% endif %}
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                {% else %}
+                    <p style="text-align: center; color: #666; padding: 20px;">Nenhuma partida agendada no momento.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Aba: Partidas Anteriores -->
+        <div id="previous-matches" class="tab-content">
+            <div class="card">
+                {% if previous_matches %}
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <thead>
+                            <tr style="text-align: left; border-bottom: 2px solid #eee;">
+                                <th style="padding: 12px 8px;">Data</th>
+                                <th style="padding: 12px 8px;">Fase</th>
+                                <th style="padding: 12px 8px;">Confronto</th>
+                                <th style="padding: 12px 8px; text-align: center;">Resultado</th>
+                                {% if current_user.is_admin %}
+                                    <th style="padding: 12px 8px; text-align: center;">Ações</th>
+                                {% endif %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for match in previous_matches %}
+                                <tr style="border-bottom: 1px solid #eee; background-color: #fcfcfc;">
+                                    <td style="padding: 12px 8px; color: #64748b;">{{ match.formatted_date }}</td>
+                                    <td style="padding: 12px 8px;">{{ match.round }}</td>
+                                    <td style="padding: 12px 8px;"><strong>{{ match.team_a }}</strong> vs <strong>{{ match.team_b }}</strong></td>
+                                    <td style="padding: 12px 8px; text-align: center;">
+                                        <span style="background: #e2e8f0; padding: 4px 10px; border-radius: 4px; font-weight: bold;">{{ match.score_a }} x {{ match.score_b }}</span>
+                                    </td>
+                                    {% if current_user.is_admin %}
+                                        <td style="padding: 12px 8px; text-align: center;">
+                                            <div style="display: flex; gap: 12px; justify-content: center; align-items: center;">
+                                                <a href="{{ url_for('edit_match', match_id=match.id) }}" style="color: #4f46e5; text-decoration: none; font-size: 14px; font-weight: 600;">Editar</a>
+                                            </div>
+                                        </td>
+                                    {% endif %}
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                {% else %}
+                    <p style="text-align: center; color: #666; padding: 20px;">Nenhuma partida anterior encontrada.</p>
+                {% endif %}
+            </div>
+        </div>
     </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function openTab(evt, tabName) {
+    var i, tabcontent, tablinks;
+    tabcontent = document.getElementsByClassName("tab-content");
+    for (i = 0; i < tabcontent.length; i++) {
+        tabcontent[i].classList.remove("active");
+    }
+    tablinks = document.getElementsByClassName("tab-button");
+    for (i = 0; i < tablinks.length; i++) {
+        tablinks[i].classList.remove("active");
+    }
+    document.getElementById(tabName).classList.add("active");
+    evt.currentTarget.classList.add("active");
+}
+</script>
 {% endblock %}

@@ -1,6 +1,8 @@
 import os
 import locale
+import pytz
 from functools import wraps
+from datetime import datetime
 from dotenv import load_dotenv
 from src.utils import phases, teams
 from sqlalchemy.orm import joinedload
@@ -113,8 +115,8 @@ def home():
 @app.route('/matches', methods=['GET'])
 @login_required
 def matches():
-    all_matches = matches_controller.get_all_matches()
-    return render_template('matches.html', matches=all_matches)
+    categorized_matches = matches_controller.get_categorized_matches()
+    return render_template('matches.html', active_matches=categorized_matches['active'], previous_matches=categorized_matches['previous'])
 
 @app.route('/guesses', methods=['GET'])
 @login_required
@@ -205,6 +207,42 @@ def edit_match(match_id):
         match = Match.query.get(match_id)
         teams_list = [team[0] for team in Teams.query.with_entities(Teams.name).order_by(Teams.name.asc()).all()]
         return render_template('edit_match.html', match=match, phases=phases, teams=teams_list)
+    
+@app.route('/all_guesses', methods=['GET'])
+@admin_required
+def all_guesses():
+    categorized_matches = matches_controller.get_categorized_matches()
+    guesses = Guesses.query.options(joinedload(Guesses.match)).all()
+
+    # Lógica para encontrar a partida mais próxima (filtro padrão)
+    saopaulo_tz = pytz.timezone('America/Sao_Paulo')
+    now_sp = datetime.now(saopaulo_tz)
+    
+    default_match_id = None
+    is_default_in_active = True
+
+    # Tenta encontrar a primeira partida futura na lista de ativos
+    for m in categorized_matches['active']:
+        if m.date:
+            m_dt = saopaulo_tz.localize(datetime.strptime(m.date, "%Y-%m-%dT%H:%M"))
+            if m_dt >= now_sp:
+                default_match_id = m.id
+                break
+    
+    # Se não houver partidas futuras hoje/frente, pega a última ativa ou a primeira anterior
+    if not default_match_id:
+        if categorized_matches['active']:
+            default_match_id = categorized_matches['active'][0].id
+        elif categorized_matches['previous']:
+            default_match_id = categorized_matches['previous'][0].id
+            is_default_in_active = False
+
+    return render_template('all_guesses.html', 
+                           active_matches=categorized_matches['active'],
+                           previous_matches=categorized_matches['previous'],
+                           guesses=guesses,
+                           default_match_id=default_match_id,
+                           is_default_in_active=is_default_in_active)
 
 if __name__ == '__main__':
     app.run(debug=True)

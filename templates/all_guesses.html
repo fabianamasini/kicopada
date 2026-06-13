@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+
+{% block title %}Todos os Palpites - Kicopada{% endblock %}
+
+{% block page_title %}Todos os Palpites{% endblock %}
+
+{% block content %}
+    <div class="topbar">
+        <h1>Todos os Palpites</h1>
+    </div>
+
+    <div class="tabs-container">
+        <div class="tabs-header">
+            <button class="tab-button {{ 'active' if is_default_in_active else '' }}" onclick="openTab(event, 'active-guesses-tab')">Próximos Jogos</button>
+            <button class="tab-button {{ 'active' if not is_default_in_active else '' }}" onclick="openTab(event, 'previous-guesses-tab')">Partidas Anteriores</button>
+        </div>
+
+        <!-- Aba: Próximos Jogos -->
+        <div id="active-guesses-tab" class="tab-content {{ 'active' if is_default_in_active else '' }}">
+            <div class="card" style="margin-bottom: 15px;">
+                <label for="filter-active" style="font-weight: bold; margin-bottom: 8px; display: block;">Filtrar por Partida:</label>
+                <select id="filter-active" onchange="filterGuesses('active', this.value)" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #e6e9ee;">
+                    {% for m in active_matches %}
+                        <option value="{{ m.id }}" {% if m.id == default_match_id %}selected{% endif %}>
+                            {{ m.team_a }} vs {{ m.team_b }} - {{ m.formatted_date }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            {% set tab_type = 'active' %}
+            {% include 'all_guesses_table.html' %}
+        </div>
+
+        <!-- Aba: Partidas Anteriores -->
+        <div id="previous-guesses-tab" class="tab-content {{ 'active' if not is_default_in_active else '' }}">
+            <div class="card" style="margin-bottom: 15px;">
+                <label for="filter-previous" style="font-weight: bold; margin-bottom: 8px; display: block;">Filtrar por Partida Anterior:</label>
+                <select id="filter-previous" onchange="filterGuesses('previous', this.value)" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #e6e9ee;">
+                    <option value="" disabled {{ 'selected' if is_default_in_active else '' }}>Selecione uma partida</option>
+                    {% for m in previous_matches %}
+                        <option value="{{ m.id }}" {% if m.id == default_match_id %}selected{% endif %}>
+                            {{ m.team_a }} vs {{ m.team_b }} - {{ m.formatted_date }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            {% set tab_type = 'previous' %}
+            {% include 'all_guesses_table.html' %}
+        </div>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function openTab(evt, tabName) {
+    var i, tabcontent, tablinks;
+    tabcontent = document.getElementsByClassName("tab-content");
+    for (i = 0; i < tabcontent.length; i++) {
+        tabcontent[i].classList.remove("active");
+    }
+    tablinks = document.getElementsByClassName("tab-button");
+    for (i = 0; i < tablinks.length; i++) {
+        tablinks[i].classList.remove("active");
+    }
+    document.getElementById(tabName).classList.add("active");
+    evt.currentTarget.classList.add("active");
+    
+    // Ao trocar de aba, aplica o filtro do select daquela aba
+    const selectId = tabName === 'active-guesses-tab' ? 'filter-active' : 'filter-previous';
+    const val = document.getElementById(selectId).value;
+    if (val) filterGuesses(tabName.split('-')[0], val);
+}
+
+function filterGuesses(type, matchId) {
+    const rows = document.querySelectorAll(`.guess-row-${type}`);
+    let hasResults = false;
+    
+    rows.forEach(row => {
+        if (row.getAttribute('data-match-id') === matchId) {
+            row.style.display = 'table-row';
+            hasResults = true;
+        } else {
+            row.style.display = 'none';
+        }
+    });
+
+    document.getElementById(`no-results-${type}`).style.display = hasResults ? 'none' : 'block';
+}
+
+// Inicialização do filtro no carregamento da página
+window.onload = function() {
+    const activeVal = document.getElementById('filter-active').value;
+    if (activeVal) filterGuesses('active', activeVal);
+    
+    const prevVal = document.getElementById('filter-previous').value;
+    if (prevVal) filterGuesses('previous', prevVal);
+};
+</script>
+{% endblock %}
