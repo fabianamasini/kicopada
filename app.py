@@ -129,7 +129,7 @@ def guesses():
 def create_guess():
     if request.method == 'POST':
         return guesses_controller.add_guess(request, current_user)
-    matches_list = matches_controller.get_all_matches()
+    matches_list = matches_controller.get_available_matches_for_user(current_user.id)
     return render_template('add_guess.html', matches=matches_list)
 
 @app.route('/delete_guess/<int:guess_id>', methods=['POST'])
