@@ -31,6 +31,9 @@
                           {% if user.id == current_user.id %}
                               <span style="font-size: 0.75rem; color: #ff6b6b; font-weight: bold;">(Você)</span>
                           {% endif %}
+                          {% if user.has_67_sequence %}
+                              <img src="{{ url_for('static', filename='img/meme-67.gif') }}" class="special-gif" title="67 neles!">
+                          {% endif %}
                       </td>
                       <td class="pts">{{ user.points }}</td>
                   </tr>

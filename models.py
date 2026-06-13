@@ -22,6 +22,11 @@ class User(UserMixin, db.Model):
         """Compara a senha digitada com o hash salvo no banco."""
         return check_password_hash(self.password_hash, password)
 
+    @property
+    def has_67_sequence(self):
+        """Verifica se a pontuação contém a sequência '67'."""
+        return "67" in str(self.points or 0)
+
 class Match(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     team_a = db.Column(db.String(50), nullable=False)
