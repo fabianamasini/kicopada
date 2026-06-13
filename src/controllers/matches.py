@@ -19,7 +19,8 @@ class MatchesController:
         saopaulo_tz = pytz.timezone('America/Sao_Paulo')
         now_saopaulo = datetime.now(saopaulo_tz)
         today_str = now_saopaulo.strftime("%Y-%m-%d")
-        limit_previous_saopaulo = now_saopaulo - timedelta(days=1)
+        # Define o limite como o início do dia atual (00:00) em São Paulo
+        limit_today_start = now_saopaulo.replace(hour=0, minute=0, second=0, microsecond=0)
 
         active_matches = []
         previous_matches = []
@@ -31,7 +32,7 @@ class MatchesController:
             try:
                 match_dt_naive = datetime.strptime(m.date, "%Y-%m-%dT%H:%M")
                 match_dt_saopaulo = saopaulo_tz.localize(match_dt_naive)
-                if match_dt_saopaulo < limit_previous_saopaulo:
+                if match_dt_saopaulo < limit_today_start:
                     previous_matches.append(m)
                 else:
                     active_matches.append(m)
@@ -51,12 +52,14 @@ class MatchesController:
 
     def get_next_match(self):
         """Retorna a próxima partida programada a partir de agora."""
-        now_str = datetime.now().strftime("%Y-%m-%d")
+        saopaulo_tz = pytz.timezone('America/Sao_Paulo')
+        now_str = datetime.now(saopaulo_tz).strftime("%Y-%m-%d")
         return Match.query.filter(Match.date >= now_str).order_by(Match.date.asc()).first()
 
     def get_upcoming_matches(self):
         """Retorna as próximas partidas programadas a partir de agora."""
-        now_str = datetime.now().strftime("%Y-%m-%d")
+        saopaulo_tz = pytz.timezone('America/Sao_Paulo')
+        now_str = datetime.now(saopaulo_tz).strftime("%Y-%m-%d")
         return Match.query.filter(Match.date >= now_str).order_by(Match.date.asc()).all()
 
     def add_new_match(self, team_a, team_b, match_date, round, score_a=None, score_b=None):

@@ -22,8 +22,9 @@ class GuessesController:
         # today_str deve refletir "hoje" no fuso horário de São Paulo
         today_str = now_saopaulo.strftime("%Y-%m-%d")
         
-        # limit_previous deve ser calculado com base no fuso horário de São Paulo
-        limit_previous_saopaulo = now_saopaulo - timedelta(days=1)
+        # Define o limite como o início do dia atual (00:00) em São Paulo.
+        # Partidas que ocorreram em dias anteriores são movidas para a aba de anteriores.
+        limit_today_start = now_saopaulo.replace(hour=0, minute=0, second=0, microsecond=0)
 
         active_guesses = []
         previous_guesses = []
@@ -38,8 +39,8 @@ class GuessesController:
                 match_dt_naive = datetime.strptime(g.match.date, "%Y-%m-%dT%H:%M")
                 match_dt_saopaulo = saopaulo_tz.localize(match_dt_naive)
 
-                # Compara datetimes cientes do fuso horário
-                if match_dt_saopaulo < limit_previous_saopaulo:
+                # Se a partida ocorreu antes do início de hoje, vai para anteriores
+                if match_dt_saopaulo < limit_today_start:
                     previous_guesses.append(g)
                 else:
                     active_guesses.append(g)
