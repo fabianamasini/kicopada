@@ -1,7 +1,7 @@
+import pytz
 from datetime import datetime
 from flask_login import UserMixin
-import locale
-import pytz
+from babel.dates import format_datetime
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 
@@ -69,7 +69,12 @@ class Match(db.Model):
             saopaulo_tz = pytz.timezone('America/Sao_Paulo')
             dt_object_naive = datetime.strptime(self.date, "%Y-%m-%dT%H:%M")
             dt_object_saopaulo = saopaulo_tz.localize(dt_object_naive)
-            return dt_object_saopaulo.strftime("%A, %d de %B de %Y às %Hh%M")
+            # Usamos o Babel para formatar independente do locale do SO
+            return format_datetime(
+                dt_object_saopaulo, 
+                "EEEE, d 'de' MMMM 'de' y 'às' HH'h'mm", 
+                locale='pt_BR'
+            )
         except (ValueError, TypeError):
             return self.date
 
@@ -81,7 +86,8 @@ class Match(db.Model):
         try:
             # Extrai a data da string ISO (YYYY-MM-DD)
             dt = datetime.strptime(self.date[:10], "%Y-%m-%d")
-            return dt.strftime("%A %d/%m").upper()
+            # Formata o dia da semana e data em português
+            return format_datetime(dt, "EEEE dd/MM", locale='pt_BR').upper()
         except (ValueError, TypeError):
             return ""
 
