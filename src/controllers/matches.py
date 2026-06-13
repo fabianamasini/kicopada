@@ -1,12 +1,45 @@
 from models import db, Match, Guesses
 from flask import flash, redirect, url_for
-from datetime import datetime
+from datetime import datetime, timedelta
+import pytz
 
 class MatchesController:
     def get_all_matches(self):
         all_matches = Match.query.order_by(Match.date.desc()).all()
         return all_matches
-    
+
+    def get_categorized_matches(self):
+        """Retorna partidas divididas entre ativas e anteriores com ordenação específica."""
+        matches = Match.query.all()
+        saopaulo_tz = pytz.timezone('America/Sao_Paulo')
+        now_saopaulo = datetime.now(saopaulo_tz)
+        today_str = now_saopaulo.strftime("%Y-%m-%d")
+        limit_previous_saopaulo = now_saopaulo - timedelta(days=1)
+
+        active_matches = []
+        previous_matches = []
+
+        for m in matches:
+            if not m.date:
+                active_matches.append(m)
+                continue
+            try:
+                match_dt_naive = datetime.strptime(m.date, "%Y-%m-%dT%H:%M")
+                match_dt_saopaulo = saopaulo_tz.localize(match_dt_naive)
+                if match_dt_saopaulo < limit_previous_saopaulo:
+                    previous_matches.append(m)
+                else:
+                    active_matches.append(m)
+            except (ValueError, TypeError):
+                active_matches.append(m)
+
+        # Ordenação Active: Jogos de hoje primeiro, depois cronológica (mais próximos primeiro)
+        active_matches.sort(key=lambda x: (x.date[:10] != today_str, x.date))
+        # Ordenação Anteriores: Mais recentes para mais antigos
+        previous_matches.sort(key=lambda x: x.date, reverse=True)
+
+        return {'active': active_matches, 'previous': previous_matches}
+
     def get_match_by_id(self, match_id):
         match = Match.query.get(match_id)
         return match

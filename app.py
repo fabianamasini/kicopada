@@ -113,8 +113,8 @@ def home():
 @app.route('/matches', methods=['GET'])
 @login_required
 def matches():
-    all_matches = matches_controller.get_all_matches()
-    return render_template('matches.html', matches=all_matches)
+    categorized_matches = matches_controller.get_categorized_matches()
+    return render_template('matches.html', active_matches=categorized_matches['active'], previous_matches=categorized_matches['previous'])
 
 @app.route('/guesses', methods=['GET'])
 @login_required
