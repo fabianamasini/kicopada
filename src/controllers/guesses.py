@@ -45,9 +45,9 @@ class GuessesController:
                     active_guesses.append(g)
             except (ValueError, TypeError):
                 active_guesses.append(g)
-
-        # Ordenação Active: Jogos de hoje primeiro, depois por data decrescente
-        active_guesses.sort(key=lambda x: (x.match.date[:10] == today_str, x.match.date), reverse=True)
+        
+        # Ordenação Active: Jogos de hoje primeiro, depois os mais próximos para os mais futuros
+        active_guesses.sort(key=lambda x: (x.match.date[:10] != today_str, x.match.date))
 
         # Ordenação Previous: Data decrescente (mais recentes primeiro)
         previous_guesses.sort(key=lambda x: x.match.date, reverse=True)
