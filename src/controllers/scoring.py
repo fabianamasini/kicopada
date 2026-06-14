@@ -142,7 +142,7 @@ class ScoringController:
         """Recalcula a pontuação total de um usuário com base em todos os seus palpites."""
         user = User.query.get(user_id)
         if user:
-            total_points = 0
+            total_points = user.adjustment_points or 0
             user_guesses = Guesses.query.filter_by(user_id=user_id).options(joinedload(Guesses.match)).all()
             
             for g in user_guesses:

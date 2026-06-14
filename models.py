@@ -13,6 +13,7 @@ class User(UserMixin, db.Model):
     password_hash = db.Column(db.String(255), nullable=False)
     is_admin = db.Column(db.Boolean, default=False)
     points = db.Column(db.Integer, default=0)
+    adjustment_points = db.Column(db.Integer, default=0)
 
     def set_password(self, password):
         """Transforma a senha em texto plano em um hash seguro."""

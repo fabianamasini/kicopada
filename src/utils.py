@@ -1,4 +1,4 @@
-phases = ['Fase de Grupos', '16-avos de Final', 'Oitavas de Final', 'Quartas de Final', 'Semifinal', 'Final']
+phases = ['Fase de Grupos']
 
 teams = {'🇨🇦 Canadá': 'B',
          '🇺🇸 EUA': 'D',
