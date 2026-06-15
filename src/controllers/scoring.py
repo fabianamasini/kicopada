@@ -150,9 +150,8 @@ class ScoringController:
         """Recalcula a pontuação total de um usuário com base em todos os seus palpites."""
         user = User.query.get(user_id)
         if user:
-    
+            total_points = user.adjustment_points or 0
             if recalculate_all:
-                total_points = user.adjustment_points or 0
                 user_guesses = Guesses.query.filter_by(user_id=user_id).options(joinedload(Guesses.match)).all()
                 
                 for g in user_guesses:
@@ -165,9 +164,10 @@ class ScoringController:
                 guess = Guesses.query.get(guess_id)
                 if guess and guess.user_id == user_id and guess.match.score_a is not None and guess.match.score_b is not None:
                     points = self.__calculate_points(guess)
+                    total_points += points
                     
                     # Atualiza a pontuação do usuário somando o ajuste e os pontos dos palpites
-                    user.points = int((user.points or 0) + points + 0.5)
+                    user.points = int((user.points or 0) + total_points + 0.5)
                     db.session.commit()
 
     def update_all_scores_for_match(self, match_id):
