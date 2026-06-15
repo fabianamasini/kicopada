@@ -1,10 +1,10 @@
-from datetime import datetime, timedelta
-from models import db, Guesses
 import pytz
+from datetime import datetime
+from models import db, Guesses
+from sqlalchemy.orm import joinedload
 from .matches import MatchesController
 from .scoring import ScoringController
 from flask import flash, redirect, url_for
-from sqlalchemy.orm import joinedload
 
 class GuessesController:
     def __init__(self):

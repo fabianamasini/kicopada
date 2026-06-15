@@ -1,6 +1,7 @@
 import os
-import locale
 import pytz
+import locale
+
 from functools import wraps
 from datetime import datetime
 from dotenv import load_dotenv
@@ -10,6 +11,7 @@ from models import db, User, Teams, Match, Guesses
 from werkzeug.security import generate_password_hash
 from flask_login import LoginManager, login_required, current_user
 from flask import Flask, render_template, request, redirect, url_for, flash
+
 from src.controllers.auth import AuthController
 from src.controllers.user import UserController
 from src.controllers.signup import SignupController
@@ -99,6 +101,10 @@ def login():
 @login_required
 def logout():
     return auth_controller.logout()
+
+@app.route('/forgot_password', methods=['GET', 'POST'])
+def forgot_password():
+    return auth_controller.forgot_password(request)
 
 ### Signup ###
 @app.route('/signup', methods=['GET', 'POST'])
