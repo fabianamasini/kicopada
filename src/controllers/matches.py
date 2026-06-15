@@ -1,7 +1,7 @@
+import pytz
+from datetime import datetime
 from models import db, Match, Guesses
 from flask import flash, redirect, url_for
-from datetime import datetime, timedelta
-import pytz
 
 class MatchesController:
     def get_all_matches(self):

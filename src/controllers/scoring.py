@@ -1,5 +1,5 @@
-from models import db, User, Guesses, Odds
 from sqlalchemy.orm import joinedload
+from models import db, User, Guesses, Odds
 
 class ScoringController:
 
