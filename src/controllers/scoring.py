@@ -13,7 +13,23 @@ class ScoringController:
         
         odd = 1 + ((total - count) / (total - 1))
         return max(1.0, min(2.0, odd))
+    
+    
+    def __calculate_points(self, guess):
+        odds = self.get_odds_for_guess(guess)
+        if not guess.match.is_knockout:
+            points += (self.group_phase_result(
+                guess.match.score_a, guess.match.score_b, guess.pred_a, guess.pred_b
+            ) * odds)
+        else:
+            points += (self.knockout_phase_result(
+                guess.match.score_a, guess.match.score_b, guess.pred_a, guess.pred_b,
+                guess.match.winner, guess.winner_pred,
+                guess.match.penalty_score_a, guess.match.penalty_score_b,
+                guess.penalty_pred_a, guess.penalty_pred_b
+            ) * odds)
 
+        return points
 
     def calculate_odds_for_match(self, match_id):
         """Calcula as odds para uma partida específica com base nos palpites dos usuários.
@@ -118,14 +134,6 @@ class ScoringController:
             return 100
         return 0
 
-    def calculate_score_for_guess(self, guess):
-        """
-        Calcula e atualiza a pontuação de um palpite específico e a pontuação total do usuário.
-        """
-        guess = Guesses.query.get(guess.id)
-        if guess:
-            self.update_user_points(guess.user_id)
-
     def get_odds_for_guess(self, guess):
         odds = Odds.query.filter_by(match_id=guess.match_id).first()
         if not odds:
@@ -138,35 +146,32 @@ class ScoringController:
         else:
             return odds.draw_odds
 
-    def update_user_points(self, user_id):
+    def update_user_points(self, user_id, guess_id=None, recalculate_all=False):
         """Recalcula a pontuação total de um usuário com base em todos os seus palpites."""
         user = User.query.get(user_id)
         if user:
-            total_points = user.adjustment_points or 0
-            user_guesses = Guesses.query.filter_by(user_id=user_id).options(joinedload(Guesses.match)).all()
-            
-            for g in user_guesses:
-                if g.match.score_a is not None and g.match.score_b is not None:
-                    odds = self.get_odds_for_guess(g)
+    
+            if recalculate_all:
+                total_points = user.adjustment_points or 0
+                user_guesses = Guesses.query.filter_by(user_id=user_id).options(joinedload(Guesses.match)).all()
+                
+                for g in user_guesses:
+                    if g.match.score_a is not None and g.match.score_b is not None:
+                        total_points += self.__calculate_points(g)
+                user.points = int(total_points + 0.5)
+                db.session.commit()
 
-                    if not g.match.is_knockout:
-                        total_points += (self.group_phase_result(
-                            g.match.score_a, g.match.score_b, g.pred_a, g.pred_b
-                        ) * odds)
-                    else:
-                        total_points += (self.knockout_phase_result(
-                            g.match.score_a, g.match.score_b, g.pred_a, g.pred_b,
-                            g.match.winner, g.winner_pred,
-                            g.match.penalty_score_a, g.match.penalty_score_b,
-                            g.penalty_pred_a, g.penalty_pred_b
-                        ) * odds)
-            
-            user.points = int(total_points + 0.5)
-            db.session.commit()
+            elif guess_id:
+                guess = Guesses.query.get(guess_id)
+                if guess and guess.user_id == user_id and guess.match.score_a is not None and guess.match.score_b is not None:
+                    points = self.__calculate_points(guess)
+                    
+                    # Atualiza a pontuação do usuário somando o ajuste e os pontos dos palpites
+                    user.points = int((user.points or 0) + points + 0.5)
+                    db.session.commit()
 
     def update_all_scores_for_match(self, match_id):
         """Atualiza a pontuação de todos os usuários que palpitaram em uma partida específica."""
         guesses = Guesses.query.filter_by(match_id=match_id).all()
-        user_ids = set(g.user_id for g in guesses)
-        for uid in user_ids:
-            self.update_user_points(uid)
+        for g in guesses:
+            self.update_user_points(g.user_id, g.id)
