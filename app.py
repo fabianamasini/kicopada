@@ -192,7 +192,7 @@ def delete_match(match_id):
 
     # Recalcula a pontuação de todos os usuários afetados
     for uid in set(user_ids):
-        guesses_controller.update_user_points(uid)
+        guesses_controller.update_user_points(uid, recalculate_all=True)
 
     return response
 
