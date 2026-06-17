@@ -116,7 +116,12 @@ def signup():
 def home():
     ranking = user_controller.get_ranked_users()
     upcoming_matches = matches_controller.get_upcoming_matches()
-    return render_template('home.html', ranking=ranking, upcoming_matches=upcoming_matches)
+
+    # Busca os palpites do usuário logado para mapear nos jogos
+    user_guesses = Guesses.query.filter_by(user_id=current_user.id).all()
+    guesses_dict = {guess.match_id: guess for guess in user_guesses}
+
+    return render_template('home.html', ranking=ranking, upcoming_matches=upcoming_matches, user_guesses=guesses_dict)
 
 @app.route('/matches', methods=['GET'])
 @login_required
@@ -159,11 +164,11 @@ def edit_guess(guess_id):
     if not guess:
         flash('Palpite não encontrado.', 'error')
         return redirect(url_for('guesses'))
-    
+
     if not guess.match.is_editable():
         flash('O prazo para editar este palpite expirou.', 'error')
         return redirect(url_for('guesses'))
-        
+
     return render_template('edit_guess.html', guess=guess)
 
 # Admin required route
@@ -177,7 +182,7 @@ def create_match():
                                             round = request.form.get('round'),
                                             score_a = request.form.get('score_a'),
                                             score_b = request.form.get('score_b'))
-    
+
     teams_list = [team[0] for team in Teams.query.with_entities(Teams.name).order_by(Teams.name.asc()).all()]
 
     return render_template('add_match.html', phases=phases, teams=teams_list)
@@ -192,7 +197,7 @@ def delete_match(match_id):
 
     # Recalcula a pontuação de todos os usuários afetados
     for uid in set(user_ids):
-        guesses_controller.update_user_points(uid, recalculate_all=True)
+        guesses_controller.update_user_points(uid)
 
     return response
 
@@ -200,7 +205,7 @@ def delete_match(match_id):
 @admin_required
 def edit_match(match_id):
     if request.method == 'POST':
-        response = matches_controller.edit_match(match_id, 
+        response = matches_controller.edit_match(match_id,
                                           team_a=request.form.get('team_a'),
                                           team_b=request.form.get('team_b'),
                                           match_date=request.form.get('match_date'),
@@ -213,7 +218,7 @@ def edit_match(match_id):
         match = Match.query.get(match_id)
         teams_list = [team[0] for team in Teams.query.with_entities(Teams.name).order_by(Teams.name.asc()).all()]
         return render_template('edit_match.html', match=match, phases=phases, teams=teams_list)
-    
+
 @app.route('/all_guesses', methods=['GET'])
 @admin_required
 def all_guesses():
@@ -223,7 +228,7 @@ def all_guesses():
     # Lógica para encontrar a partida mais próxima (filtro padrão)
     saopaulo_tz = pytz.timezone('America/Sao_Paulo')
     now_sp = datetime.now(saopaulo_tz)
-    
+
     default_match_id = None
     is_default_in_active = True
 
@@ -234,7 +239,7 @@ def all_guesses():
             if m_dt >= now_sp:
                 default_match_id = m.id
                 break
-    
+
     # Se não houver partidas futuras hoje/frente, pega a última ativa ou a primeira anterior
     if not default_match_id:
         if categorized_matches['active']:
@@ -243,7 +248,7 @@ def all_guesses():
             default_match_id = categorized_matches['previous'][0].id
             is_default_in_active = False
 
-    return render_template('all_guesses.html', 
+    return render_template('all_guesses.html',
                            active_matches=categorized_matches['active'],
                            previous_matches=categorized_matches['previous'],
                            guesses=guesses,

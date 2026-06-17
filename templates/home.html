@@ -55,7 +55,7 @@
           {% set current_day = namespace(val=None) %}
           {% for match in upcoming_matches %}
           {% set day_header = match.date_header %}
-          
+
           {% if day_header != current_day.val %}
             {% set current_day.val = day_header %}
             <tr class="date-group-header">
@@ -83,6 +83,19 @@
                   {% else %}<span class="no-odds">N/A</span>{% endif %}
               </td>
           </tr>
+          {% if match.id in user_guesses %}
+            <tr class="guess-row">
+              <td colspan="5" style="background-color: #f0f9ff; padding: 8px 16px; font-size: 0.9rem; color: #0c4a6e;">
+                <strong>Seu palpite:</strong> {{ user_guesses[match.id].pred_a }} x {{ user_guesses[match.id].pred_b }}
+              </td>
+            </tr>
+          {% else %}
+            <tr class="guess-row">
+              <td colspan="5" style="background-color: #f0f9ff; padding: 8px 16px; font-size: 0.9rem; color: #64748b;">
+                <strong>Seu palpite:</strong> <em>Nenhum palpite registrado</em>
+              </td>
+            </tr>
+          {% endif %}
           {% endfor %}
       </tbody>
   </table>
