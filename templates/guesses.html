@@ -41,9 +41,9 @@
                                     <td style="padding: 12px 8px; text-align: center;">
                                         <div style="background: #f0f0f0; padding: 4px 10px; border-radius: 4px; font-weight: bold; display: inline-block; min-width: 60px;">
                                             {{ guess.pred_a }} x {{ guess.pred_b }}
-                                            {% if guess.match.is_knockout and guess.penalty_pred_a is not none %}
+                                            {% if guess.match.is_knockout and guess.pred_a == guess.pred_b %}
                                                 <div style="font-size: 0.75rem; color: #6b7280; font-weight: normal; margin-top: 2px; border-top: 1px solid #d1d5db; padding-top: 2px;">
-                                                    {{ guess.penalty_pred_a }} x {{ guess.penalty_pred_b }} (P)
+                                                    Classificado: {{ guess.match.team_a if guess.winner_pred == 'A' else guess.match.team_b }}
                                                 </div>
                                             {% endif %}
                                         </div>
@@ -88,7 +88,14 @@
                                 <tr style="border-bottom: 1px solid #eee; background-color: #fcfcfc;">
                                     <td style="padding: 12px 8px; color: #64748b;">{{ guess.match.formatted_date }}</td>
                                     <td style="padding: 12px 8px;">{{ guess.match.team_a }} vs {{ guess.match.team_b }}</td>
-                                    <td style="padding: 12px 8px; text-align: center; font-weight: 600;">{{ guess.pred_a }} x {{ guess.pred_b }}</td>
+                                    <td style="padding: 12px 8px; text-align: center; font-weight: 600;">
+                                        {{ guess.pred_a }} x {{ guess.pred_b }}
+                                        {% if guess.match.is_knockout and guess.pred_a == guess.pred_b %}
+                                            <div style="font-size: 0.75rem; color: #6b7280; font-weight: normal; margin-top: 2px; border-top: 1px solid #d1d5db; padding-top: 2px;">
+                                                Classificado: {{ guess.match.team_a if guess.winner_pred == 'A' else guess.match.team_b }}
+                                            </div>
+                                        {% endif %}
+                                    </td>
                                     <td style="padding: 12px 8px; text-align: center;">
                                         {% if guess.match.score_a is not none %}
                                             <span style="background: #e2e8f0; padding: 2px 8px; border-radius: 4px;">{{ guess.match.score_a }} x {{ guess.match.score_b }}</span>

@@ -10,7 +10,7 @@
         <div class="form-row">
             <div class="col">
                 <label for="team_a">Time A</label>
-                <select name="team_a" id="team_a" required>
+                <select name="team_a" id="team_a" required onchange="updateTeamLabels()">
                     {% for team in teams %}
                         <option value="{{ team }}" {% if match.team_a == team %}selected{% endif %}>{{ team }}</option>
                     {% endfor %}
@@ -19,7 +19,7 @@
             <div class="col-narrow" style="text-align: center; align-self: flex-end; padding-bottom: 10px; font-weight: bold;">VS</div>
             <div class="col">
                 <label for="team_b">Time B</label>
-                <select name="team_b" id="team_b" required>
+                <select name="team_b" id="team_b" required onchange="updateTeamLabels()">
                     {% for team in teams %}
                         <option value="{{ team }}" {% if match.team_b == team %}selected{% endif %}>{{ team }}</option>
                     {% endfor %}
@@ -34,7 +34,7 @@
             </div>
             <div class="col">
                 <label for="round">Fase</label>
-                <select name="round" id="round" required>
+                <select name="round" id="round" required onchange="toggleWinnerSection()">
                     {% for phase in phases %}
                         <option value="{{ phase }}" {% if match.round == phase %}selected{% endif %}>{{ phase }}</option>
                     {% endfor %}
@@ -45,12 +45,21 @@
         <div class="form-row">
             <div class="col">
                 <label for="score_a">Placar Time A (opcional)</label>
-                <input type="number" name="score_a" id="score_a" value="{{ match.score_a if match.score_a is not none else '' }}">
+                <input type="number" name="score_a" id="score_a" value="{{ match.score_a if match.score_a is not none else '' }}" oninput="toggleWinnerSection()">
             </div>
             <div class="col">
                 <label for="score_b">Placar Time B (opcional)</label>
-                <input type="number" name="score_b" id="score_b" value="{{ match.score_b if match.score_b is not none else '' }}">
+                <input type="number" name="score_b" id="score_b" value="{{ match.score_b if match.score_b is not none else '' }}" oninput="toggleWinnerSection()">
             </div>
+        </div>
+
+        <div id="winner-section" style="display: none; margin-top: 15px;">
+            <label for="winner">Quem se classificou nos pênaltis?</label>
+            <select name="winner" id="winner">
+                <option value="" disabled {% if match.winner is none %}selected{% endif %}>Selecione o vencedor</option>
+                <option value="A" id="winner-option-a" {% if match.winner == 'A' %}selected{% endif %}>{{ match.team_a }}</option>
+                <option value="B" id="winner-option-b" {% if match.winner == 'B' %}selected{% endif %}>{{ match.team_b }}</option>
+            </select>
         </div>
 
         <div style="margin-top: 20px; display: flex; gap: 12px;">
@@ -59,4 +68,40 @@
         </div>
     </form>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function updateTeamLabels() {
+    const teamA = document.getElementById('team_a').value;
+    const teamB = document.getElementById('team_b').value;
+    document.getElementById('winner-option-a').textContent = teamA;
+    document.getElementById('winner-option-b').textContent = teamB;
+}
+
+function toggleWinnerSection() {
+    const round = document.getElementById('round').value;
+    const scoreAInput = document.getElementById('score_a');
+    const scoreBInput = document.getElementById('score_b');
+    const winnerSection = document.getElementById('winner-section');
+    const winnerSelect = document.getElementById('winner');
+
+    // Lista de fases que são mata-mata (knockout)
+    const knockoutPhases = ['Oitavas de Final', 'Quartas de Final', 'Semifinal', 'Final', 'Disputa de 3º Lugar'];
+    const isKnockout = knockoutPhases.includes(round);
+
+    const scoreA = scoreAInput.value;
+    const scoreB = scoreBInput.value;
+
+    if (isKnockout && scoreA !== '' && scoreB !== '' && parseInt(scoreA) === parseInt(scoreB)) {
+        winnerSection.style.display = 'block';
+        winnerSelect.setAttribute('required', 'required');
+    } else {
+        winnerSection.style.display = 'none';
+        winnerSelect.removeAttribute('required');
+    }
+}
+
+document.addEventListener('DOMContentLoaded', toggleWinnerSection);
+</script>
 {% endblock %}
