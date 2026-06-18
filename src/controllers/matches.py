@@ -1,7 +1,7 @@
+import pytz
+from datetime import datetime
 from models import db, Match, Guesses
 from flask import flash, redirect, url_for
-from datetime import datetime, timedelta
-import pytz
 
 class MatchesController:
     def get_all_matches(self):
@@ -62,7 +62,7 @@ class MatchesController:
         now_str = datetime.now(saopaulo_tz).strftime("%Y-%m-%d")
         return Match.query.filter(Match.date >= now_str).order_by(Match.date.asc()).all()
 
-    def add_new_match(self, team_a, team_b, match_date, round, score_a=None, score_b=None):
+    def add_new_match(self, team_a, team_b, match_date, round, score_a=None, score_b=None, winner=None):
         if not team_a:
             flash('O time A é obrigatório.', 'error')
             return redirect(url_for('create_match'))
@@ -91,13 +91,31 @@ class MatchesController:
             return redirect(url_for('create_match'))
         else:
             is_knockout = round != 'Fase de Grupos'
+            
+            winner_real = None
+            if is_knockout and score_a and score_b:
+                score_a_int = int(score_a)
+                score_b_int = int(score_b)
+
+                if score_a_int > score_b_int:
+                    winner_real = 'A'
+                elif score_b_int > score_a_int:
+                    winner_real = 'B'
+                else:
+                    if winner not in ['A', 'B']:
+                        flash('Escolha quem se classificou nos pênaltis.', 'error')
+                        return redirect(url_for('create_match'))
+                    winner_real = winner
+
             new_match = Match(team_a=team_a,
                               team_b=team_b,
                               date=match_date,
                               round=round,
                               score_a=int(score_a) if score_a else None,
                               score_b=int(score_b) if score_b else None,
-                              is_knockout=is_knockout)
+                              is_knockout=is_knockout,
+                              winner=winner_real)
+            
             db.session.add(new_match)
             db.session.commit()
 
@@ -115,16 +133,34 @@ class MatchesController:
             flash('Partida não encontrada.', 'error')
         return redirect(url_for('matches'))
     
-    def edit_match(self, match_id, team_a, team_b, match_date, round, score_a=None, score_b=None):
+    def edit_match(self, match_id, team_a, team_b, match_date, round, score_a=None, score_b=None, winner=None):
         match = Match.query.get(match_id)
         if match:
+            is_knockout = round != 'Fase de Grupos'
+            
+            winner_real = None
+            if is_knockout and score_a and score_b:
+                score_a_int = int(score_a)
+                score_b_int = int(score_b)
+
+                if score_a_int > score_b_int:
+                    winner_real = 'A'
+                elif score_b_int > score_a_int:
+                    winner_real = 'B'
+                else:
+                    if winner not in ['A', 'B']:
+                        flash('Escolha quem se classificou nos pênaltis.', 'error')
+                        return redirect(url_for('edit_match', match_id=match_id))
+                    winner_real = winner
+
             match.team_a = team_a
             match.team_b = team_b
             match.date = match_date
             match.round = round
-            match.is_knockout = round != 'Fase de Grupos'
+            match.is_knockout = is_knockout
             match.score_a = int(score_a) if score_a else None
             match.score_b = int(score_b) if score_b else None
+            match.winner = winner_real
             db.session.commit()
             flash('Partida atualizada com sucesso.', 'success')
         else:
