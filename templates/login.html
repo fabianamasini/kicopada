@@ -3,7 +3,7 @@
 {% block title %}Login - Kicopada{% endblock %}
 
 {% block head %}
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}">
 {% endblock %}
 
 {% block sidebar %}{% endblock %}
@@ -11,31 +11,35 @@
 {% block page_title %}Login{% endblock %}
 
 {% block content %}
-  <div style="display:flex;justify-content:center;align-items:center;margin-top:20px">
-    <div class="auth-container">
-      <div class="card">
-        <div class="brand">
-          <h1>Kicopada</h1>
-          <p class="hint">Entre com sua conta</p>
-        </div>
+<div style="display:flex;justify-content:center;align-items:center;margin-top:20px">
+  <div class="auth-container">
+    <div class="card">
+      <div class="brand">
+        <h1>Kicopada</h1>
+        <p class="hint">Entre com sua conta</p>
+      </div>
 
-        <!-- Flashes are handled centrally in base.html -->
+      <!-- Flashes are handled centrally in base.html -->
 
-        <form method="POST" action="/">
-            <label>Usuário:</label>
-            <input type="text" name="username" autocomplete="username">
+      <form method="POST" action="/">
+        <label>Usuário:</label>
+        <input type="text" name="username" autocomplete="username">
 
-            <label>Senha:</label>
-            <input type="password" name="password" autocomplete="current-password">
+        <label>Senha:</label>
+        <input type="password" name="password" autocomplete="current-password">
 
-            <button type="submit">Login</button>
-        </form>
+        <button type="submit">Login</button>
+      </form>
 
-        <div class="meta">
-          <a class="secondary" href="/signup">Não tem uma conta? Cadastre-se</a>
-          <span></span>
-        </div>
+      <div class="meta">
+        <a class="secondary" href="/signup">Cadastre-se</a>
+        <span></span>
+      </div>
+      <div class="meta">
+        <a class="secondary" href="/forgot_password">Esqueci minha senha</a>
+        <span></span>
       </div>
     </div>
   </div>
+</div>
 {% endblock %}

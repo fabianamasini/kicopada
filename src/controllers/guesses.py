@@ -127,7 +127,7 @@ class GuessesController:
 
             # Recalcular Odds e pontos do usuário
             self.scoring.calculate_odds_for_match(guess.match_id)
-            self.scoring.update_user_points(user_id)
+            self.scoring.update_user_points(user_id, recalculate_all=True)
             flash('Palpite excluído com sucesso.', 'success')
         else:
             flash('Palpite não encontrado ou acesso negado.', 'error')

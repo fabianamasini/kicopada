@@ -13,6 +13,7 @@ class User(UserMixin, db.Model):
     password_hash = db.Column(db.String(255), nullable=False)
     is_admin = db.Column(db.Boolean, default=False)
     points = db.Column(db.Integer, default=0)
+    adjustment_points = db.Column(db.Integer, default=0)
 
     def set_password(self, password):
         """Transforma a senha em texto plano em um hash seguro."""
@@ -52,9 +53,9 @@ class Match(db.Model):
             # Em seguida, localize-o para o fuso horário de São Paulo
             match_dt_saopaulo = saopaulo_tz.localize(match_dt_naive)
 
-            # Define o limite como 03:00 AM do dia do jogo no fuso horário de São Paulo
+            # Define o limite como 00:00 AM do dia do jogo no fuso horário de São Paulo
             # Usamos a data da partida, mas com o horário de corte
-            limit_time_saopaulo = saopaulo_tz.localize(datetime.strptime(self.date[:10], "%Y-%m-%d")).replace(hour=3, minute=0)
+            limit_time_saopaulo = saopaulo_tz.localize(datetime.strptime(self.date[:10], "%Y-%m-%d")).replace(hour=0, minute=0)
 
             return now_saopaulo < limit_time_saopaulo
         except (ValueError, TypeError):
