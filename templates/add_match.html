@@ -92,9 +92,8 @@ function toggleWinnerSection() {
     const winnerSection = document.getElementById('winner-section');
     const winnerSelect = document.getElementById('winner');
 
-    // Lista de fases que são mata-mata (knockout)
-    const knockoutPhases = ['Oitavas de Final', 'Quartas de Final', 'Semifinal', 'Final', 'Disputa de 3º Lugar'];
-    const isKnockout = knockoutPhases.includes(round);
+    // Segue a lógica do backend: tudo que não for Fase de Grupos é mata-mata
+    const isKnockout = round !== '' && round !== 'Fase de Grupos';
 
     const scoreA = scoreAInput.value;
     const scoreB = scoreBInput.value;
