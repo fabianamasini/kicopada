@@ -26,9 +26,7 @@ class ScoringController:
         else:
             points += (self.knockout_phase_result(
                 guess.match.score_a, guess.match.score_b, guess.pred_a, guess.pred_b,
-                guess.match.winner, guess.winner_pred,
-                guess.match.penalty_score_a, guess.match.penalty_score_b,
-                guess.penalty_pred_a, guess.penalty_pred_b
+                guess.match.winner, guess.winner_pred
             ) * odd_value)
 
         return points
@@ -155,7 +153,7 @@ class ScoringController:
         if guess and guess.user_id:
             self.update_user_points(guess.user_id) # Garante que o usuário é atualizado
 
-    def get_odds_for_guess(self, guess):
+    def get_odds_for_guess(self, guess, odds_map=None):
         odds = Odds.query.filter_by(match_id=guess.match_id).first()
         if not odds:
             return 2.0 

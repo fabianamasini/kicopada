@@ -44,7 +44,13 @@
                                     <td style="padding: 12px 8px;"><strong>{{ match.team_a }}</strong> vs <strong>{{ match.team_b }}</strong></td>
                                     <td style="padding: 12px 8px; text-align: center;">
                                         {% if match.score_a is not none and match.score_b is not none %}
-                                            <span style="background: #f0f0f0; padding: 4px 10px; border-radius: 4px; font-weight: bold;">{{ match.score_a }} x {{ match.score_b }}</span>
+                                            <div style="background: #f0f0f0; padding: 4px 10px; border-radius: 4px; font-weight: bold; display: inline-block; min-width: 60px;">{{ match.score_a }} x {{ match.score_b }}
+                                            {% if match.is_knockout and match.score_a == match.score_b %}
+                                                <div style="font-size: 0.75rem; color: #6b7280; font-weight: normal; margin-top: 2px; border-top: 1px solid #d1d5db; padding-top: 2px;">
+                                                    Classificado: {{ match.team_a if match.winner == 'A' else match.team_b }}
+                                                </div>
+                                            {% endif %}
+                                            </div>
                                         {% else %}
                                             <span style="color: #999; font-style: italic;">Agendado</span>
                                         {% endif %}
