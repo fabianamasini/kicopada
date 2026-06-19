@@ -9,6 +9,7 @@ from dotenv import load_dotenv
 from app import app
 from models import db, User, Match, Guesses, Teams, Odds
 from werkzeug.security import generate_password_hash
+import pytz
 
 load_dotenv()
 
@@ -17,8 +18,8 @@ def seed_database():
 
     with app.app_context():
         # Limpa dados existentes (opcional - descomente se quiser limpar)
-        # db.drop_all()
-        # db.create_all()
+        db.drop_all()
+        db.create_all()
 
         print("🌱 Iniciando seed do banco de dados...")
 
@@ -26,11 +27,12 @@ def seed_database():
         print("\n📝 Criando usuários...")
 
         users_data = [
-            {"username": "alice", "password": "senha123"},
-            {"username": "bob", "password": "senha123"},
-            {"username": "carlos", "password": "senha123"},
-            {"username": "diana", "password": "senha123"},
-            {"username": "eva", "password": "senha123"},
+            {"username": "mario", "password": "senha123"},
+            {"username": "megu", "password": "senha123"},
+            {"username": "fabs", "password": "senha123"},
+            {"username": "diabo", "password": "senha123"},
+            {"username": "mbappe", "password": "senha123"},
+            {"username": "dembele", "password": "senha123"},
         ]
 
         users = []
@@ -81,42 +83,45 @@ def seed_database():
         # ==================== CRIAR JOGOS ====================
         print("\n🎮 Criando partidas...")
 
-        # Datas futuras (próximos 7 dias)
-        base_date = datetime.now() + timedelta(hours=24)
+        # Define o fuso horário de São Paulo
+        saopaulo_tz = pytz.timezone('America/Sao_Paulo')
+
+        # Obtém a data e hora atual no fuso horário de São Paulo
+        base_date = datetime.now(saopaulo_tz) + timedelta(hours=24)
 
         matches_data = [
             {
                 "team_a": "Brasil",
                 "team_b": "Espanha",
-                "date": base_date.replace(hour=19, minute=0).isoformat(),
+                "date": base_date.replace(hour=19, minute=0),
                 "round": "Fase de Grupos",
                 "is_knockout": False
             },
             {
                 "team_a": "Alemanha",
                 "team_b": "França",
-                "date": (base_date + timedelta(days=1)).replace(hour=20, minute=30).isoformat(),
+                "date": (base_date + timedelta(days=1)).replace(hour=20, minute=30),
                 "round": "Fase de Grupos",
                 "is_knockout": False
             },
             {
                 "team_a": "Argentina",
                 "team_b": "Itália",
-                "date": (base_date + timedelta(days=2)).replace(hour=17, minute=0).isoformat(),
+                "date": (base_date + timedelta(days=2)).replace(hour=17, minute=0),
                 "round": "Fase de Grupos",
                 "is_knockout": False
             },
             {
                 "team_a": "Portugal",
                 "team_b": "Holanda",
-                "date": (base_date + timedelta(days=3)).replace(hour=21, minute=0).isoformat(),
+                "date": (base_date + timedelta(days=3)).replace(hour=21, minute=0),
                 "round": "Fase de Grupos",
                 "is_knockout": False
             },
             {
                 "team_a": "Brasil",
                 "team_b": "Alemanha",
-                "date": (base_date + timedelta(days=4)).replace(hour=19, minute=0).isoformat(),
+                "date": (base_date + timedelta(days=4)).replace(hour=19, minute=0),
                 "round": "Oitavas de Final",
                 "is_knockout": True
             },
