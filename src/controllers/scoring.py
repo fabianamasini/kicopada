@@ -141,8 +141,6 @@ class ScoringController:
             return 100 # Acertou o saldo, mas não o classificado
         elif is_pred_draw == is_real_draw:
             return 100 # Acertou se foi empate ou não no tempo normal, mas não o classificado
-        elif saldo_real != 0 and saldo_palpite != 0:
-            return 100 # Acertou forma de decisão (tempo normal)
         return 0
 
     def calculate_score_for_guess(self, guess):
