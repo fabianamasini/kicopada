@@ -91,30 +91,38 @@ h1{margin:0 0 8px 0}
 .odds-table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 12px; overflow: hidden; margin-top: 0px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); table-layout: fixed; }
 .odds-table th, .odds-table td { padding: 12px 16px; text-align: center; border-bottom: 1px solid #f1f5f9; }
 .odds-table th { background: #f8fafc; color: #64748b; font-size: 0.75rem; text-transform: uppercase; font-weight: 700; }
-.odds-table .match-info { text-align: left; font-weight: 600; width: 32%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.odds-table th:not(.match-info) { width: 17%; }
+.odds-table .match-info { text-align: left; font-weight: 600; width: 26%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.odds-table th:not(.match-info):not(.col-guess) { width: 14%; }
+.odds-table .col-guess { width: 18%; }
 .odds-table .odd-value { font-family: 'Courier New', Courier, monospace; color: #2563eb; font-weight: 700; background: #eff6ff; padding: 4px 8px; border-radius: 4px; }
 .odds-table tr:hover { background: #fdfdfd; }
 .odds-table .no-odds { color: #94a3b8; font-size: 0.85rem; font-style: italic; }
 
+/* Coluna "Palpite" — identidade coral de "Você" (mesma do destaque no ranking) */
+.odds-table .guess-pill { font-family: 'Courier New', Courier, monospace; font-weight: 700; color: #e11d48; background: #fff1f2; border: 1px solid #fecdd3; padding: 4px 10px; border-radius: 4px; white-space: nowrap; }
+.odds-table .guess-cta { color: #ff6b6b; font-size: 0.8rem; font-weight: 600; text-decoration: none; white-space: nowrap; }
+.odds-table .guess-cta:hover { text-decoration: underline; }
+/* Odd destacada = resultado que o usuário palpitou (liga visualmente ao palpite coral) */
+.odds-table .odd-picked { box-shadow: 0 0 0 2px #fda4af; }
+
 /* Estilos para Abas de Palpites */
 .tabs-container { margin-top: 20px; }
 .tabs-header { display: flex; gap: 10px; border-bottom: 2px solid #e2e8f0; margin-bottom: 20px; }
-.tab-button { 
-    padding: 10px 20px; 
-    border: none; 
-    background: none; 
-    cursor: pointer; 
-    font-weight: 600; 
-    color: #64748b; 
+.tab-button {
+    padding: 10px 20px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    font-weight: 600;
+    color: #64748b;
     border-bottom: 2px solid transparent;
     margin-bottom: -2px;
     transition: all 0.2s;
 }
 .tab-button:hover { color: #0f172a; }
-.tab-button.active { 
-    color: #ff6b6b; 
-    border-bottom-color: #ff6b6b; 
+.tab-button.active {
+    color: #ff6b6b;
+    border-bottom-color: #ff6b6b;
 }
 .tab-content { display: none; }
 .tab-content.active { display: block; }

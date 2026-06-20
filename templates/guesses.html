@@ -35,7 +35,7 @@
                         <tbody>
                             {% for guess in active_guesses %}
                                 <tr style="border-bottom: 1px solid #eee;">
-                                    <td style="padding: 12px 8px;">{{ guess.match.formatted_date }}</td>
+                                    <td style="padding: 12px 8px;"><time datetime="{{ guess.match.date }}">{{ guess.match.formatted_date }}</time></td>
                                     <td style="padding: 12px 8px;">{{ guess.match.round }}</td>
                                     <td style="padding: 12px 8px;"><strong>{{ guess.match.team_a }}</strong> vs <strong>{{ guess.match.team_b }}</strong></td>
                                     <td style="padding: 12px 8px; text-align: center;">
@@ -86,7 +86,7 @@
                         <tbody>
                             {% for guess in previous_guesses %}
                                 <tr style="border-bottom: 1px solid #eee; background-color: #fcfcfc;">
-                                    <td style="padding: 12px 8px; color: #64748b;">{{ guess.match.formatted_date }}</td>
+                                    <td style="padding: 12px 8px; color: #64748b;"><time datetime="{{ guess.match.date }}">{{ guess.match.formatted_date }}</time></td>
                                     <td style="padding: 12px 8px;">{{ guess.match.team_a }} vs {{ guess.match.team_b }}</td>
                                     <td style="padding: 12px 8px; text-align: center; font-weight: 600;">{{ guess.pred_a }} x {{ guess.pred_b }}</td>
                                     <td style="padding: 12px 8px; text-align: center;">

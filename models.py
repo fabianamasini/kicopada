@@ -79,18 +79,29 @@ class Match(db.Model):
         except (ValueError, TypeError):
             return self.date
 
+    def _datetime_saopaulo(self):
+        """Converte self.date ('%Y-%m-%dT%H:%M') em datetime com fuso de São Paulo, ou None."""
+        if not self.date:
+            return None
+        try:
+            saopaulo_tz = pytz.timezone('America/Sao_Paulo')
+            return saopaulo_tz.localize(datetime.strptime(self.date, "%Y-%m-%dT%H:%M"))
+        except (ValueError, TypeError):
+            return None
+
+    @property
+    def time_label(self):
+        """Hora no formato brasileiro (ex: '19h00'), ou '' se sem data válida."""
+        dt = self._datetime_saopaulo()
+        return format_datetime(dt, "HH'h'mm", locale='pt_BR') if dt else ""
+
     @property
     def date_header(self):
-        """Retorna a data formatada para cabeçalho de grupo na Home (ex: DOMINGO 14/06)."""
-        if not self.date:
+        """Cabeçalho de grupo na Home agrupando por dia (ex: 'SÁBADO 20/06')."""
+        dt = self._datetime_saopaulo()
+        if not dt:
             return ""
-        try:
-            # Extrai a data da string ISO (YYYY-MM-DD)
-            dt = datetime.strptime(self.date[:10], "%Y-%m-%d")
-            # Formata o dia da semana e data em português
-            return format_datetime(dt, "EEEE dd/MM", locale='pt_BR').upper()
-        except (ValueError, TypeError):
-            return ""
+        return format_datetime(dt, "EEEE dd/MM", locale='pt_BR').upper()
 
 class Guesses(db.Model):
     id = db.Column(db.Integer, primary_key=True)

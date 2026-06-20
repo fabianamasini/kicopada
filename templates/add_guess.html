@@ -21,7 +21,7 @@
                                         data-knockout="{{ 'true' if m.is_knockout else 'false' }}"
                                         data-team-a="{{ m.team_a }}" 
                                         data-team-b="{{ m.team_b }}">
-                                    {{ m.team_a }} vs {{ m.team_b }} ({{ m.date }})
+                                    {{ m.team_a }} vs {{ m.team_b }} — {{ m.formatted_date }}
                                 </option>
                             {% endif %}
                         {% endfor %}
