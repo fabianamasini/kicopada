@@ -17,8 +17,8 @@ class ScoringController:
 
     def __calculate_points(self, guess, odds_map=None):
         # Busca a odd no mapa em cache ou faz a query se não houver mapa
-        odd_value = self.get_odds_for_guess(guess, odds_map)
         points = 0
+        odd_value = self.get_odds_for_guess(guess, odds_map)
         if not guess.match.is_knockout:
             points += (self.group_phase_result(
                 guess.match.score_a, guess.match.score_b, guess.pred_a, guess.pred_b
@@ -26,8 +26,8 @@ class ScoringController:
         else:
             points += (self.knockout_phase_result(
                 guess.match.score_a, guess.match.score_b, guess.pred_a, guess.pred_b,
-                guess.match.winner, guess.winner_pred
-            ) * odd_value)
+                guess.match.winner, guess.winner_pred, odd_value
+            ))
 
         return points
 
@@ -102,7 +102,7 @@ class ScoringController:
             return 200
         return 0
     
-    def knockout_phase_result(self, score_a, score_b, pred_a, pred_b, winner_real, winner_pred):
+    def knockout_phase_result(self, score_a, score_b, pred_a, pred_b, winner_real, winner_pred, odd_value):
         if score_a is None or score_b is None:
             return 0
 
@@ -128,13 +128,13 @@ class ScoringController:
 
         # Regras hierárquicas
         if cx_eq_c and pred_a == score_a and pred_b == score_b:
-            return 1500
+            return 1500 * odd_value
         elif cx_eq_c and saldo_palpite == saldo_real:
-            return 800
+            return 800 * odd_value
         elif cx_eq_c and is_pred_draw == is_real_draw: # Acertou se foi empate ou não no tempo normal
-            return 600
+            return 600 * odd_value
         elif cx_eq_c:
-            return 500
+            return 500 * odd_value
         elif pred_a == score_a and pred_b == score_b:
             return 200
         elif saldo_palpite == saldo_real:
