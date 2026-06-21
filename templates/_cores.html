@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cores</title>
+
+    <!-- Lê os valores reais direto da fonte de verdade.
+         Caminho relativo a templates/_cores.html -> static/css/tokens.css -->
+    <link rel="stylesheet" href="../static/css/tokens.css">
+
+    <style>
+        body {
+            background: #fff;
+            color: #0f172a;
+            padding: 32px 24px 64px;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        header,
+        main {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            font-size: 26px;
+            margin: 0 0 6px;
+        }
+
+        .sub {
+            color: #64748b;
+            font-size: 14px;
+            margin: 0;
+            line-height: 1.5;
+        }
+
+        .sub code {
+            background: #f1f5f9;
+            padding: 1px 6px;
+            border-radius: 4px;
+            font-size: 13px;
+        }
+
+        .warn {
+            max-width: 1100px;
+            margin: 20px auto 0;
+            background: #fff1f2;
+            color: #9b1c1c;
+            border: 1px solid #fecaca;
+            border-radius: 8px;
+            padding: 12px 14px;
+            font-size: 14px;
+        }
+
+        section {
+            margin-top: 24px;
+        }
+
+        section>h2 {
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            color: #64748b;
+            margin: 0 0 16px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #eef2f6;
+        }
+
+        /* Grade de cores */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 10px;
+        }
+
+        .card {
+            border: 1px solid #e8edf2;
+            border-radius: 12px;
+            overflow: hidden;
+            background: #fff;
+        }
+
+        .swatch {
+            height: 70px;
+            /* anel sutil pra cores claras (branco, off-whites) aparecerem */
+            box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.06);
+        }
+
+        .info {
+            padding: 5px;
+        }
+
+        .token {
+            font-family: ui-monospace, 'Courier New', monospace;
+            font-weight: 700;
+            font-size: 12px;
+            color: #0f172a;
+        }
+
+        .token.is-literal {
+            color: #94a3b8;
+            font-weight: 600;
+        }
+
+        .value {
+            font-family: ui-monospace, 'Courier New', monospace;
+            font-size: 12px;
+            color: #64748b;
+            user-select: all;
+            margin-top: 2px;
+            word-break: break-all;
+        }
+
+        /* Pílulas (componente real) */
+        .pills {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 10px;
+        }
+
+        .pill-card {
+            border: 1px solid #e8edf2;
+            border-radius: 12px;
+            background: #fff;
+            padding: 14px;
+        }
+
+        .pill-name {
+            font-size: 13px;
+            font-weight: 600;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .pill-demo {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 12px;
+        }
+
+        .chip {
+            display: inline-block;
+            font-weight: 600;
+            padding: 5px 14px;
+            border-radius: 4px;
+            white-space: nowrap;
+        }
+
+        .odd-chip {
+            display: inline-block;
+            font-family: ui-monospace, 'Courier New', monospace;
+            font-weight: 600;
+            padding: 6px 12px;
+            border-radius: 4px;
+            white-space: nowrap;
+        }
+
+        .pill-tokens {
+            font-family: ui-monospace, 'Courier New', monospace;
+            font-size: 12px;
+            color: #64748b;
+            line-height: 1.2;
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <h1>🎨 Paleta de cores</h1>
+        <p class="sub">
+            Espelha <code>static/css/tokens.css</code>, mostra o token, o valor e onde é usada.
+        </p>
+        <button type="submit" style="background: none; border: none; color: var(--red-strong); cursor: pointer; font-size: 14px; font-weight: 600; padding: 0; font-family: inherit;">Deletar</button>
+    </header>
+
+    <main id="app"></main>
+
+    <!--
+        Para adicionar ou mudar uma cor, edite <code>static/css/tokens.css</code> — este catálogo pega o valor de
+        lá automaticamente. Aqui você só mantém a lista de <code>[token, descrição]</code> no
+        <code>&lt;script&gt;</code> abaixo.
+    -->
+
+    <script>
+        (function () {
+            // Valores vêm SEMPRE do tokens.css (lidos via getComputedStyle).
+            // Aqui só descrevemos o que cada token significa / onde aparece.
+            const root = getComputedStyle(document.documentElement);
+            const read = name =>
+                name.indexOf('--') === 0 ? root.getPropertyValue(name).trim() : name;
+
+            const groups = [
+                {
+                    title: 'Destaque', tokens: [
+                        ['--coral', 'Cor principal: menu ativo, CTAs, pontos, destaques'],
+                        ['--coral-2', 'Fim do gradiente coral'],
+                        ['--grad-coral', 'Botões, item de menu ativo e botão "Sair"'],
+                        ['--coral-bg', 'Realce coral suave: linha do usuário, "hoje", pílula "Você", erro do login'],
+                    ]
+                },
+                {
+                    title: 'Monocromáticos', tokens: [
+                        ['--ink', 'Texto principal'],
+                        ['--slate', 'Texto da pílula neutra'],
+                        ['--muted', 'Texto secundário, cabeçalho de tabela, links discretos'],
+                        ['--muted-2', 'Texto desabilitado ("sem odds")'],
+                        ['--nav-link', 'Links da barra lateral'],
+                        ['--bg', 'Fundo do app, pílula neutra, bordas de tabela'],
+                        ['--surface', 'Cards, tabelas, inputs e texto sobre o coral'],
+                        ['--mist', 'Texto da sidebar, pílula "placar", borda das abas'],
+                        ['--line', 'Borda dos inputs'],
+                        ['--grad-sidebar', 'Fundo da barra lateral'],
+                    ]
+                },
+                {
+                    title: 'Autenticação (telas de login)', tokens: [
+                        ['--grad-auth', 'Fundo das telas de login/cadastro'],
+                        ['--error-text', 'Texto do flash de erro'],
+                        ['--success-bg', 'Fundo do flash de sucesso'],
+                        ['--success-fg', 'Texto do flash de sucesso'],
+                    ]
+                },
+            ];
+
+            // Cores que NÃO são tokens (não dá ou não vale a pena variabilizar).
+            const literals = [
+                ['#000000', '.topbar .username — preto puro'],
+                ['#9ca3af', 'Ícone do seletor de data, dentro de um SVG data-URI'],
+            ];
+
+            // Pílulas de placar = pares fundo/texto. Mostradas como o componente real.
+            const pills = [
+                ['Neutro', '--bg', '--slate'],
+                ['Placar oficial', '--mist', '--ink'],
+                ['Você', '--coral-bg', '--coral'],
+                ['Acertou exato', '--green-strong', '--green-soft'],
+                ['Acertou saldo', '--green-soft', '--green-deep'],
+                ['Acertou vencedor', '--yellow-soft', '--brown-deep'],
+                ['Errou tudo', '--red-soft', '--red-deep']
+            ];
+
+            const app = document.getElementById('app');
+
+            // Se o tokens.css não carregou, avisa em vez de mostrar tudo quebrado.
+            if (!read('--coral')) {
+                const warn = document.createElement('div');
+                warn.className = 'warn';
+                warn.textContent = '⚠️ Não consegui ler os tokens. Confira se ../static/css/tokens.css existe e está acessível a partir deste arquivo.';
+                document.body.insertBefore(warn, app);
+            }
+
+            function swatchCard(name, isLiteral) {
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.innerHTML =
+                    `<div class="swatch" style="background:${isLiteral ? name : 'var(' + name + ')'}"></div>` +
+                    `<div class="info">` +
+                    `<div class="token${isLiteral ? ' is-literal' : ''}">${isLiteral ? 'literal' : name}</div>` +
+                    `<div class="value">${isLiteral ? name : (read(name) || '—')}</div>` +
+                    `</div>`;
+                return card;
+            }
+
+            function addSection(title, className, build) {
+                const sec = document.createElement('section');
+                const h2 = document.createElement('h2');
+                h2.textContent = title;
+                const body = document.createElement('div');
+                body.className = className;
+                build(body);
+                sec.append(h2, body);
+                app.appendChild(sec);
+            }
+
+            groups.forEach(g =>
+                addSection(g.title, 'grid', body =>
+                    g.tokens.forEach(([t]) => body.appendChild(swatchCard(t, false)))
+                )
+            );
+
+            addSection('Literais (fora dos tokens)', 'grid', body =>
+                literals.forEach(([hex]) => body.appendChild(swatchCard(hex, true)))
+            );
+
+            addSection('Pílulas de placar (componente real)', 'pills', body =>
+                pills.forEach(([label, bg, fg]) => {
+                    const card = document.createElement('div');
+                    card.className = 'pill-card';
+                    card.innerHTML =
+                        `<div class="pill-name">${label}</div>` +
+                        `<div class="pill-demo"><span class="chip" style="background:var(${bg});color:var(${fg})">2 × 1</span></div>` +
+                        `<div class="pill-tokens">${bg}<br>${fg}</div>`;
+                    body.appendChild(card);
+                })
+
+            );
+
+            addSection('Odds (componente real)', 'pills', body => {
+                const card = document.createElement('div');
+                card.className = 'pill-card';
+                card.innerHTML =
+                    `<div class="pill-name">Valor da odd</div>` +
+                    `<div class="pill-demo"><span class="odd-chip" style="background:var(--odd-bg);color:var(--odd)">2.50</span></div>` +
+                    `<div class="pill-tokens">--odd-bg<br>--odd</div>`;
+                body.appendChild(card);
+            });
+        })();
+    </script>
+</body>
+
+</html>

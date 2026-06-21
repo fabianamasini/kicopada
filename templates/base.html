@@ -4,6 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>{% block title %}Kicopada{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/tokens.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
   {% block head %}{% endblock %}
 </head>
@@ -13,10 +14,10 @@
     <aside class="sidebar">
       <div class="brand">Kicopada</div>
       <nav class="nav">
-        <a href="/" class="{% if request.path == '/' %}active{% endif %}">Home</a>
+        <a href="/home" class="{% if request.path == '/home' %}active{% endif %}">Home</a>
         <a href="/matches" class="{% if request.path.startswith('/matches') %}active{% endif %}">Partidas</a>
         <a href="/guesses" class="{% if request.path.startswith('/guesses') %}active{% endif %}">Meus palpites</a>
-        {% if current_user.is_authenticated and current_user.is_admin %}
+        {% if current_user.is_authenticated %}
           <a href="/all_guesses" class="{% if request.path.startswith('/all_guesses') %}active{% endif %}">Todos os Palpites</a>
         {% endif %}
       </nav>
