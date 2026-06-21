@@ -97,7 +97,11 @@
                                     <td style="padding: 12px 8px;"><strong>{{ match.team_a }}</strong> vs <strong>{{ match.team_b }}</strong></td>
                                     <td style="padding: 12px 8px; text-align: center;">
                                         {% if match.score_a is not none and match.score_b is not none %}
-                                            <span class="score-pill score-pill--result">{{ match.score_a }} x {{ match.score_b }}</span>
+                                            <span class="score-pill score-pill--result">{{ match.score_a }} x {{ match.score_b }}
+                                                {% if match.is_knockout and match.score_a == match.score_b %}
+                                                    <span class="penalty-line">Classificado: {{ match.team_a if match.winner == 'A' else match.team_b }}</span>
+                                                {% endif %}
+                                            </span>
                                         {% else %}
                                             <span style="color: var(--muted-2); font-style: italic;">Aguardando...</span>
                                         {% endif %}
