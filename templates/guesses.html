@@ -55,13 +55,8 @@
                                     <td style="padding: 12px 8px; text-align: center;">
                                         <span class="score-pill">
                                             {{ guess.pred_a }} x {{ guess.pred_b }}
-                                            {% if guess.match.is_knockout %}
-                                                {% if guess.pred_a == guess.pred_b %}
-                                                    <span class="penalty-line">Classificado: {{ guess.match.team_a if guess.winner_pred == 'A' else guess.match.team_b }}</span>
-                                                {% endif %}
-                                                {% if guess.penalty_pred_a is not none %}
-                                                    <span class="penalty-line">{{ guess.penalty_pred_a }} x {{ guess.penalty_pred_b }} (P)</span>
-                                                {% endif %}
+                                            {% if guess.match.is_knockout and guess.pred_a == guess.pred_b and guess.winner_pred %}
+                                                <span class="penalty-line">Classificado: {{ guess.match.team_a if guess.winner_pred == 'A' else guess.match.team_b }}</span>
                                             {% endif %}
                                         </span>
                                     </td>
@@ -117,7 +112,11 @@
                                             {% if sa == guess.pred_a and sb == guess.pred_b %}{% set tier = 'is-exact' %}{% set tier_label = 'Acertou o placar exato' %}
                                             {% elif (sa - sb) == (guess.pred_a - guess.pred_b) %}{% set tier = 'is-diff' %}{% set tier_label = 'Acertou o saldo de gols' %}
                                             {% elif ((sa - sb) > 0) == ((guess.pred_a - guess.pred_b) > 0) and ((sa - sb) < 0) == ((guess.pred_a - guess.pred_b) < 0) %}{% set tier = 'is-winner' %}{% set tier_label = 'Acertou o vencedor' %}{% endif %}
-                                            <span class="score-pill {{ tier }}" title="{{ tier_label }}" style="cursor: help;">{{ guess.pred_a }} x {{ guess.pred_b }}</span>
+                                            <span class="score-pill {{ tier }}" title="{{ tier_label }}" style="cursor: help;">{{ guess.pred_a }} x {{ guess.pred_b }}
+                                            {% if guess.match.is_knockout and guess.pred_a == guess.pred_b and guess.winner_pred %}
+                                                <span class="penalty-line">Classificado: {{ guess.match.team_a if guess.winner_pred == 'A' else guess.match.team_b }}</span>
+                                            {% endif %}
+                                            </span>
                                         {% else %}
                                             <span class="score-pill">{{ guess.pred_a }} x {{ guess.pred_b }}</span>
                                         {% endif %}
