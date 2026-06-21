@@ -44,7 +44,7 @@
                                     <td style="padding: 12px 8px;"><strong>{{ match.team_a }}</strong> vs <strong>{{ match.team_b }}</strong></td>
                                     <td style="padding: 12px 8px; text-align: center;">
                                         {% if match.score_a is not none and match.score_b is not none %}
-                                            <span style="background: #f0f0f0; padding: 4px 10px; border-radius: 4px; font-weight: bold;">{{ match.score_a }} x {{ match.score_b }}</span>
+                                            <span class="score-pill">{{ match.score_a }} x {{ match.score_b }}</span>
                                         {% else %}
                                             <span style="color: #999; font-style: italic;">Agendado</span>
                                         {% endif %}
@@ -79,7 +79,7 @@
                                 <th style="padding: 12px 8px;">Data</th>
                                 <th style="padding: 12px 8px;">Fase</th>
                                 <th style="padding: 12px 8px;">Confronto</th>
-                                <th style="padding: 12px 8px; text-align: center;">Resultado</th>
+                                <th style="padding: 12px 8px; text-align: center;">Placar</th>
                                 {% if current_user.is_admin %}
                                     <th style="padding: 12px 8px; text-align: center;">Ações</th>
                                 {% endif %}
@@ -92,7 +92,11 @@
                                     <td style="padding: 12px 8px;">{{ match.round }}</td>
                                     <td style="padding: 12px 8px;"><strong>{{ match.team_a }}</strong> vs <strong>{{ match.team_b }}</strong></td>
                                     <td style="padding: 12px 8px; text-align: center;">
-                                        <span style="background: #e2e8f0; padding: 4px 10px; border-radius: 4px; font-weight: bold;">{{ match.score_a }} x {{ match.score_b }}</span>
+                                        {% if match.score_a is not none and match.score_b is not none %}
+                                            <span class="score-pill score-pill--result">{{ match.score_a }} x {{ match.score_b }}</span>
+                                        {% else %}
+                                            <span style="color: #94a3b8; font-style: italic;">Aguardando...</span>
+                                        {% endif %}
                                     </td>
                                     {% if current_user.is_admin %}
                                         <td style="padding: 12px 8px; text-align: center;">

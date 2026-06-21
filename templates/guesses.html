@@ -21,7 +21,7 @@
         <!-- Aba: Palpites Atuais e Futuros -->
         <div id="active-guesses" class="tab-content active">
             <div class="card">
-                {% if active_guesses %}
+                {% if active_guesses or pending_matches %}
                     <table style="width: 100%; border-collapse: collapse;">
                         <thead>
                             <tr style="text-align: left; border-bottom: 2px solid #eee;">
@@ -33,20 +33,32 @@
                             </tr>
                         </thead>
                         <tbody>
+                            {# Jogos de amanhã ainda sem palpite — destacados para lembrar de palpitar antes do prazo #}
+                            {% for match in pending_matches %}
+                                <tr style="border-bottom: 1px solid #eee; background-color: var(--coral-bg);">
+                                    <td style="padding: 12px 8px;"><time datetime="{{ match.date }}">{{ match.formatted_date }}</time></td>
+                                    <td style="padding: 12px 8px;">{{ match.round }}</td>
+                                    <td style="padding: 12px 8px;"><strong>{{ match.team_a }}</strong> vs <strong>{{ match.team_b }}</strong></td>
+                                    <td style="padding: 12px 8px; text-align: center;">
+                                        <span style="color: #94a3b8; font-style: italic;">Sem palpite</span>
+                                    </td>
+                                    <td style="padding: 12px 8px; text-align: center;">
+                                        <a href="{{ url_for('create_guess', match_id=match.id) }}" style="text-decoration: none; background-color: #28a745; color: white; padding: 6px 14px; border-radius: 4px; font-size: 14px; font-weight: 600;">+ Palpitar</a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
                             {% for guess in active_guesses %}
                                 <tr style="border-bottom: 1px solid #eee;">
                                     <td style="padding: 12px 8px;"><time datetime="{{ guess.match.date }}">{{ guess.match.formatted_date }}</time></td>
                                     <td style="padding: 12px 8px;">{{ guess.match.round }}</td>
                                     <td style="padding: 12px 8px;"><strong>{{ guess.match.team_a }}</strong> vs <strong>{{ guess.match.team_b }}</strong></td>
                                     <td style="padding: 12px 8px; text-align: center;">
-                                        <div style="background: #f0f0f0; padding: 4px 10px; border-radius: 4px; font-weight: bold; display: inline-block; min-width: 60px;">
+                                        <span class="score-pill">
                                             {{ guess.pred_a }} x {{ guess.pred_b }}
                                             {% if guess.match.is_knockout and guess.penalty_pred_a is not none %}
-                                                <div style="font-size: 0.75rem; color: #6b7280; font-weight: normal; margin-top: 2px; border-top: 1px solid #d1d5db; padding-top: 2px;">
-                                                    {{ guess.penalty_pred_a }} x {{ guess.penalty_pred_b }} (P)
-                                                </div>
+                                                <span class="penalty-line">{{ guess.penalty_pred_a }} x {{ guess.penalty_pred_b }} (P)</span>
                                             {% endif %}
-                                        </div>
+                                        </span>
                                     </td>
                                     <td style="padding: 12px 8px; text-align: center;">
                                         <div style="display: flex; gap: 12px; justify-content: center; align-items: center;">
@@ -78,20 +90,36 @@
                         <thead>
                             <tr style="text-align: left; border-bottom: 2px solid #eee;">
                                 <th style="padding: 12px 8px;">Data</th>
+                                <th style="padding: 12px 8px;">Fase</th>
                                 <th style="padding: 12px 8px;">Confronto</th>
-                                <th style="padding: 12px 8px; text-align: center;">Seu Palpite</th>
-                                <th style="padding: 12px 8px; text-align: center;">Resultado Real</th>
+                                <th style="padding: 12px 8px; text-align: center;">Palpite</th>
+                                <th style="padding: 12px 8px; text-align: center;">Placar</th>
                             </tr>
                         </thead>
                         <tbody>
                             {% for guess in previous_guesses %}
                                 <tr style="border-bottom: 1px solid #eee; background-color: #fcfcfc;">
                                     <td style="padding: 12px 8px; color: #64748b;"><time datetime="{{ guess.match.date }}">{{ guess.match.formatted_date }}</time></td>
+                                    <td style="padding: 12px 8px;">{{ guess.match.round }}</td>
                                     <td style="padding: 12px 8px;">{{ guess.match.team_a }} vs {{ guess.match.team_b }}</td>
-                                    <td style="padding: 12px 8px; text-align: center; font-weight: 600;">{{ guess.pred_a }} x {{ guess.pred_b }}</td>
                                     <td style="padding: 12px 8px; text-align: center;">
-                                        {% if guess.match.score_a is not none %}
-                                            <span style="background: #e2e8f0; padding: 2px 8px; border-radius: 4px;">{{ guess.match.score_a }} x {{ guess.match.score_b }}</span>
+                                        {# Cor reflete o acerto, mesma hierarquia do scoring: exato > saldo > vencedor > erro #}
+                                        {% set sa = guess.match.score_a %}
+                                        {% set sb = guess.match.score_b %}
+                                        {% if sa is not none and sb is not none %}
+                                            {% set tier = 'is-miss' %}
+                                            {% set tier_label = 'Errou' %}
+                                            {% if sa == guess.pred_a and sb == guess.pred_b %}{% set tier = 'is-exact' %}{% set tier_label = 'Acertou o placar exato' %}
+                                            {% elif (sa - sb) == (guess.pred_a - guess.pred_b) %}{% set tier = 'is-diff' %}{% set tier_label = 'Acertou o saldo de gols' %}
+                                            {% elif ((sa - sb) > 0) == ((guess.pred_a - guess.pred_b) > 0) and ((sa - sb) < 0) == ((guess.pred_a - guess.pred_b) < 0) %}{% set tier = 'is-winner' %}{% set tier_label = 'Acertou o vencedor' %}{% endif %}
+                                            <span class="score-pill {{ tier }}" title="{{ tier_label }}" style="cursor: help;">{{ guess.pred_a }} x {{ guess.pred_b }}</span>
+                                        {% else %}
+                                            <span class="score-pill">{{ guess.pred_a }} x {{ guess.pred_b }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td style="padding: 12px 8px; text-align: center;">
+                                        {% if guess.match.score_a is not none and guess.match.score_b is not none %}
+                                            <span class="score-pill score-pill--result">{{ guess.match.score_a }} x {{ guess.match.score_b }}</span>
                                         {% else %}
                                             <span style="color: #94a3b8; font-style: italic;">Aguardando...</span>
                                         {% endif %}

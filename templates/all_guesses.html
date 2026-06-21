@@ -11,25 +11,35 @@
 
     <div class="tabs-container">
         <div class="tabs-header">
-            <button class="tab-button {{ 'active' if is_default_in_active else '' }}" onclick="openTab(event, 'active-guesses-tab')">Próximos Jogos</button>
+            {% if current_user.is_admin %}
+                <button class="tab-button {{ 'active' if is_default_in_active else '' }}" onclick="openTab(event, 'active-guesses-tab')">Próximos Jogos</button>
+            {% endif %}
             <button class="tab-button {{ 'active' if not is_default_in_active else '' }}" onclick="openTab(event, 'previous-guesses-tab')">Partidas Anteriores</button>
         </div>
 
-        <!-- Aba: Próximos Jogos -->
+        {% if current_user.is_admin %}
+        <!-- Aba: Próximos Jogos (somente admin) -->
         <div id="active-guesses-tab" class="tab-content {{ 'active' if is_default_in_active else '' }}">
             <div class="card" style="margin-bottom: 15px;">
                 <label for="filter-active" style="font-weight: bold; margin-bottom: 8px; display: block;">Filtrar por Partida:</label>
                 <select id="filter-active" onchange="filterGuesses('active', this.value)" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #e6e9ee;">
                     {% for m in active_matches %}
-                        <option value="{{ m.id }}" {% if m.id == default_match_id %}selected{% endif %}>
+                        <option value="{{ m.id }}"
+                                data-teams="{{ m.team_a }} vs {{ m.team_b }}"
+                                data-date="{{ m.formatted_date }}"
+                                data-sa="" data-sb=""
+                                {% if m.id == default_match_id %}selected{% endif %}>
                             {{ m.team_a }} vs {{ m.team_b }} - {{ m.formatted_date }}
                         </option>
                     {% endfor %}
                 </select>
             </div>
+            <div id="summary-active" class="match-summary card" style="margin-bottom: 15px; text-align: center; display: none;"></div>
+            {% set guesses = active_guesses %}
             {% set tab_type = 'active' %}
             {% include 'all_guesses_table.html' %}
         </div>
+        {% endif %}
 
         <!-- Aba: Partidas Anteriores -->
         <div id="previous-guesses-tab" class="tab-content {{ 'active' if not is_default_in_active else '' }}">
@@ -38,12 +48,20 @@
                 <select id="filter-previous" onchange="filterGuesses('previous', this.value)" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #e6e9ee;">
                     <option value="" disabled {{ 'selected' if is_default_in_active else '' }}>Selecione uma partida</option>
                     {% for m in previous_matches %}
-                        <option value="{{ m.id }}" {% if m.id == default_match_id %}selected{% endif %}>
-                            {{ m.team_a }} vs {{ m.team_b }} - {{ m.formatted_date }}
+                        {% set pending = m.score_a is none or m.score_b is none %}
+                        <option value="{{ m.id }}"
+                                data-teams="{{ m.team_a }} vs {{ m.team_b }}"
+                                data-date="{{ m.formatted_date }}"
+                                data-sa="{{ m.score_a if m.score_a is not none else '' }}"
+                                data-sb="{{ m.score_b if m.score_b is not none else '' }}"
+                                {% if m.id == default_match_id %}selected{% endif %}>
+                            {% if pending %}⚠️ {% endif %}{{ m.team_a }} vs {{ m.team_b }} - {{ m.formatted_date }}{% if pending %} — sem placar{% else %} ({{ m.score_a }} x {{ m.score_b }}){% endif %}
                         </option>
                     {% endfor %}
                 </select>
             </div>
+            <div id="summary-previous" class="match-summary card" style="margin-bottom: 15px; text-align: center; display: none;"></div>
+            {% set guesses = previous_guesses %}
             {% set tab_type = 'previous' %}
             {% include 'all_guesses_table.html' %}
         </div>
@@ -52,6 +70,8 @@
 
 {% block scripts %}
 <script>
+const IS_ADMIN = {{ 'true' if current_user.is_admin else 'false' }};
+
 function openTab(evt, tabName) {
     var i, tabcontent, tablinks;
     tabcontent = document.getElementsByClassName("tab-content");
@@ -64,17 +84,17 @@ function openTab(evt, tabName) {
     }
     document.getElementById(tabName).classList.add("active");
     evt.currentTarget.classList.add("active");
-    
+
     // Ao trocar de aba, aplica o filtro do select daquela aba
     const selectId = tabName === 'active-guesses-tab' ? 'filter-active' : 'filter-previous';
-    const val = document.getElementById(selectId).value;
-    if (val) filterGuesses(tabName.split('-')[0], val);
+    const selectEl = document.getElementById(selectId);
+    if (selectEl && selectEl.value) filterGuesses(tabName.split('-')[0], selectEl.value);
 }
 
 function filterGuesses(type, matchId) {
     const rows = document.querySelectorAll(`.guess-row-${type}`);
     let hasResults = false;
-    
+
     rows.forEach(row => {
         if (row.getAttribute('data-match-id') === matchId) {
             row.style.display = 'table-row';
@@ -85,15 +105,51 @@ function filterGuesses(type, matchId) {
     });
 
     document.getElementById(`no-results-${type}`).style.display = hasResults ? 'none' : 'block';
+    updateMatchSummary(type, matchId);
+}
+
+// Mostra o placar oficial UMA vez (acima da lista), em vez de repetir por linha.
+function updateMatchSummary(type, matchId) {
+    const summary = document.getElementById(`summary-${type}`);
+    if (!summary) return;
+
+    const opt = document.querySelector(`#filter-${type} option[value="${matchId}"]`);
+    if (!opt || !matchId) {
+        summary.style.display = 'none';
+        return;
+    }
+
+    const teams = opt.dataset.teams || '';
+    const date = opt.dataset.date || '';
+    const sa = opt.dataset.sa;
+    const sb = opt.dataset.sb;
+    const hasScore = sa !== '' && sb !== '';
+
+    let result;
+    if (hasScore) {
+        result = `<span class="score-pill score-pill--result" style="font-size: 1.05rem; padding: 8px 18px;">${sa} x ${sb}</span>`;
+    } else if (type === 'previous') {
+        result = `<span style="color: #94a3b8; font-style: italic;">⚠️ sem placar</span>`;
+        if (IS_ADMIN) {
+            result += `<a href="/edit_match/${matchId}" style="margin-left: 12px; color: var(--coral); font-weight: 600; text-decoration: none;">+ adicionar placar</a>`;
+        }
+    } else {
+        result = `<span style="color: #94a3b8; font-style: italic;">Agendado</span>`;
+    }
+
+    summary.innerHTML =
+        `<div style="color: #64748b; font-size: 0.9rem; margin-bottom: 8px;">${teams} · ${date}</div>` +
+        `<div>${result}</div>`;
+    summary.style.display = 'block';
 }
 
 // Inicialização do filtro no carregamento da página
 window.onload = function() {
-    const activeVal = document.getElementById('filter-active').value;
-    if (activeVal) filterGuesses('active', activeVal);
-    
-    const prevVal = document.getElementById('filter-previous').value;
-    if (prevVal) filterGuesses('previous', prevVal);
+    const activeEl = document.getElementById('filter-active');
+    if (activeEl && activeEl.value) filterGuesses('active', activeEl.value);
+
+    const prevEl = document.getElementById('filter-previous');
+    if (prevEl && prevEl.value) filterGuesses('previous', prevEl.value);
 };
 </script>
 {% endblock %}

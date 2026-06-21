@@ -14,13 +14,14 @@
                 <div class="col">
                     <label for="match">Jogo</label>
                     <select name="match_id" id="match" required onchange="updateMatchDetails(this)">
-                        <option value="" disabled selected>Selecione o jogo</option>
+                        <option value="" disabled {% if not selected_match_id %}selected{% endif %}>Selecione o jogo</option>
                         {% for m in matches %}
                             {% if m.is_editable() %}
-                                <option value="{{ m.id }}" 
+                                <option value="{{ m.id }}"
                                         data-knockout="{{ 'true' if m.is_knockout else 'false' }}"
-                                        data-team-a="{{ m.team_a }}" 
-                                        data-team-b="{{ m.team_b }}">
+                                        data-team-a="{{ m.team_a }}"
+                                        data-team-b="{{ m.team_b }}"
+                                        {% if m.id == selected_match_id %}selected{% endif %}>
                                     {{ m.team_a }} vs {{ m.team_b }} — {{ m.formatted_date }}
                                 </option>
                             {% endif %}
@@ -94,5 +95,11 @@ function togglePenaltyFields(isChecked) {
         container.querySelectorAll('input').forEach(i => i.value = '');
     }
 }
+
+// Pré-seleção via URL (?match_id=...): aplica os labels dos times e a seção de pênaltis ao carregar
+(function () {
+    const select = document.getElementById('match');
+    if (select && select.value) updateMatchDetails(select);
+})();
 </script>
 {% endblock %}

@@ -92,9 +92,11 @@
               </td>
               <td>
                   {% if match.id in user_guesses %}
-                      <span class="guess-pill">{{ user_guesses[match.id].pred_a }}–{{ user_guesses[match.id].pred_b }}</span>
+                      <span class="score-pill">{{ user_guesses[match.id].pred_a }} x {{ user_guesses[match.id].pred_b }}</span>
+                  {% elif match.is_editable() %}
+                      <a href="{{ url_for('create_guess', match_id=match.id) }}" class="guess-cta">+ palpitar</a>
                   {% else %}
-                      <a href="{{ url_for('create_guess') }}" class="guess-cta">+ palpitar</a>
+                      <span title="Você não palpitou e o prazo encerrou" style="color: var(--muted-2); cursor: default;">🪰</span>
                   {% endif %}
               </td>
           </tr>

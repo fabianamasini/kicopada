@@ -1,6 +1,6 @@
 import pytz
-from datetime import datetime
-from models import db, Guesses
+from datetime import datetime, timedelta
+from models import db, Guesses, Match
 from sqlalchemy.orm import joinedload
 from .matches import MatchesController
 from .scoring import ScoringController
@@ -54,6 +54,18 @@ class GuessesController:
         previous_guesses.sort(key=lambda x: x.match.date, reverse=True)
 
         return {'active': active_guesses, 'previous': previous_guesses}
+
+    def get_pending_matches_tomorrow(self, user_id):
+        """Jogos de amanhã (fuso de São Paulo) que o usuário ainda não palpitou."""
+        saopaulo_tz = pytz.timezone('America/Sao_Paulo')
+        tomorrow_str = (datetime.now(saopaulo_tz) + timedelta(days=1)).strftime("%Y-%m-%d")
+
+        guessed_ids = db.session.query(Guesses.match_id).filter(Guesses.user_id == user_id)
+        return (Match.query
+                .filter(Match.date.startswith(tomorrow_str))
+                .filter(~Match.id.in_(guessed_ids))
+                .order_by(Match.date.asc())
+                .all())
 
     def get_guess_by_id(self, user_id, match_id):
         return Guesses.query.filter_by(user_id=user_id, match_id=int(match_id)).first()

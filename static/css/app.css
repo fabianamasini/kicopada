@@ -1,82 +1,287 @@
-/* Shared layout styles for main app pages */
-*{box-sizing:border-box}
-html,body{height:100%;margin:0;font-family:Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;background:#f3f4f6;color:#0f172a}
-.layout{display:flex;min-height:100vh}
-.sidebar{width:220px;background:linear-gradient(180deg,#0f172a,#111827);color:#e6eef6;padding:20px;flex-shrink:0}
-.sidebar .brand{font-weight:700;font-size:18px;margin-bottom:14px;color:#fff}
-.nav{display:flex;flex-direction:column;gap:6px}
-.nav a{display:block;color:#cbd5e1;padding:10px;border-radius:8px;text-decoration:none;font-weight:600}
-.nav a:hover{background:rgba(255,255,255,0.03);color:#fff}
-.nav a.active{background:linear-gradient(90deg,#ff6b6b,#ff8a65);color:#fff;box-shadow:0 6px 14px rgba(203,67,53,0.12)}
-.content{flex:1;padding:28px}
-.topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}
-.card{background:#fff;border-radius:12px;padding:20px;box-shadow:0 6px 20px rgba(2,6,23,0.06)}
-h1{margin:0 0 8px 0}
-.card form{display:flex;flex-direction:column;gap:12px}
-.card label{font-size:0.95rem;color:#0f172a}
-.card input[type="text"], .card input[type="datetime-local"], .card input[type="number"], .card textarea, .card select{width:100%;padding:10px;border-radius:8px;border:1px solid #e6e9ee;font-size:1rem}
-.card button[type="submit"]{padding:10px 14px;border-radius:8px;border:0;background:linear-gradient(90deg,#ff6b6b,#ff8a65);color:#fff;font-weight:600;cursor:pointer;align-self:flex-start}
+/* Estilos de layout das páginas internas do app.
+   Tokens, reset e fonte ficam em tokens.css (carregado antes deste arquivo). */
+body {
+    background: var(--bg);
+    color: var(--ink)
+}
+
+.layout {
+    display: flex;
+    min-height: 100vh
+}
+
+.sidebar {
+    width: 220px;
+    background: var(--grad-sidebar);
+    color: var(--mist);
+    padding: 20px;
+    flex-shrink: 0
+}
+
+.sidebar .brand {
+    font-weight: 700;
+    font-size: 18px;
+    margin-bottom: 14px;
+    color: var(--surface)
+}
+
+.nav {
+    display: flex;
+    flex-direction: column;
+    gap: 6px
+}
+
+.nav a {
+    display: block;
+    color: var(--nav-link);
+    padding: 10px;
+    border-radius: var(--radius);
+    text-decoration: none;
+    font-weight: 600
+}
+
+.nav a:hover {
+    background: rgba(255, 255, 255, 0.03);
+    color: var(--surface)
+}
+
+.nav a.active {
+    background: var(--grad-coral);
+    color: var(--surface);
+    box-shadow: 0 6px 14px rgba(203, 67, 53, 0.12)
+}
+
+.content {
+    flex: 1;
+    padding: 28px
+}
+
+.topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 18px
+}
+
+.card {
+    background: var(--surface);
+    border-radius: var(--radius-lg);
+    padding: 20px;
+    box-shadow: 0 6px 20px rgba(2, 6, 23, 0.06)
+}
+
+h1 {
+    margin: 0 0 8px 0
+}
+
+.card form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px
+}
+
+.card label {
+    font-size: 0.95rem;
+    color: var(--ink)
+}
+
+.card input[type="text"],
+.card input[type="datetime-local"],
+.card input[type="number"],
+.card textarea,
+.card select {
+    width: 100%;
+    padding: 10px;
+    border-radius: var(--radius);
+    border: 1px solid var(--line);
+    font-size: 1rem
+}
+
+.card button[type="submit"] {
+    padding: 10px 14px;
+    border-radius: var(--radius);
+    border: 0;
+    background: var(--grad-coral);
+    color: var(--surface);
+    font-weight: 600;
+    cursor: pointer;
+    align-self: flex-start
+}
 
 /* Form row helpers to place fields side-by-side */
-.form-row{display:flex;gap:12px;align-items:center}
-.form-row .col{flex:1}
-.form-row .col-narrow{width:120px}
-.form-row .col input, .form-row .col select, .form-row .col textarea{width:100%}
+.form-row {
+    display: flex;
+    gap: 12px;
+    align-items: center
+}
 
-@media (max-width:720px){
-  .form-row{flex-direction:column}
-  .form-row .col-narrow{width:100%}
+.form-row .col {
+    flex: 1
+}
+
+.form-row .col-narrow {
+    width: 120px
+}
+
+.form-row .col input,
+.form-row .col select,
+.form-row .col textarea {
+    width: 100%
+}
+
+@media (max-width:720px) {
+    .form-row {
+        flex-direction: column
+    }
+
+    .form-row .col-narrow {
+        width: 100%
+    }
 }
 
 /* Estilização personalizada para input de data/hora */
-.card input[type="date"]{
-  /* espaço extra à direita para o ícone */
-  padding:10px 40px 10px 12px;
-  background-color:#fff;
-  background-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%239ca3af' d='M7 2h2v2h6V2h2v4H7V2zM5 7h14v13H5z'/%3E%3C/svg%3E");
-  background-repeat:no-repeat;
-  background-position:right 10px center;
-  background-size:20px 20px;
-  -webkit-appearance:none;
-  appearance:none;
+.card input[type="date"] {
+    /* espaço extra à direita para o ícone */
+    padding: 10px 40px 10px 12px;
+    background-color: var(--surface);
+    background-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%239ca3af' d='M7 2h2v2h6V2h2v4H7V2zM5 7h14v13H5z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    background-size: 20px 20px;
+    -webkit-appearance: none;
+    appearance: none;
 }
-.card input[type="datetime-local"]:focus{outline:none;box-shadow:0 0 0 4px rgba(255,107,107,0.08);border-color:#ff6b6b}
-.topbar .username{color:#000000;background:transparent;padding:6px 8px;margin-right:8px}
-.topbar-actions{display:flex;align-items:center;gap:8px}
-.btn-logout{background:linear-gradient(90deg,#ff6b6b,#ff8a65);color:#fff;padding:8px 10px;border-radius:8px;text-decoration:none;font-weight:600}
-.link-muted{color:#6b7280;text-decoration:none;padding:6px 8px}
-@media (max-width:880px){
-  .layout{flex-direction:column}
-  .sidebar{width:100%;display:flex;flex-direction:row;gap:12px;overflow:auto}
-  .nav{flex-direction:row}
-  .nav a{white-space:nowrap}
+
+.card input[type="datetime-local"]:focus {
+    outline: none;
+    box-shadow: 0 0 0 4px rgba(255, 107, 107, 0.08);
+    border-color: var(--coral)
+}
+
+.topbar .username {
+    color: #000000;
+    background: transparent;
+    padding: 6px 8px;
+    margin-right: 8px
+}
+
+.topbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px
+}
+
+.btn-logout {
+    background: var(--grad-coral);
+    color: var(--surface);
+    padding: 8px 10px;
+    border-radius: var(--radius);
+    text-decoration: none;
+    font-weight: 600
+}
+
+.link-muted {
+    color: var(--muted);
+    text-decoration: none;
+    padding: 6px 8px
+}
+
+@media (max-width:880px) {
+    .layout {
+        flex-direction: column
+    }
+
+    .sidebar {
+        width: 100%;
+        display: flex;
+        flex-direction: row;
+        gap: 12px;
+        overflow: auto
+    }
+
+    .nav {
+        flex-direction: row
+    }
+
+    .nav a {
+        white-space: nowrap
+    }
 }
 
 /* Estilos para a Tabela de Ranking */
-.ranking-section { margin-top: 24px; }
-.ranking-table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 12px; overflow: hidden; margin-top: 15px; }
-.ranking-table th, .ranking-table td { padding: 14px 20px; text-align: left; border-bottom: 1px solid #f1f5f9; }
-.ranking-table th { background: #f8fafc; color: #64748b; font-size: 0.8rem; text-transform: uppercase; font-weight: 700; }
-.ranking-table tr:last-child td { border-bottom: none; }
-.ranking-table tr:hover { background: #f8fafc; }
-.ranking-table .pos { font-weight: 700; color: #1e293b; width: 40px; }
-.ranking-table .pts { font-weight: 700; color: #ff6b6b; text-align: right; }
-.ranking-table th.pts { text-align: right; }
-.ranking-table .is-current-user { background: #fff1f2; }
-.ranking-table .is-current-user td { border-bottom-color: #fecaca; }
+.ranking-section {
+    margin-top: 24px;
+}
+
+.ranking-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--surface);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    margin-top: 15px;
+}
+
+.ranking-table th,
+.ranking-table td {
+    padding: 14px 20px;
+    text-align: left;
+    border-bottom: 1px solid var(--bg);
+}
+
+.ranking-table th {
+    background: var(--surface);
+    color: var(--muted);
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    font-weight: 700;
+}
+
+.ranking-table tr:last-child td {
+    border-bottom: none;
+}
+
+.ranking-table tr:hover {
+    background: var(--surface);
+}
+
+.ranking-table .pos {
+    font-weight: 700;
+    color: var(--ink);
+    width: 40px;
+}
+
+.ranking-table .pts {
+    font-weight: 700;
+    color: var(--coral);
+    text-align: right;
+}
+
+.ranking-table th.pts {
+    text-align: right;
+}
+
+.ranking-table .is-current-user {
+    background: var(--coral-bg);
+}
+
+.ranking-table .is-current-user td {
+    border-bottom-color: var(--red-soft);
+}
 
 /* Layout para as tabelas na Home */
 .home-content-layout {
     display: flex;
-    gap: 30px; /* Espaçamento entre as tabelas */
+    gap: 30px;
+    /* Espaçamento entre as tabelas */
     margin-top: 24px;
 }
 
-.home-content-layout > .card {
+.home-content-layout>.card {
     flex: 3;
 }
 
-.home-content-layout > .odds-section {
+.home-content-layout>.odds-section {
     flex: 7;
 }
 
@@ -87,47 +292,190 @@ h1{margin:0 0 8px 0}
 }
 
 /* Estilos para a Tabela de Odds na Home */
-.odds-section { margin-top: 0; }
-.odds-table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 12px; overflow: hidden; margin-top: 0px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); table-layout: fixed; }
-.odds-table th, .odds-table td { padding: 12px 16px; text-align: center; border-bottom: 1px solid #f1f5f9; }
-.odds-table th { background: #f8fafc; color: #64748b; font-size: 0.75rem; text-transform: uppercase; font-weight: 700; }
-.odds-table .match-info { text-align: left; font-weight: 600; width: 26%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.odds-table th:not(.match-info):not(.col-guess) { width: 14%; }
-.odds-table .col-guess { width: 18%; }
-.odds-table .odd-value { font-family: 'Courier New', Courier, monospace; color: #2563eb; font-weight: 700; background: #eff6ff; padding: 4px 8px; border-radius: 4px; }
-.odds-table tr:hover { background: #fdfdfd; }
-.odds-table .no-odds { color: #94a3b8; font-size: 0.85rem; font-style: italic; }
+.odds-section {
+    margin-top: 0;
+}
 
-/* Coluna "Palpite" — identidade coral de "Você" (mesma do destaque no ranking) */
-.odds-table .guess-pill { font-family: 'Courier New', Courier, monospace; font-weight: 700; color: #e11d48; background: #fff1f2; border: 1px solid #fecdd3; padding: 4px 10px; border-radius: 4px; white-space: nowrap; }
-.odds-table .guess-cta { color: #ff6b6b; font-size: 0.8rem; font-weight: 600; text-decoration: none; white-space: nowrap; }
-.odds-table .guess-cta:hover { text-decoration: underline; }
+.odds-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--surface);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    margin-top: 0px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    table-layout: fixed;
+}
+
+.odds-table th,
+.odds-table td {
+    padding: 12px 16px;
+    text-align: center;
+    border-bottom: 1px solid var(--bg);
+}
+
+.odds-table th {
+    background: var(--surface);
+    color: var(--muted);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    font-weight: 700;
+}
+
+.odds-table .match-info {
+    text-align: left;
+    font-weight: 600;
+    width: 26%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.odds-table th:not(.match-info):not(.col-guess) {
+    width: 14%;
+}
+
+.odds-table .col-guess {
+    width: 18%;
+}
+
+.odds-table .odd-value {
+    font-family: 'Courier New', Courier, monospace;
+    color: var(--odd);
+    font-weight: 600;
+    background: var(--odd-bg);
+    padding: 6px 12px;
+    border-radius: var(--radius-sm);
+}
+
+.odds-table tr:hover {
+    background: var(--surface);
+}
+
+.odds-table .no-odds {
+    color: var(--muted-2);
+    font-size: 0.85rem;
+    font-style: italic;
+}
+
+.odds-table .guess-cta {
+    color: var(--coral);
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.odds-table .guess-cta:hover {
+    text-decoration: underline;
+}
+
 /* Odd destacada = resultado que o usuário palpitou (liga visualmente ao palpite coral) */
-.odds-table .odd-picked { box-shadow: 0 0 0 2px #fda4af; }
+.odds-table .odd-picked {
+    box-shadow: 0 0 0 1px var(--coral);
+}
+
+/* ===== Pílula de placar — padrão ÚNICO em todo o app =====
+   Mesmo tamanho, fonte (não-monoespaçada, herdada do app), padding e raio em
+   Home, Partidas e Palpites. As variações mudam APENAS a cor conforme o significado. */
+.score-pill {
+    display: inline-block;
+    font-family: inherit;
+    /* herda a fonte do app — sem monoespaçada */
+    font-weight: 600;
+    padding: 5px 14px;
+    border-radius: var(--radius-sm);
+    white-space: nowrap;
+    background: var(--bg);
+    /* neutro: palpite/placar sem avaliação */
+    color: var(--slate);
+}
+
+.score-pill--result {
+    background: var(--mist);
+    color: var(--ink);
+}
+
+/* "Você" (identidade coral) */
+/* Avaliação do palpite (aba "Palpites Anteriores") — cor = acerto, mesma fórmula do
+   scoring (group_phase_result): exato > saldo > vencedor > erro. */
+/* placar exato → verde forte */
+.score-pill.is-exact {
+    background: var(--green-strong);
+    color: var(--green-soft);
+}
+
+/* saldo de gols → verde fraco */
+.score-pill.is-diff {
+    background: var(--green-soft);
+    color: var(--green-deep);
+}
+
+/* só o vencedor → amarelo */
+.score-pill.is-winner {
+    background: var(--yellow-soft);
+    color: var(--brown-deep);
+}
+
+/* errou tudo → vermelho */
+.score-pill.is-miss {
+    background: var(--red-soft);
+    color: var(--red-deep);
+}
+
+/* Sub-linha de pênaltis dentro da pílula (mata-mata) */
+.score-pill .penalty-line {
+    display: block;
+    font-size: 0.72rem;
+    font-weight: 500;
+    opacity: 0.8;
+    margin-top: 2px;
+    padding-top: 2px;
+    border-top: 1px solid rgba(0, 0, 0, 0.12);
+}
 
 /* Estilos para Abas de Palpites */
-.tabs-container { margin-top: 20px; }
-.tabs-header { display: flex; gap: 10px; border-bottom: 2px solid #e2e8f0; margin-bottom: 20px; }
+.tabs-container {
+    margin-top: 20px;
+}
+
+.tabs-header {
+    display: flex;
+    gap: 10px;
+    border-bottom: 2px solid var(--mist);
+    margin-bottom: 20px;
+}
+
 .tab-button {
     padding: 10px 20px;
     border: none;
     background: none;
     cursor: pointer;
     font-weight: 600;
-    color: #64748b;
+    color: var(--muted);
     border-bottom: 2px solid transparent;
     margin-bottom: -2px;
     transition: all 0.2s;
 }
-.tab-button:hover { color: #0f172a; }
-.tab-button.active {
-    color: #ff6b6b;
-    border-bottom-color: #ff6b6b;
+
+.tab-button:hover {
+    color: var(--ink);
 }
-.tab-content { display: none; }
-.tab-content.active { display: block; }
+
+.tab-button.active {
+    color: var(--coral);
+    border-bottom-color: var(--coral);
+}
+
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
+}
 
 .match-today-highlight {
-    border-left: 4px solid #ff6b6b;
-    background-color: #fffafb;
+    border-left: 4px solid var(--coral);
+    background-color: var(--coral-bg);
 }
