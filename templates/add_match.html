@@ -13,7 +13,7 @@
             <div class="form-row">
                 <div class="col">
                     <label for="team_a">Time A</label>
-                    <select name="team_a" id="team_a" required>
+                    <select name="team_a" id="team_a" required onchange="updateTeamLabels()">
                         <option value="" disabled selected>Selecione o Time A</option>
                         {% for t in teams %}
                             <option value="{{ t }}">{{ t }}</option>
@@ -23,7 +23,7 @@
                 <div class="col-narrow" style="text-align: center; align-self: flex-end; padding-bottom: 10px; font-weight: bold;">VS</div>
                 <div class="col">
                     <label for="team_b">Time B</label>
-                    <select name="team_b" id="team_b" required>
+                    <select name="team_b" id="team_b" required onchange="updateTeamLabels()">
                         <option value="" disabled selected>Selecione o Time B</option>
                         {% for t in teams %}
                             <option value="{{ t }}">{{ t }}</option>
@@ -39,7 +39,7 @@
                 </div>
                 <div class="col">
                     <label for="round">Fase</label>
-                    <select name="round" id="round" required>
+                    <select name="round" id="round" required onchange="toggleWinnerSection()">
                       <option value="" disabled selected>Selecione a fase</option>
                       {% for p in phases %}
                         <option value="{{ p }}">{{ p }}</option>
@@ -51,12 +51,21 @@
             <div class="form-row">
                 <div class="col">
                     <label for="score_a">Placar Time A (opcional)</label>
-                    <input type="number" name="score_a" id="score_a" min="0" step="1">
+                    <input type="number" name="score_a" id="score_a" min="0" step="1" oninput="toggleWinnerSection()">
                 </div>
                 <div class="col">
                     <label for="score_b">Placar Time B (opcional)</label>
-                    <input type="number" name="score_b" id="score_b" min="0" step="1">
+                    <input type="number" name="score_b" id="score_b" min="0" step="1" oninput="toggleWinnerSection()">
                 </div>
+            </div>
+
+            <div id="winner-section" style="display: none; margin-top: 15px;">
+                <label for="winner">Quem se classificou nos pênaltis?</label>
+                <select name="winner" id="winner">
+                    <option value="" disabled selected>Selecione o vencedor</option>
+                    <option value="A" id="winner-option-a">Time A</option>
+                    <option value="B" id="winner-option-b">Time B</option>
+                </select>
             </div>
 
             <div style="margin-top: 20px; display: flex; gap: 12px;">
@@ -65,4 +74,39 @@
             </div>
         </form>
     </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function updateTeamLabels() {
+    const teamA = document.getElementById('team_a').value;
+    const teamB = document.getElementById('team_b').value;
+    document.getElementById('winner-option-a').textContent = teamA || 'Time A';
+    document.getElementById('winner-option-b').textContent = teamB || 'Time B';
+}
+
+function toggleWinnerSection() {
+    const round = document.getElementById('round').value;
+    const scoreAInput = document.getElementById('score_a');
+    const scoreBInput = document.getElementById('score_b');
+    const winnerSection = document.getElementById('winner-section');
+    const winnerSelect = document.getElementById('winner');
+
+    // Segue a lógica do backend: tudo que não for Fase de Grupos é mata-mata
+    const isKnockout = round !== '' && round !== 'Fase de Grupos';
+
+    const scoreA = scoreAInput.value;
+    const scoreB = scoreBInput.value;
+
+    if (isKnockout && scoreA !== '' && scoreB !== '' && parseInt(scoreA) === parseInt(scoreB)) {
+        winnerSection.style.display = 'block';
+        winnerSelect.setAttribute('required', 'required');
+    } else {
+        winnerSection.style.display = 'none';
+        winnerSelect.removeAttribute('required');
+    }
+}
+
+document.addEventListener('DOMContentLoaded', toggleWinnerSection);
+</script>
 {% endblock %}

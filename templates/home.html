@@ -81,9 +81,13 @@
                   {% else %}<span class="no-odds">N/A</span>{% endif %}
               </td>
               <td>
-                  {% if not match.is_editable() and match.odds %}
-                      <span class="odd-value {{ 'odd-picked' if pick == 'draw' else '' }}">{{ "%.2f"|format(match.odds.draw_odds) }}</span>
-                  {% else %}<span class="no-odds">N/A</span>{% endif %}
+                  {% if match.is_knockout %}
+                      —
+                  {% else %}
+                      {% if not match.is_editable() and match.odds %}
+                          <span class="odd-value {{ 'odd-picked' if pick == 'draw' else '' }}">{{ "%.2f"|format(match.odds.draw_odds) }}</span>
+                      {% else %}<span class="no-odds">N/A</span>{% endif %}
+                  {% endif %}
               </td>
               <td>
                   {% if not match.is_editable() and match.odds %}

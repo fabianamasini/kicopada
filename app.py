@@ -161,9 +161,7 @@ def edit_guess(guess_id):
                                              user_id=current_user.id,
                                              pred_a=request.form.get('pred_a'),
                                              pred_b=request.form.get('pred_b'),
-                                             winner_pred=request.form.get('winner_pred'),
-                                         penalty_a=request.form.get('penalty_a'),
-                                         penalty_b=request.form.get('penalty_b'))
+                                             winner_pred=request.form.get('winner_pred'))
 
     guess = Guesses.query.filter_by(id=guess_id, user_id=current_user.id).options(joinedload(Guesses.match)).first()
     if not guess:
@@ -186,7 +184,8 @@ def create_match():
                                             match_date = request.form.get('match_date'),
                                             round = request.form.get('round'),
                                             score_a = request.form.get('score_a'),
-                                            score_b = request.form.get('score_b'))
+                                            score_b = request.form.get('score_b'),
+                                            winner = request.form.get('winner'))
 
     teams_list = [team[0] for team in Teams.query.with_entities(Teams.name).order_by(Teams.name.asc()).all()]
 
@@ -216,7 +215,8 @@ def edit_match(match_id):
                                           match_date=request.form.get('match_date'),
                                           round=request.form.get('round'),
                                           score_a=request.form.get('score_a'),
-                                          score_b=request.form.get('score_b'))
+                                          score_b=request.form.get('score_b'),
+                                          winner=request.form.get('winner'))
         scoring_controller.update_all_scores_for_match(match_id)
         return response
     else:
