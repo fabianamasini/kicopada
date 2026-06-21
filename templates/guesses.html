@@ -55,13 +55,8 @@
                                     <td style="padding: 12px 8px; text-align: center;">
                                         <span class="score-pill">
                                             {{ guess.pred_a }} x {{ guess.pred_b }}
-                                            {% if guess.match.is_knockout %}
-                                                {% if guess.pred_a == guess.pred_b %}
-                                                    <span class="penalty-line">Classificado: {{ guess.match.team_a if guess.winner_pred == 'A' else guess.match.team_b }}</span>
-                                                {% endif %}
-                                                {% if guess.penalty_pred_a is not none %}
-                                                    <span class="penalty-line">{{ guess.penalty_pred_a }} x {{ guess.penalty_pred_b }} (P)</span>
-                                                {% endif %}
+                                            {% if guess.match.is_knockout and guess.pred_a == guess.pred_b %}
+                                                <span class="penalty-line">Classificado: {{ guess.match.team_a if guess.winner_pred == 'A' else guess.match.team_b }}</span>
                                             {% endif %}
                                         </span>
                                     </td>
