@@ -8,7 +8,7 @@
     <div class="topbar">
         <h1>Meus palpites</h1>
         <div class="topbar-actions">
-            <a href="{{ url_for('create_guess') }}" style="text-decoration: none; background-color: #28a745; color: white; padding: 8px 16px; border-radius: 4px; font-size: 14px;">+ Cadastrar Palpite</a>
+            <a href="{{ url_for('create_guess') }}" style="text-decoration: none; background-color: var(--green-strong); color: var(--surface); padding: 8px 16px; border-radius: 4px; font-size: 14px;">+ Cadastrar Palpite</a>
         </div>
     </div>
 
@@ -40,10 +40,10 @@
                                     <td style="padding: 12px 8px;">{{ match.round }}</td>
                                     <td style="padding: 12px 8px;"><strong>{{ match.team_a }}</strong> vs <strong>{{ match.team_b }}</strong></td>
                                     <td style="padding: 12px 8px; text-align: center;">
-                                        <span style="color: #94a3b8; font-style: italic;">Sem palpite</span>
+                                        <span style="color: var(--muted-2); font-style: italic;">Sem palpite</span>
                                     </td>
                                     <td style="padding: 12px 8px; text-align: center;">
-                                        <a href="{{ url_for('create_guess', match_id=match.id) }}" style="text-decoration: none; background-color: #28a745; color: white; padding: 6px 14px; border-radius: 4px; font-size: 14px; font-weight: 600;">+ Palpitar</a>
+                                        <a href="{{ url_for('create_guess', match_id=match.id) }}" style="text-decoration: none; background-color: var(--green-strong); color: var(--surface); padding: 6px 14px; border-radius: 4px; font-size: 14px; font-weight: 600;">+ Palpitar</a>
                                     </td>
                                 </tr>
                             {% endfor %}
@@ -68,12 +68,12 @@
                                     <td style="padding: 12px 8px; text-align: center;">
                                         <div style="display: flex; gap: 12px; justify-content: center; align-items: center;">
                                             {% if guess.match.is_editable() %}
-                                                <a href="{{ url_for('edit_guess', guess_id=guess.id) }}" style="color: #4f46e5; text-decoration: none; font-size: 14px; font-weight: 600;">Editar</a>
+                                                <a href="{{ url_for('edit_guess', guess_id=guess.id) }}" style="color: var(--odd); text-decoration: none; font-size: 14px; font-weight: 600;">Editar</a>
                                                 <form action="{{ url_for('delete_guess', guess_id=guess.id) }}" method="POST" style="display: inline; margin: 0;" onsubmit="return confirm('Tem certeza que deseja excluir este palpite?');">
-                                                    <button type="submit" style="background: none; border: none; color: #dc3545; cursor: pointer; font-size: 14px; font-weight: 600; padding: 0; font-family: inherit;">Deletar</button>
+                                                    <button type="submit" style="background: none; border: none; color: var(--red-strong); cursor: pointer; font-size: 14px; font-weight: 600; padding: 0; font-family: inherit;">Deletar</button>
                                                 </form>
                                             {% else %}
-                                                <span style="color: #94a3b8; font-size: 12px; font-style: italic;">Prazo encerrado</span>
+                                                <span style="color: var(--muted-2); font-size: 12px; font-style: italic;">Prazo encerrado</span>
                                             {% endif %}
                                         </div>
                                     </td>
@@ -82,7 +82,7 @@
                         </tbody>
                     </table>
                 {% else %}
-                    <p style="text-align: center; color: #64748b; padding: 20px;">Você não possui palpites para os próximos jogos.</p>
+                    <p style="text-align: center; color: var(--muted); padding: 20px;">Você não possui palpites para os próximos jogos.</p>
                 {% endif %}
             </div>
         </div>
@@ -104,7 +104,7 @@
                         <tbody>
                             {% for guess in previous_guesses %}
                                 <tr style="border-bottom: 1px solid #eee; background-color: #fcfcfc;">
-                                    <td style="padding: 12px 8px; color: #64748b;"><time datetime="{{ guess.match.date }}">{{ guess.match.formatted_date }}</time></td>
+                                    <td style="padding: 12px 8px; color: var(--muted);"><time datetime="{{ guess.match.date }}">{{ guess.match.formatted_date }}</time></td>
                                     <td style="padding: 12px 8px;">{{ guess.match.round }}</td>
                                     <td style="padding: 12px 8px;">{{ guess.match.team_a }} vs {{ guess.match.team_b }}</td>
                                     <td style="padding: 12px 8px; text-align: center;">
@@ -126,7 +126,7 @@
                                         {% if guess.match.score_a is not none and guess.match.score_b is not none %}
                                             <span class="score-pill score-pill--result">{{ guess.match.score_a }} x {{ guess.match.score_b }}</span>
                                         {% else %}
-                                            <span style="color: #94a3b8; font-style: italic;">Aguardando...</span>
+                                            <span style="color: var(--muted-2); font-style: italic;">Aguardando...</span>
                                         {% endif %}
                                     </td>
                                 </tr>
@@ -134,7 +134,7 @@
                         </tbody>
                     </table>
                 {% else %}
-                    <p style="text-align: center; color: #64748b; padding: 20px;">Nenhum palpite anterior encontrado.</p>
+                    <p style="text-align: center; color: var(--muted); padding: 20px;">Nenhum palpite anterior encontrado.</p>
                 {% endif %}
             </div>
         </div>

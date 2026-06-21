@@ -22,7 +22,7 @@
         <div id="active-guesses-tab" class="tab-content {{ 'active' if is_default_in_active else '' }}">
             <div class="card" style="margin-bottom: 15px;">
                 <label for="filter-active" style="font-weight: bold; margin-bottom: 8px; display: block;">Filtrar por Partida:</label>
-                <select id="filter-active" onchange="filterGuesses('active', this.value)" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #e6e9ee;">
+                <select id="filter-active" onchange="filterGuesses('active', this.value)" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--line);">
                     {% for m in active_matches %}
                         <option value="{{ m.id }}"
                                 data-teams="{{ m.team_a }} vs {{ m.team_b }}"
@@ -45,7 +45,7 @@
         <div id="previous-guesses-tab" class="tab-content {{ 'active' if not is_default_in_active else '' }}">
             <div class="card" style="margin-bottom: 15px;">
                 <label for="filter-previous" style="font-weight: bold; margin-bottom: 8px; display: block;">Filtrar por Partida Anterior:</label>
-                <select id="filter-previous" onchange="filterGuesses('previous', this.value)" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #e6e9ee;">
+                <select id="filter-previous" onchange="filterGuesses('previous', this.value)" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--line);">
                     <option value="" disabled {{ 'selected' if is_default_in_active else '' }}>Selecione uma partida</option>
                     {% for m in previous_matches %}
                         {% set pending = m.score_a is none or m.score_b is none %}
@@ -129,16 +129,16 @@ function updateMatchSummary(type, matchId) {
     if (hasScore) {
         result = `<span class="score-pill score-pill--result" style="font-size: 1.05rem; padding: 8px 18px;">${sa} x ${sb}</span>`;
     } else if (type === 'previous') {
-        result = `<span style="color: #94a3b8; font-style: italic;">⚠️ sem placar</span>`;
+        result = `<span style="color: var(--muted-2); font-style: italic;">⚠️ sem placar</span>`;
         if (IS_ADMIN) {
             result += `<a href="/edit_match/${matchId}" style="margin-left: 12px; color: var(--coral); font-weight: 600; text-decoration: none;">+ adicionar placar</a>`;
         }
     } else {
-        result = `<span style="color: #94a3b8; font-style: italic;">Agendado</span>`;
+        result = `<span style="color: var(--muted-2); font-style: italic;">Agendado</span>`;
     }
 
     summary.innerHTML =
-        `<div style="color: #64748b; font-size: 0.9rem; margin-bottom: 8px;">${teams} · ${date}</div>` +
+        `<div style="color: var(--muted); font-size: 0.9rem; margin-bottom: 8px;">${teams} · ${date}</div>` +
         `<div>${result}</div>`;
     summary.style.display = 'block';
 }

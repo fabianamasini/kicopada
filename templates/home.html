@@ -29,7 +29,7 @@
                       <td>
                           {{ user.username }}
                           {% if user.id == current_user.id %}
-                              <span style="font-size: 0.75rem; color: #ff6b6b; font-weight: bold;">(Você)</span>
+                              <span style="font-size: 0.75rem; color: var(--coral); font-weight: bold;">(Você)</span>
                           {% endif %}
                       </td>
                       <td class="pts">{{ user.points }}</td>
@@ -60,7 +60,7 @@
           {% if day_header != current_day.val %}
             {% set current_day.val = day_header %}
             <tr class="date-group-header">
-              <td colspan="6" style="text-align: left; background-color: #f8fafc; font-weight: bold; padding: 10px 16px; color: #475569; border-bottom: 2px solid #e2e8f0; font-size: 0.85rem;">
+              <td colspan="6" style="text-align: left; background-color: var(--surface); font-weight: bold; padding: 10px 16px; color: #475569; border-bottom: 2px solid #e2e8f0; font-size: 0.85rem;">
                 {{ day_header }}
               </td>
             </tr>
