@@ -24,7 +24,7 @@
                 {% if active_guesses or pending_matches %}
                     <table style="width: 100%; border-collapse: collapse;">
                         <thead>
-                            <tr style="text-align: left; border-bottom: 2px solid #eee;">
+                            <tr style="text-align: left; border-bottom: 2px solid var(--line);">
                                 <th style="padding: 12px 8px;">Data</th>
                                 <th style="padding: 12px 8px;">Fase</th>
                                 <th style="padding: 12px 8px;">Confronto</th>
@@ -35,7 +35,7 @@
                         <tbody>
                             {# Jogos de amanhã ainda sem palpite — destacados para lembrar de palpitar antes do prazo #}
                             {% for match in pending_matches %}
-                                <tr style="border-bottom: 1px solid #eee; background-color: var(--coral-bg);">
+                                <tr style="border-bottom: 1px solid var(--line); background-color: var(--coral-bg);">
                                     <td style="padding: 12px 8px;"><time datetime="{{ match.date }}">{{ match.formatted_date }}</time></td>
                                     <td style="padding: 12px 8px;">{{ match.round }}</td>
                                     <td style="padding: 12px 8px;"><strong>{{ match.team_a }}</strong> vs <strong>{{ match.team_b }}</strong></td>
@@ -48,7 +48,7 @@
                                 </tr>
                             {% endfor %}
                             {% for guess in active_guesses %}
-                                <tr style="border-bottom: 1px solid #eee;">
+                                <tr style="border-bottom: 1px solid var(--line);">
                                     <td style="padding: 12px 8px;"><time datetime="{{ guess.match.date }}">{{ guess.match.formatted_date }}</time></td>
                                     <td style="padding: 12px 8px;">{{ guess.match.round }}</td>
                                     <td style="padding: 12px 8px;"><strong>{{ guess.match.team_a }}</strong> vs <strong>{{ guess.match.team_b }}</strong></td>
@@ -93,7 +93,7 @@
                 {% if previous_guesses %}
                     <table style="width: 100%; border-collapse: collapse;">
                         <thead>
-                            <tr style="text-align: left; border-bottom: 2px solid #eee;">
+                            <tr style="text-align: left; border-bottom: 2px solid var(--line);">
                                 <th style="padding: 12px 8px;">Data</th>
                                 <th style="padding: 12px 8px;">Fase</th>
                                 <th style="padding: 12px 8px;">Confronto</th>
@@ -103,7 +103,7 @@
                         </thead>
                         <tbody>
                             {% for guess in previous_guesses %}
-                                <tr style="border-bottom: 1px solid #eee; background-color: #fcfcfc;">
+                                <tr style="border-bottom: 1px solid var(--line); background-color: var(--surface);">
                                     <td style="padding: 12px 8px; color: var(--muted);"><time datetime="{{ guess.match.date }}">{{ guess.match.formatted_date }}</time></td>
                                     <td style="padding: 12px 8px;">{{ guess.match.round }}</td>
                                     <td style="padding: 12px 8px;">{{ guess.match.team_a }} vs {{ guess.match.team_b }}</td>

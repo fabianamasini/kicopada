@@ -1,7 +1,7 @@
 <div class="card">
     <table style="width: 100%; border-collapse: collapse;" id="table-{{ tab_type }}">
         <thead>
-            <tr style="text-align: left; border-bottom: 2px solid #eee;">
+            <tr style="text-align: left; border-bottom: 2px solid var(--line);">
                 <th style="padding: 12px 8px;">Usuário</th>
                 <th style="padding: 12px 8px; text-align: center;">Palpite</th>
             </tr>
@@ -11,7 +11,7 @@
                 {# Cor da pílula reflete o acerto, mesma hierarquia do scoring: exato > saldo > vencedor > erro #}
                 {% set sa = guess.match.score_a %}
                 {% set sb = guess.match.score_b %}
-                <tr class="guess-row-{{ tab_type }}" data-match-id="{{ guess.match_id }}" style="border-bottom: 1px solid #eee; display: none;">
+                <tr class="guess-row-{{ tab_type }}" data-match-id="{{ guess.match_id }}" style="border-bottom: 1px solid var(--line); display: none;">
                     <td style="padding: 12px 8px;"><strong>{{ guess.user.username }}</strong></td>
                     <td style="padding: 12px 8px; text-align: center;">
                         {% if sa is not none and sb is not none %}

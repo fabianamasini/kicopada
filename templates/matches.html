@@ -26,7 +26,7 @@
                 {% if active_matches %}
                     <table style="width: 100%; border-collapse: collapse;">
                         <thead>
-                            <tr style="text-align: left; border-bottom: 2px solid #eee;">
+                            <tr style="text-align: left; border-bottom: 2px solid var(--line);">
                                 <th style="padding: 12px 8px;">Data</th>
                                 <th style="padding: 12px 8px;">Fase</th>
                                 <th style="padding: 12px 8px;">Confronto</th>
@@ -38,7 +38,7 @@
                         </thead>
                         <tbody>
                             {% for match in active_matches %}
-                                <tr style="border-bottom: 1px solid #eee;">
+                                <tr style="border-bottom: 1px solid var(--line);">
                                     <td style="padding: 12px 8px;"><time datetime="{{ match.date }}">{{ match.formatted_date }}</time></td>
                                     <td style="padding: 12px 8px;">{{ match.round }}</td>
                                     <td style="padding: 12px 8px;"><strong>{{ match.team_a }}</strong> vs <strong>{{ match.team_b }}</strong></td>
@@ -50,7 +50,7 @@
                                                 {% endif %}
                                             </span>
                                         {% else %}
-                                            <span style="color: #999; font-style: italic;">Agendado</span>
+                                            <span style="color: var(--muted-2); font-style: italic;">Agendado</span>
                                         {% endif %}
                                     </td>
                                     {% if current_user.is_admin %}
@@ -68,7 +68,7 @@
                         </tbody>
                     </table>
                 {% else %}
-                    <p style="text-align: center; color: #666; padding: 20px;">Nenhuma partida agendada no momento.</p>
+                    <p style="text-align: center; color: var(--muted); padding: 20px;">Nenhuma partida agendada no momento.</p>
                 {% endif %}
             </div>
         </div>
@@ -79,7 +79,7 @@
                 {% if previous_matches %}
                     <table style="width: 100%; border-collapse: collapse;">
                         <thead>
-                            <tr style="text-align: left; border-bottom: 2px solid #eee;">
+                            <tr style="text-align: left; border-bottom: 2px solid var(--line);">
                                 <th style="padding: 12px 8px;">Data</th>
                                 <th style="padding: 12px 8px;">Fase</th>
                                 <th style="padding: 12px 8px;">Confronto</th>
@@ -91,7 +91,7 @@
                         </thead>
                         <tbody>
                             {% for match in previous_matches %}
-                                <tr style="border-bottom: 1px solid #eee; background-color: #fcfcfc;">
+                                <tr style="border-bottom: 1px solid var(--line); background-color: var(--surface);">
                                     <td style="padding: 12px 8px; color: var(--muted);"><time datetime="{{ match.date }}">{{ match.formatted_date }}</time></td>
                                     <td style="padding: 12px 8px;">{{ match.round }}</td>
                                     <td style="padding: 12px 8px;"><strong>{{ match.team_a }}</strong> vs <strong>{{ match.team_b }}</strong></td>
@@ -114,7 +114,7 @@
                         </tbody>
                     </table>
                 {% else %}
-                    <p style="text-align: center; color: #666; padding: 20px;">Nenhuma partida anterior encontrada.</p>
+                    <p style="text-align: center; color: var(--muted); padding: 20px;">Nenhuma partida anterior encontrada.</p>
                 {% endif %}
             </div>
         </div>
