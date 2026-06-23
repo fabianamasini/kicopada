@@ -665,9 +665,9 @@ h1 {
 }
 
 .cal-legend {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 14px;
+    display: grid;
+    grid-template-columns: repeat(2, max-content);
+    gap: 10px 18px;
     margin-top: 18px;
     padding-top: 14px;
     border-top: 1px solid var(--line);
