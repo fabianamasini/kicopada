@@ -33,8 +33,12 @@
                 {% for week in month.weeks %}
                 <div class="cal-grid">
                     {% for day in week %}
-                        {% if day is none or not day.is_cup_day %}
+                        {% if day is none or (not day.is_cup_day and not day.is_folga) %}
                             <div class="cal-day is-blank"></div>
+                        {% elif day.is_folga %}
+                            <div class="cal-day is-folga" title="Folga">
+                                <span class="cal-num">{{ day.num }}</span>
+                            </div>
                         {% elif day.clickable %}
                             <button type="button"
                                     class="cal-day is-open{{ ' is-final' if day.is_final }}{{ ' is-today' if day.is_today }}"

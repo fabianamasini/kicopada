@@ -36,6 +36,8 @@ def _build_wc_schedule():
 
 
 WC_SCHEDULE = _build_wc_schedule()
+WC_FIRST = min(WC_SCHEDULE)   # primeiro dia da Copa (2026-06-11)
+WC_LAST = max(WC_SCHEDULE)    # último dia da Copa (2026-07-19, a final)
 
 # Rótulo curto exibido na célula dos dias de mata-mata ainda sem partidas no banco.
 # (Fase de Grupos mostra a contagem de jogos; Final mostra o troféu.)
@@ -121,13 +123,17 @@ class MatchesController:
             day_matches = by_day.get(iso, [])
 
             if not day_matches:
-                if phase is None:                 # dia fora da Copa → célula vazia
-                    return {'iso': iso, 'is_cup_day': False, 'has_matches': False,
-                            'match_count': 0, 'guessed_count': 0, 'complete': False,
-                            'state': 'empty', 'clickable': False, 'target_match_id': None,
+                if phase is None:
+                    # Sem fase: folga (buraco entre as fases, dentro da Copa) ou
+                    # dia totalmente fora da Copa (esse fica invisível).
+                    is_folga = WC_FIRST <= iso <= WC_LAST
+                    return {'iso': iso, 'is_cup_day': False, 'is_folga': is_folga,
+                            'has_matches': False, 'match_count': 0, 'guessed_count': 0,
+                            'complete': False, 'state': 'folga' if is_folga else 'empty',
+                            'clickable': False, 'target_match_id': None,
                             'is_final': False, 'phase': None, 'tag': None}
                 # Dia fixo da Copa ainda sem partidas no banco (mata-mata) → agendado
-                return {'iso': iso, 'is_cup_day': True, 'has_matches': False,
+                return {'iso': iso, 'is_cup_day': True, 'is_folga': False, 'has_matches': False,
                         'match_count': 0, 'guessed_count': 0, 'complete': False,
                         'state': 'fixture', 'clickable': False, 'target_match_id': None,
                         'is_final': is_final, 'phase': phase, 'tag': PHASE_TAG.get(phase)}
@@ -147,7 +153,7 @@ class MatchesController:
                 state = 'past'
 
             return {
-                'iso': iso, 'is_cup_day': True, 'has_matches': True,
+                'iso': iso, 'is_cup_day': True, 'is_folga': False, 'has_matches': True,
                 'match_count': len(day_matches), 'guessed_count': len(guessed),
                 'complete': complete, 'state': state, 'clickable': state == 'open',
                 'target_match_id': available[0].id if available else None,

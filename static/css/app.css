@@ -604,6 +604,14 @@ h1 {
     background: transparent;
 }
 
+/* Folga: dia sem jogo no meio da Copa (buraco entre fases) — visível mas vazio */
+.cal-day.is-folga {
+    background: var(--surface);
+    border-style: dashed;
+    color: var(--muted-2);
+    cursor: help;
+}
+
 .cal-day.is-complete {
     background: var(--green-soft);
     border-color: var(--green-strong);
