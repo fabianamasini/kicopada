@@ -150,6 +150,8 @@ def parse_minute(clock: str):
 def round_name(competition: dict) -> str:
     """Best-effort: lê a fase nas 'notes' do confronto."""
     for note in competition.get("notes", []) or []:
+        if not note:
+            continue
         text = (note.get("headline") or note.get("text") or "").lower()
         for key, label in ESPN_ROUND_NAMES.items():
             if key in text:
@@ -191,6 +193,8 @@ def fetch_goals(event_id: str, home_id: str, away_id: str) -> list:
 
     goals = []
     for ev in data.get("keyEvents", []) or []:
+        if not ev:
+            continue
         # Só gols de fato; ignora pênaltis perdidos e a disputa de pênaltis.
         if not ev.get("scoringPlay"):
             continue
@@ -291,10 +295,10 @@ def build_match(event: dict, include_goals: bool = True) -> dict:
     """
     comp = (event.get("competitions") or [{}])[0] or {}
     competitors = comp.get("competitors", []) or []
-    home = next((c for c in competitors if c.get("homeAway") == "home"),
-               competitors[0] if competitors else {})
-    away = next((c for c in competitors if c.get("homeAway") == "away"),
-               competitors[1] if len(competitors) > 1 else {})
+    home = next((c for c in competitors if c and c.get("homeAway") == "home"),
+               competitors[0] if competitors else {}) or {}
+    away = next((c for c in competitors if c and c.get("homeAway") == "away"),
+               competitors[1] if len(competitors) > 1 else {}) or {}
 
     home_team = home.get("team", {}) or {}
     away_team = away.get("team", {}) or {}
@@ -374,7 +378,8 @@ def snapshot(date: str = None, include_goals: bool = True) -> dict:
         try:
             matches.append(build_match(ev, include_goals=include_goals))
         except Exception as e:
-            warn(f"[live_scores] erro ao montar jogo {ev.get('id')}: {e}")
+            event_id = ev.get("id") if ev else "desconhecido"
+            warn(f"[live_scores] erro ao montar jogo {event_id}: {e}")
 
     matches.sort(key=lambda m: m["date"])
     now = datetime.now(SAO_PAULO) if SAO_PAULO else datetime.now(timezone.utc)
