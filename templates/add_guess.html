@@ -193,29 +193,32 @@ function toggleWinnerSection() {
 
 // Calendário: clicar num dia filtra o seletor para os jogos daquele dia,
 // pré-seleciona o primeiro e rola até o formulário.
+// Reconstrói o <select> (clona só o grupo do dia) em vez de usar `hidden`,
+// que o Safari do iOS ignora em <option>/<optgroup>.
 (function () {
     const select = document.getElementById('match');
     if (!select) return;
 
+    const originalGroups = Array.from(select.querySelectorAll('optgroup'));
+    const placeholder = select.querySelector('option[value=""]');
+
     document.querySelectorAll('.cal-day.is-open').forEach(function (cell) {
         cell.addEventListener('click', function () {
             const date = cell.getAttribute('data-date');
-            let firstVisible = null;
 
-            // Mostra só o grupo (dia) escolhido; esconde os demais.
-            select.querySelectorAll('optgroup').forEach(function (g) {
-                const match = g.getAttribute('data-date') === date;
-                g.hidden = !match;
-                g.disabled = !match;
-                Array.from(g.children).forEach(function (opt) {
-                    opt.hidden = !match;
-                    opt.disabled = !match;
-                    if (match && firstVisible === null) firstVisible = opt;
-                });
+            select.innerHTML = '';
+            if (placeholder) select.appendChild(placeholder);
+
+            let firstOption = null;
+            originalGroups.forEach(function (g) {
+                if (g.getAttribute('data-date') !== date) return;
+                const clone = g.cloneNode(true);
+                select.appendChild(clone);
+                if (firstOption === null) firstOption = clone.querySelector('option');
             });
 
-            if (firstVisible) {
-                select.value = firstVisible.value;
+            if (firstOption) {
+                select.value = firstOption.value;
                 updateMatchDetails(select);
             }
 

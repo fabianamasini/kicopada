@@ -131,7 +131,7 @@ def to_sao_paulo(utc_iso: str) -> str:
             dt = dt.astimezone(SAO_PAULO)
         return dt.strftime("%Y-%m-%dT%H:%M")
     except Exception:
-        return utc_iso
+        return str(utc_iso)
 
 
 def parse_minute(clock: str):
@@ -208,9 +208,9 @@ def fetch_goals(event_id: str, home_id: str, away_id: str) -> list:
 
         participants = ev.get("participants", []) or []
         scorer = assist = None
-        if participants:
+        if participants and participants[0]:
             scorer = (participants[0].get("athlete", {}) or {}).get("displayName")
-        if len(participants) > 1:
+        if len(participants) > 1 and participants[1]:
             assist = (participants[1].get("athlete", {}) or {}).get("displayName")
         if not scorer:
             scorer = (ev.get("shortText") or "").replace(" Goal", "").strip() or None
@@ -289,7 +289,7 @@ def build_match(event: dict, include_goals: bool = True) -> dict:
           "goals": [ ...ver fetch_goals()... ]    # [] se --no-goals ou sem gols
         }
     """
-    comp = (event.get("competitions") or [{}])[0]
+    comp = (event.get("competitions") or [{}])[0] or {}
     competitors = comp.get("competitors", []) or []
     home = next((c for c in competitors if c.get("homeAway") == "home"),
                competitors[0] if competitors else {})
@@ -315,8 +315,9 @@ def build_match(event: dict, include_goals: bool = True) -> dict:
         except (TypeError, ValueError):
             return None
 
-    status_type = comp.get("status", {}).get("type", {}) or {}
-    clock = comp.get("status", {}).get("displayClock", "") or ""
+    status_obj = comp.get("status") or {}
+    status_type = status_obj.get("type") or {}
+    clock = status_obj.get("displayClock", "") or ""
     detail = status_type.get("detail", "") or ""
     pen_a, pen_b = pens(home), pens(away)
     shootout = pen_a is not None and pen_b is not None
