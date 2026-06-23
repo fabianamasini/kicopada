@@ -3,6 +3,7 @@ import pytz
 import locale
 
 from functools import wraps
+from itertools import groupby
 from datetime import datetime
 from dotenv import load_dotenv
 from src.utils import phases, teams
@@ -145,8 +146,18 @@ def create_guess():
     if request.method == 'POST':
         return guesses_controller.add_guess(request, current_user)
     matches_list = matches_controller.get_available_matches_for_user(current_user.id)
+    # Agrupa os jogos disponíveis por dia para montar a lista (optgroup) por data.
+    editable = [m for m in matches_list if m.is_editable()]
+    match_groups = []
+    for _day, grp in groupby(editable, key=lambda m: m.date[:10]):
+        items = list(grp)
+        match_groups.append({'label': items[0].date_header,
+                             'date': items[0].date[:10], 'matches': items})
     selected_match_id = request.args.get('match_id', type=int)
-    return render_template('add_guess.html', matches=matches_list, selected_match_id=selected_match_id)
+    calendar_months = matches_controller.get_guess_calendar(current_user.id)
+    return render_template('add_guess.html', match_groups=match_groups,
+                           selected_match_id=selected_match_id,
+                           calendar_months=calendar_months)
 
 @app.route('/delete_guess/<int:guess_id>', methods=['POST'])
 @login_required

@@ -479,3 +479,330 @@ h1 {
     border-left: 4px solid var(--coral);
     background-color: var(--coral-bg);
 }
+
+/* ─── Calendário de palpites (tela cadastrar palpite) ───────────────────── */
+.cal-card {
+    margin-bottom: 20px;
+}
+
+.cal-head h2 {
+    margin: 0;
+    font-size: 1.1rem;
+    color: var(--ink);
+}
+
+.cal-sub {
+    margin: 4px 0 16px;
+    font-size: 0.85rem;
+    color: var(--muted);
+}
+
+.cal-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.cal-nav-label {
+    flex: 1;
+    text-align: center;
+    font-size: 0.98rem;
+    font-weight: 700;
+    color: var(--slate);
+}
+
+.cal-arrow {
+    width: 34px;
+    height: 34px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    border: 1px solid var(--line);
+    background: var(--surface);
+    color: var(--slate);
+    font-size: 1.2rem;
+    line-height: 1;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.12s ease, color 0.12s ease, border-color 0.12s ease;
+}
+
+.cal-arrow:hover:not(:disabled) {
+    background: var(--grad-coral);
+    border-color: transparent;
+    color: var(--surface);
+}
+
+.cal-arrow:disabled {
+    opacity: 0.4;
+    cursor: default;
+}
+
+.cal-month {
+    display: none;
+}
+
+.cal-month.is-active {
+    display: block;
+}
+
+.cal-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 6px;
+}
+
+.cal-grid + .cal-grid {
+    margin-top: 6px;
+}
+
+.cal-dow-row {
+    margin-bottom: 6px;
+}
+
+.cal-dow {
+    text-align: center;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--muted-2);
+    padding: 2px 0;
+}
+
+.cal-day {
+    aspect-ratio: 1 / 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1px;
+    border-radius: var(--radius);
+    border: 1px solid var(--line);
+    background: var(--surface);
+    font-family: inherit;
+    padding: 0;
+}
+
+.cal-num {
+    font-size: 0.8rem;
+    font-weight: 600;
+    line-height: 1;
+}
+
+.cal-count {
+    font-size: 0.62rem;
+    font-weight: 700;
+    line-height: 1;
+    opacity: 0.85;
+}
+
+.cal-day.is-blank {
+    border-color: transparent;
+    background: transparent;
+}
+
+.cal-day.is-complete {
+    background: var(--green-soft);
+    border-color: var(--green-strong);
+    color: var(--green-deep);
+}
+
+.cal-day.is-open {
+    background: var(--coral-bg);
+    border-color: var(--coral);
+    color: var(--red-strong);
+    cursor: pointer;
+    transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+
+.cal-day.is-open:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(2, 6, 23, 0.10);
+}
+
+.cal-day.is-open:focus-visible {
+    outline: 2px solid var(--coral);
+    outline-offset: 2px;
+}
+
+.cal-day.is-past {
+    background: var(--mist);
+    border-color: var(--line);
+    color: var(--muted);
+}
+
+/* Dia da Copa ainda sem partidas pra palpitar (mata-mata futuro) */
+.cal-day.is-fixture {
+    background: var(--odd-bg);
+    border-color: var(--odd);
+    color: var(--odd);
+}
+
+.cal-day.is-today {
+    box-shadow: 0 0 0 2px var(--coral);
+}
+
+/* Dia da final — dourado da paleta (vence as demais cores de estado) */
+.cal-day.is-final {
+    background: var(--yellow-soft);
+    border-color: var(--brown-deep);
+    color: var(--brown-deep);
+}
+
+.cal-day.is-final .cal-count {
+    font-size: 0.82rem;
+    opacity: 1;
+}
+
+.cal-empty-month {
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.9rem;
+    padding: 28px 10px;
+}
+
+.cal-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    margin-top: 18px;
+    padding-top: 14px;
+    border-top: 1px solid var(--line);
+}
+
+.cal-legend-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.78rem;
+    color: var(--slate);
+}
+
+.cal-dot {
+    width: 14px;
+    height: 14px;
+    border-radius: 4px;
+    border: 1px solid var(--line);
+    flex-shrink: 0;
+}
+
+.cal-dot.is-complete {
+    background: var(--green-soft);
+    border-color: var(--green-strong);
+}
+
+.cal-dot.is-open {
+    background: var(--coral-bg);
+    border-color: var(--coral);
+}
+
+.cal-dot.is-past {
+    background: var(--mist);
+}
+
+.cal-dot.is-fixture {
+    background: var(--odd-bg);
+    border-color: var(--odd);
+}
+
+.cal-dot.is-final {
+    background: var(--yellow-soft);
+    border-color: var(--brown-deep);
+}
+
+@media (max-width: 600px) {
+    .cal-grid {
+        gap: 4px;
+    }
+    .cal-num {
+        font-size: 0.74rem;
+    }
+}
+
+/* Maior que mobile: mostra os dois meses lado a lado (versão anterior) e
+   dispensa o carrossel. O foco do projeto ainda é mobile. */
+@media (min-width: 720px) {
+    .cal-nav {
+        display: none;
+    }
+    .cal-panels {
+        display: flex;
+        gap: 24px;
+        align-items: flex-start;
+    }
+    .cal-month {
+        display: block;
+        flex: 1 1 0;
+    }
+}
+
+/* ─── Placar do palpite (scoreboard) ───────────────────────────────────── */
+.sb-caption {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 0.85rem;
+    color: var(--muted);
+}
+
+.scoreboard {
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 10px;
+    margin: 0 0 4px;
+    padding: 18px 14px;
+    background: var(--bg);
+    border-radius: var(--radius-lg);
+}
+
+.sb-side {
+    flex: 1 1 0;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+
+.sb-name {
+    max-width: 100%;
+    text-align: center;
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: var(--slate);
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+}
+
+.sb-x {
+    flex: 0 0 auto;
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--muted-2);
+    padding-bottom: 14px;
+}
+
+.card .scoreboard .sb-input {
+    width: 76px;
+    max-width: 100%;
+    text-align: center;
+    font-size: 1.7rem;
+    font-weight: 700;
+    padding: 10px 6px;
+    color: var(--ink);
+}
+
+.card .scoreboard .sb-input:focus {
+    outline: none;
+    border-color: var(--coral);
+    box-shadow: 0 0 0 3px var(--coral-bg);
+}
+
+.sb-input::placeholder {
+    color: var(--muted-2);
+    font-weight: 600;
+    opacity: 1;
+}
