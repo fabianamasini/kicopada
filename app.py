@@ -294,4 +294,4 @@ def all_guesses():
                            is_default_in_active=is_default_in_active)
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host='0.0.0.0', debug=True, port=int(os.getenv('PORT', 5000)))
