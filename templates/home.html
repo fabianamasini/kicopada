@@ -5,154 +5,118 @@
 {% block title %}Home - Bolão{% endblock %}
 
 {% block content %}
-  <div class="topbar">
+<div class="topbar">
     <h1>Home</h1>
     <div></div>
-  </div>
+</div>
 
-  <div class="home-content-layout">
+<div class="home-content-layout">
     <div class="card">
-      <h2>Ranking Geral</h2>
-      <div style="overflow-x: auto;">
-          <table class="ranking-table">
-              <thead>
-                  <tr>
-                      <th class="pos">#</th>
-                      <th>Usuário</th>
-                      <th class="pts">Pontos</th>
-                  </tr>
-              </thead>
-              <tbody>
-                  {% for user in ranking %}
-                  <tr class="{{ 'is-current-user' if user.id == current_user.id else '' }}">
-                      <td class="pos">{{ loop.index }}º</td>
-                      <td>
-                          {{ user.username }}
-                          {% if user.id == current_user.id %}
-                              <span style="font-size: 0.75rem; color: var(--coral); font-weight: bold;">(Você)</span>
-                          {% endif %}
-                      </td>
-                      <td class="pts">{{ user.points }}</td>
-                  </tr>
-                  {% endfor %}
-              </tbody>
-          </table>
-      </div>
+        <h2>Ranking Geral</h2>
+        <div style="overflow-x: auto;">
+            <table class="ranking-table">
+                <thead>
+                    <tr>
+                        <th class="pos">#</th>
+                        <th>Usuário</th>
+                        <th class="pts">Pontos</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in ranking %}
+                    <tr class="{{ 'is-current-user' if user.id == current_user.id else '' }}">
+                        <td class="pos">{{ loop.index }}º</td>
+                        <td>
+                            {{ user.username }}
+                            {% if user.id == current_user.id %}
+                            <span style="font-size: 0.75rem; color: var(--coral); font-weight: bold;">(Você)</span>
+                            {% endif %}
+                        </td>
+                        <td class="pts">{{ user.points }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </div>
     <div class="card odds-section">
-      <h2>Próximos Jogos e Odds</h2>
-          <table class="odds-table">
-      <thead>
-          <tr>
-              <th class="match-info" scope="col">Partida</th>
-              <th scope="col">Hora</th>
-              <th scope="col">Vitória A</th>
-              <th scope="col">Empate</th>
-              <th scope="col">Vitória B</th>
-              <th class="col-guess" scope="col">Palpite</th>
-          </tr>
-      </thead>
-      <tbody>
-          {% set current_day = namespace(val=None) %}
-          {% for match in upcoming_matches %}
-          {% set day_header = match.date_header %}
+        <h2>Próximos Jogos e Odds</h2>
+        <table class="odds-table">
+            <thead>
+                <tr>
+                    <th class="match-info" scope="col">Partida</th>
+                    <th scope="col">Hora</th>
+                    <th scope="col">Vitória A</th>
+                    <th scope="col">Empate</th>
+                    <th scope="col">Vitória B</th>
+                    <th class="col-guess" scope="col">Palpite</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% set current_day = namespace(val=None) %}
+                {% for match in upcoming_matches %}
+                {% set day_header = match.date_header %}
 
-          {% if day_header != current_day.val %}
-            {% set current_day.val = day_header %}
-            <tr class="date-group-header">
-              <td colspan="6" class="day-header-cell">
-                {{ day_header }}
-              </td>
-            </tr>
-          {% endif %}
-          {% set pick = 'none' %}
-          {% if match.id in user_guesses %}
-            {% set g = user_guesses[match.id] %}
-            {% if g.pred_a > g.pred_b %}{% set pick = 'a' %}
-            {% elif g.pred_a < g.pred_b %}{% set pick = 'b' %}
-            {% else %}{% set pick = 'draw' %}{% endif %}
-          {% endif %}
+                {% if day_header != current_day.val %}
+                {% set current_day.val = day_header %}
+                <tr class="date-group-header">
+                    <td colspan="6" class="day-header-cell">
+                        {{ day_header }}
+                    </td>
+                </tr>
+                {% endif %}
+                {% set pick = 'none' %}
+                {% if match.id in user_guesses %}
+                {% set g = user_guesses[match.id] %}
+                {% if g.pred_a > g.pred_b %}{% set pick = 'a' %}
+                {% elif g.pred_a < g.pred_b %}{% set pick='b' %} {% else %}{% set pick='draw' %}{% endif %} {% endif %}
+                    {# Bandeira de cada time=primeiro "token" do nome (ex.: "🇦🇹 Áustria" ) #} {% set
+                    flag_a=match.team_a.split(' ')[0] %}
+          {% set flag_b = match.team_b.split(' ')[0] %}
           <tr class="odds-row">
               <td class="match-info" title="{{ match.team_a }} vs {{ match.team_b }}">{{ match.team_a }} vs {{ match.team_b }}</td>
               <td class="col-time"><time datetime="{{ match.date }}">{{ match.time_label }}</time></td>
-              <td class="col-odd" data-label="Vitória A">
-                  {% if not match.is_editable() and match.odds %}
-                      <span class="odd-value {{ 'odd-picked' if pick == 'a' else '' }}">{{ "%.2f"|format(match.odds.team_a_odds) }}</span>
-                  {% else %}<span class="no-odds">N/A</span>{% endif %}
-              </td>
-              <td class="col-odd" data-label="Empate">
-                  {% if match.is_knockout %}
-                      —
-                  {% else %}
-                      {% if not match.is_editable() and match.odds %}
-                          <span class="odd-value {{ 'odd-picked' if pick == 'draw' else '' }}">{{ "%.2f"|format(match.odds.draw_odds) }}</span>
-                      {% else %}<span class="no-odds">N/A</span>{% endif %}
-                  {% endif %}
-              </td>
-              <td class="col-odd" data-label="Vitória B">
-                  {% if not match.is_editable() and match.odds %}
-                      <span class="odd-value {{ 'odd-picked' if pick == 'b' else '' }}">{{ "%.2f"|format(match.odds.team_b_odds) }}</span>
-                  {% else %}<span class="no-odds">N/A</span>{% endif %}
-              </td>
-              <td class="col-guess-cell">
-                  {% if match.id in user_guesses %}
-                      <span class="score-pill">{{ user_guesses[match.id].pred_a }} x {{ user_guesses[match.id].pred_b }}</span>
-                  {% elif match.is_editable() %}
-                      <a href="{{ url_for('create_guess', match_id=match.id) }}" class="guess-cta">+ palpitar</a>
-                  {% else %}
-                      <span role="img" aria-label="Você não palpitou e o prazo encerrou" title="Você não palpitou e o prazo encerrou" style="color: var(--muted-2); cursor: default;">🪰</span>
-                  {% endif %}
-              </td>
-          </tr>
-          {% endfor %}
-      </tbody>
-  </table>
+              <td class="col-odd {{ ' is-pick' if pick=='a' else '' }}" data-label="Vitória A">
+                    <span class="chip-sym">{{ flag_a }}</span>
+                    {% if not match.is_editable() and match.odds %}
+                    <span class="odd-value {{ 'odd-picked' if pick == 'a' else '' }}">{{
+                        "%.2f"|format(match.odds.team_a_odds) }}</span>
+                    {% else %}<span class="no-odds">N/A</span>{% endif %}
+                    </td>
+                    <td class="col-odd {{ 'is-pick' if pick == 'draw' else '' }}" data-label="Empate">
+                        <span class="chip-sym">➖</span>
+                        {% if match.is_knockout %}
+                        <span class="no-odds">—</span>
+                        {% else %}
+                        {% if not match.is_editable() and match.odds %}
+                        <span class="odd-value {{ 'odd-picked' if pick == 'draw' else '' }}">{{
+                            "%.2f"|format(match.odds.draw_odds) }}</span>
+                        {% else %}<span class="no-odds">N/A</span>{% endif %}
+                        {% endif %}
+                    </td>
+                    <td class="col-odd {{ 'is-pick' if pick == 'b' else '' }}" data-label="Vitória B">
+                        <span class="chip-sym">{{ flag_b }}</span>
+                        {% if not match.is_editable() and match.odds %}
+                        <span class="odd-value {{ 'odd-picked' if pick == 'b' else '' }}">{{
+                            "%.2f"|format(match.odds.team_b_odds) }}</span>
+                        {% else %}<span class="no-odds">N/A</span>{% endif %}
+                    </td>
+                    <td class="col-guess-cell">
+                        {% if match.id in user_guesses %}
+                        <span class="score-pill">{{ user_guesses[match.id].pred_a }} x {{ user_guesses[match.id].pred_b
+                            }}</span>
+                        {% elif match.is_editable() %}
+                        <a href="{{ url_for('create_guess', match_id=match.id) }}" class="guess-cta">+ palpitar</a>
+                        {% else %}
+                        <span role="img" aria-label="Você não palpitou e o prazo encerrou"
+                            title="Você não palpitou e o prazo encerrou"
+                            style="color: var(--muted-2); cursor: default;">🪰</span>
+                        {% endif %}
+                    </td>
+                    </tr>
+                    {% endfor %}
+            </tbody>
+        </table>
     </div>
-  </div>
-{% endblock %}
-
-{% block scripts %}
-<script>
-  // No mobile, cada linha de odds mostra só o resumo; toca pra expandir as odds.
-  // No desktop o CSS deixa tudo visível, então o toggle não tem efeito visual.
-  var mqMobile = window.matchMedia('(max-width: 640px)');
-
-  document.querySelectorAll('.odds-table .odds-row').forEach(function (row) {
-    function toggle() {
-      var open = row.classList.toggle('is-open');
-      row.setAttribute('aria-expanded', open ? 'true' : 'false');
-    }
-
-    row.addEventListener('click', function (e) {
-      // Não alterna ao tocar no link "+ palpitar".
-      if (e.target.closest('a')) return;
-      toggle();
-    });
-
-    // Acessibilidade de teclado: Enter/Espaço expandem a linha (só faz sentido no mobile).
-    row.addEventListener('keydown', function (e) {
-      if (!mqMobile.matches) return;
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
-        toggle();
-      }
-    });
-
-    // No mobile a "tabela" vira cards (display:block), então a linha pode virar
-    // um controle focável/anunciável; no desktop removemos para não criar tab stops inúteis.
-    function syncA11y() {
-      if (mqMobile.matches) {
-        row.setAttribute('tabindex', '0');
-        row.setAttribute('role', 'button');
-        if (!row.hasAttribute('aria-expanded')) row.setAttribute('aria-expanded', 'false');
-      } else {
-        row.removeAttribute('tabindex');
-        row.removeAttribute('role');
-        row.removeAttribute('aria-expanded');
-      }
-    }
-    syncA11y();
-    mqMobile.addEventListener('change', syncA11y);
-  });
-</script>
+</div>
 {% endblock %}

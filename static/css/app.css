@@ -41,14 +41,14 @@ body {
 }
 
 .nav a:hover {
-    background: rgba(255, 255, 255, 0.03);
+    background: color-mix(in srgb, var(--surface-white) 3%, transparent);
     color: var(--surface)
 }
 
 .nav a.active {
     background: var(--grad-coral);
     color: var(--surface);
-    box-shadow: 0 6px 14px rgba(203, 67, 53, 0.12)
+    box-shadow: 0 6px 14px color-mix(in srgb, var(--coral) 12%, transparent)
 }
 
 .content {
@@ -64,10 +64,10 @@ body {
 }
 
 .card {
-    background: var(--surface);
+    background: var(--surface-white);
     border-radius: var(--radius-lg);
     padding: 20px;
-    box-shadow: 0 6px 20px rgba(2, 6, 23, 0.06)
+    box-shadow: 0 6px 20px color-mix(in srgb, var(--slate) 6%, transparent)
 }
 
 h1 {
@@ -81,7 +81,7 @@ h1 {
 }
 
 .card label {
-    font-size: 0.95rem;
+    font-size: 0.9rem;
     color: var(--ink)
 }
 
@@ -213,7 +213,7 @@ h1 {
     .nav a {
         white-space: nowrap;
         padding: 11px 14px;
-        background: rgba(255, 255, 255, 0.06)
+        background: color-mix(in srgb, var(--surface-white) 6%, transparent)
     }
 
     .content {
@@ -229,7 +229,7 @@ h1 {
 .ranking-table {
     width: 100%;
     border-collapse: collapse;
-    background: var(--surface);
+    background: var(--surface-white);
     border-radius: var(--radius-lg);
     overflow: hidden;
     margin-top: 15px;
@@ -247,7 +247,7 @@ h1 {
     color: var(--muted);
     font-size: 0.8rem;
     text-transform: uppercase;
-    font-weight: 700;
+    font-weight: 600;
 }
 
 .ranking-table tr:last-child td {
@@ -312,11 +312,11 @@ h1 {
 .odds-table {
     width: 100%;
     border-collapse: collapse;
-    background: var(--surface);
+    background: var(--surface-white);
     border-radius: var(--radius-lg);
     overflow: hidden;
     margin-top: 0px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 4px 12px color-mix(in srgb, var(--slate) 5%, transparent);
     table-layout: fixed;
 }
 
@@ -330,9 +330,9 @@ h1 {
 .odds-table th {
     background: var(--surface);
     color: var(--muted);
-    font-size: 0.75rem;
+    font-size: 0.8rem;
     text-transform: uppercase;
-    font-weight: 700;
+    font-weight: 600;
 }
 
 .odds-table .match-info {
@@ -361,16 +361,14 @@ h1 {
     border-radius: var(--radius-sm);
 }
 
-/* Feedback de hover só em dispositivos com cursor real — evita o estado
-   "grudar" após o toque no mobile (skill §2: hover-vs-tap). */
 @media (hover: hover) {
     .odds-table .odds-row:hover {
-        background: var(--mist);
+        background: var(--surface);
+
     }
 }
 
 .odds-table .no-odds {
-    /* --muted (não --muted-2) garante contraste AA 4.5:1 sobre --surface */
     color: var(--muted);
     font-size: 0.85rem;
     font-style: italic;
@@ -445,12 +443,12 @@ h1 {
 /* Sub-linha de pênaltis dentro da pílula (mata-mata) */
 .score-pill .penalty-line {
     display: block;
-    font-size: 0.72rem;
+    font-size: 0.8rem;
     font-weight: 500;
     opacity: 0.8;
     margin-top: 2px;
     padding-top: 2px;
-    border-top: 1px solid rgba(0, 0, 0, 0.12);
+    border-top: 1px solid color-mix(in srgb, var(--slate) 12%, transparent);
 }
 
 /* Estilos para Abas de Palpites */
@@ -499,15 +497,20 @@ h1 {
     background-color: var(--coral-bg);
 }
 
+/* A bandeira dentro do chip de odd só aparece no mobile */
+.odds-table .chip-sym {
+    display: none;
+}
+
 /* Cabeçalho do dia na tabela de odds (desktop) */
 .odds-table .day-header-cell {
     text-align: left;
     background: var(--surface);
-    font-weight: 700;
-    padding: 10px 16px;
-    color: var(--slate);
+    font-weight: 600;
+    padding: 12px 12px;
+    color: var(--muted);
     border-bottom: 2px solid var(--line);
-    font-size: 0.85rem;
+    font-size: 0.8rem;
 }
 
 /* ===== Mobile (≤640px) — tabelas legíveis no celular ===== */
@@ -526,9 +529,10 @@ h1 {
         padding: 10px 12px
     }
 
-    /* Odds: mesmo feeling do ranking. Cada partida é uma linha que quebra em
-       sub-linhas. Linha 1: título (esq.) + horário (dir.) + seta na ponta.
-       Ao tocar, as 3 odds aparecem em 3 colunas; o palpite fica rótulo/valor. */
+    /* Odds (mobile, layout "chips"): cada partida em 2 linhas.
+       Linha 1: nome do time (um pouco maior) + horário.
+       Linha 2: 4 células de MESMA largura/altura — chip A (bandeira + odd),
+       empate (➖ + odd), chip B (bandeira + odd) e o palpite. Tudo visível. */
     .odds-table {
         box-shadow: none;
         overflow: visible
@@ -547,24 +551,12 @@ h1 {
 
     .odds-table .odds-row {
         display: grid;
-        grid-template-columns: repeat(3, 1fr) 38px;
-        grid-template-rows: auto auto 0fr;
-        align-items: center;
-        column-gap: 0;
-        padding: 12px;
-        margin-bottom: 10px;
-        background: var(--surface);
-        border: 1px solid var(--line);
-        border-radius: var(--radius);
-        box-shadow: 0 1px 3px rgba(2, 6, 23, 0.10);
-        cursor: pointer;
-        transition: grid-template-rows 0.28s ease, box-shadow 0.2s ease
-    }
-
-    /* aberto: revela a 3ª linha (odds) e "levanta" o card */
-    .odds-row.is-open {
-        grid-template-rows: auto auto 1fr;
-        box-shadow: 0 5px 14px rgba(2, 6, 23, 0.12)
+        grid-template-columns: repeat(4, 1fr);
+        column-gap: 6px;
+        row-gap: 8px;
+        align-items: stretch;
+        padding: 12px 10px;
+        border-bottom: 1px solid var(--line)
     }
 
     .odds-row td {
@@ -573,141 +565,90 @@ h1 {
         width: auto
     }
 
-    /* Linha 1 — título (esq.), horário (dir.) e seta, todos na mesma linha */
+    /* Linha 1 — nome do time (um pouco maior) à esquerda, horário à direita */
     .odds-row .match-info {
-        grid-column: 1 / 3;
+        grid-column: 1 / 4;
         grid-row: 1;
+        align-self: baseline;
         width: auto;
         min-width: 0;
         white-space: normal;
         overflow: visible;
-        text-overflow: clip;
-        font-size: 1rem;
+        text-overflow: ellipsis;
+        font-size: 0.9rem;
         font-weight: 600
     }
 
-    /* Horário no mesmo tamanho do desktop (herdado), encostado à direita */
     .odds-row .col-time {
-        grid-column: 3;
+        grid-column: 4;
         grid-row: 1;
+        align-self: baseline;
         text-align: right;
-        color: var(--muted)
+        color: var(--muted);
+        font-size: 0.8rem
     }
 
-    /* Caixa coral atrás da seta — visualmente coerente com o "+ palpitar" */
-    .odds-row::before {
-        content: "";
-        grid-column: 4;
-        grid-row: 1;
-        justify-self: end;
-        align-self: center;
-        width: 28px;
-        height: 28px;
-        background: var(--coral-bg);
-        border-radius: var(--radius-sm)
-    }
-
-    /* Seta coral sobreposta à caixa, centralizada, girando no próprio eixo */
-    .odds-row::after {
-        content: "";
-        grid-column: 4;
-        grid-row: 1;
-        justify-self: end;
-        align-self: center;
-        width: 8px;
-        height: 8px;
-        margin: -3px 10px 0 0;
-        border-right: 2.5px solid var(--coral);
-        border-bottom: 2.5px solid var(--coral);
-        transform: rotate(45deg);
-        transition: transform 0.2s
-    }
-
-    .odds-row.is-open::after {
-        transform: rotate(225deg)
-    }
-
-    /* Palpite — acima das odds; rótulo à esquerda, valor/botão à direita */
+    /* Linha 2 — 4 células iguais (3 chips + palpite): mesma largura e altura */
+    .odds-row .col-odd,
     .odds-row .col-guess-cell {
-        grid-column: 1 / -1;
         grid-row: 2;
         display: flex;
-        justify-content: space-between;
         align-items: center;
-        margin-top: 10px;
-        padding-top: 10px;
-        border-top: 1px solid var(--line)
-    }
-
-    .odds-row .col-guess-cell::before {
-        content: "Palpite";
-        color: var(--muted);
-        font-size: 0.72rem;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 0.3px
-    }
-
-    /* Odds sempre presentes na 3ª linha, mas recolhidas (altura 0) até abrir;
-       overflow:hidden recorta o conteúdo durante a animação. */
-    .odds-row .col-odd {
-        grid-row: 3;
-        align-self: stretch;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 3px;
-        padding: 10px 4px 0;
-        text-align: center;
-        overflow: hidden;
-        min-height: 0
-    }
-
-    /* Bordas só no estado aberto, senão vazam 1px no card fechado */
-    .odds-row.is-open .col-odd {
-        border-top: 1px solid var(--line)
-    }
-
-    /* Divisória cinza-mute entre as colunas de odds (igual à linha do topo) */
-    .odds-row.is-open .col-odd + .col-odd {
-        border-left: 1px solid var(--line)
-    }
-
-    .odds-row .col-odd::before {
-        content: attr(data-label);
-        color: var(--muted);
-        font-size: 0.72rem;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 0.3px
-    }
-
-    /* CTA "+ palpitar" com área de toque maior */
-    .odds-table .guess-cta {
-        display: inline-block;
-        padding: 8px 12px;
-        background: var(--coral-bg);
+        justify-content: center;
+        gap: 4px;
+        min-height: 28px;
         border-radius: var(--radius-sm);
         font-size: 0.9rem
     }
 
-    /* Hierarquia: o dia é uma faixa com acento coral + respiro acima.
-       (a partida = linha cinza; o dia = barra coral + espaço) */
-    .odds-table .day-header-cell {
-        margin-top: 18px;
-        margin-bottom: 8px;
-        padding: 8px 12px;
-        background: var(--bg);
-        color: var(--ink);
-        border-bottom: none;
-        border-left: 3px solid var(--coral);
-        font-size: 0.75rem;
-        text-transform: uppercase;
-        letter-spacing: 0.4px
+    /* Chip de odd — bandeira/➖ + valor, sobre um azul suave do token de odd */
+    .odds-row .col-odd {
+        background: color-mix(in srgb, var(--odd) 8%, transparent);
+        padding: 3px 4px
     }
 
-    /* o primeiro dia não precisa de respiro acima */
-    .odds-table .date-group-header:first-child .day-header-cell {
-        margin-top: 0
+    .odds-row .col-odd.is-pick {
+        box-shadow: inset 0 0 0 1.5px var(--coral)
     }
+
+    .odds-row .chip-sym {
+        display: inline;
+        font-size: 0.9rem;
+        line-height: 1
+    }
+
+    /* dentro do chip o valor não tem fundo próprio (o chip já tem) */
+    .odds-row .col-odd .odd-value {
+        background: none;
+        padding: 0;
+        box-shadow: none
+    }
+
+    .odds-row .col-odd .no-odds {
+        font-size: 0.8rem
+    }
+
+    /* Palpite / mosca / "+ palpitar" — mesma largura e altura dos chips */
+    .odds-row .col-guess-cell > * {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        min-height: 28px;
+        margin: 0;
+        font-size: 0.8rem
+    }
+
+    .odds-row .col-guess-cell .score-pill {
+        padding: 0 4px
+    }
+
+    /* "+ palpitar" com leve fundo coral */
+    .odds-row .col-guess-cell .guess-cta {
+        background: var(--coral-bg);
+        color: var(--coral);
+        border-radius: var(--radius-sm);
+        padding: 0 4px
+    }
+
 }
