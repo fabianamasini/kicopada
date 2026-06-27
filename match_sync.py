@@ -217,6 +217,12 @@ def sync_matches(dry_run: bool = False, log=print) -> int:
         log(f"[match_sync] API indisponível; nenhum jogo cadastrado neste boot ({e}).")
         return 0
 
+    # Carrega os jogos já cadastrados de uma vez só (evita N+1 no boot — seriam
+    # ~100 SELECTs). Indexa por par de times SEM mando de campo: frozenset({A,B})
+    # == frozenset({B,A}), então não duplica um jogo já cadastrado à mão pelo admin
+    # mesmo com a ordem invertida.
+    seen = {frozenset((m.team_a, m.team_b)) for m in Match.query.all()}
+
     inserted = 0
     for event in events:
         parsed = _parse_event(event)
@@ -224,16 +230,10 @@ def sync_matches(dry_run: bool = False, log=print) -> int:
             continue
 
         a, b = parsed["team_a"], parsed["team_b"]
-        # Existência ignorando mando de campo (evita duplicar um jogo já cadastrado
-        # à mão pelo admin caso a ordem dos times venha invertida).
-        exists = Match.query.filter(
-            db.or_(
-                db.and_(Match.team_a == a, Match.team_b == b),
-                db.and_(Match.team_a == b, Match.team_b == a),
-            )
-        ).first()
-        if exists:
+        key = frozenset((a, b))
+        if key in seen:
             continue
+        seen.add(key)   # evita duplicar na mesma execução se a API repetir o jogo
 
         log(f"[match_sync] + {a} x {b}  {parsed['date']}  [{parsed['round']}]")
         inserted += 1
