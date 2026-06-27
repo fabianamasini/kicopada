@@ -24,6 +24,7 @@
             <div class="cal-panels">
             {% for month in calendar_months %}
             <div class="cal-month" data-label="{{ month.label }}"{% if month.is_current %} data-current="1"{% endif %}>
+                <h3 class="cal-month-title">{{ month.label }}</h3>
                 {% if month.has_games %}
                 <div class="cal-grid cal-dow-row">
                     {% for d in ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'] %}

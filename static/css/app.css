@@ -866,6 +866,12 @@ h1 {
     display: block;
 }
 
+/* Título do mês: escondido no mobile (o carrossel mostra na nav),
+   visível no desktop (onde os dois meses aparecem lado a lado). */
+.cal-month-title {
+    display: none;
+}
+
 .cal-grid {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
@@ -1055,12 +1061,26 @@ h1 {
     }
     .cal-panels {
         display: flex;
-        gap: 24px;
+        gap: var(--space-32);
         align-items: flex-start;
     }
     .cal-month {
         display: block;
         flex: 1 1 0;
+        min-width: 0;
+    }
+    .cal-month + .cal-month {
+        border-left: 1px solid var(--line);
+        padding-left: var(--space-32);
+    }
+    .cal-month-title {
+        display: block;
+        margin: 0 0 var(--space-14);
+        font-size: 1rem;
+        font-weight: 700;
+        color: var(--slate);
+        text-align: center;
+        letter-spacing: 0.01em;
     }
 }
 
