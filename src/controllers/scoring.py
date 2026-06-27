@@ -1,6 +1,5 @@
 from models import db, User, Guesses, Odds, Match
 from sqlalchemy.orm import joinedload
-from models import db, User, Guesses, Odds
 
 class ScoringController:
 
@@ -16,9 +15,9 @@ class ScoringController:
         return max(1.0, min(2.0, odd))
 
     def __calculate_points(self, guess, odds_map=None):
-        # Busca a odd no mapa em cache ou faz a query se não houver mapa
         points = 0
         odd_value = self.get_odds_for_guess(guess, odds_map)
+        
         if not guess.match.is_knockout:
             points += (self.group_phase_result(
                 guess.match.score_a, guess.match.score_b, guess.pred_a, guess.pred_b
@@ -33,38 +32,34 @@ class ScoringController:
 
     def calculate_odds_for_match(self, match_id):
         """Calcula as odds para uma partida específica com base nos palpites dos usuários.
-
+        
         Odd = 1 + ((y - x) / (y - 1))
 
         y = numero total de palpites para aquela partida
         x = numero de palpites para aquele time
-        
         """
         guesses = Guesses.query.filter_by(match_id=match_id).all()
         match = Match.query.get(match_id)
         total_guesses = len(guesses)
 
         if match.is_knockout:
-            # Para mata-mata, contamos palpites por classificado
             count_a = sum(1 for g in guesses if g.winner_pred == 'A')
             count_b = sum(1 for g in guesses if g.winner_pred == 'B')
-            count_draw = 0 # Não há odd para empate em mata-mata
+            count_draw = 0 
         else:
-            # Para fase de grupos, contamos por vitória A, empate, vitória B
             count_a = sum(1 for g in guesses if g.pred_a > g.pred_b)
             count_b = sum(1 for g in guesses if g.pred_b > g.pred_a)
             count_draw = sum(1 for g in guesses if g.pred_a == g.pred_b)
 
         odds_a = self.__calculate_odd(total_guesses, count_a)
         odds_b = self.__calculate_odd(total_guesses, count_b)
-        odds_draw = self.__calculate_odd(total_guesses, count_draw) if not match.is_knockout else 1.0 # Em mata-mata, a odd de empate é neutra (1.0)
+        odds_draw = self.__calculate_odd(total_guesses, count_draw) if not match.is_knockout else 1.0 
 
         odds = Odds.query.filter_by(match_id=match_id).first()
         if not odds:
             odds = Odds(match_id=match_id, team_a_odds=odds_a, team_b_odds=odds_b, draw_odds=odds_draw)
             db.session.add(odds)
         else:
-            # Atualiza as odds existentes
             odds.team_a_odds = odds_a
             odds.team_b_odds = odds_b
             odds.draw_odds = odds_draw
@@ -86,8 +81,8 @@ class ScoringController:
         if score_a is None or score_b is None:
             return 0
 
-        real_diff = score_a - score_b # Saldo de gols real
-        pred_diff = pred_a - pred_b # Saldo de gols do palpite
+        real_diff = score_a - score_b 
+        pred_diff = pred_a - pred_b 
 
         def sign(x):
             if x > 0: return 1
@@ -109,7 +104,6 @@ class ScoringController:
         saldo_real = score_a - score_b
         saldo_palpite = pred_a - pred_b
 
-        # Flag para indicar se o placar final foi empate (independentemente de quem classificou)
         is_real_draw = (saldo_real == 0)
         is_pred_draw = (saldo_palpite == 0)
 
@@ -119,6 +113,7 @@ class ScoringController:
             c_real = 'A' if score_a > score_b else 'B'
         else:
             c_real = winner_real
+            
         if pred_a != pred_b:
             c_pred = 'A' if pred_a > pred_b else 'B'
         else:
@@ -126,35 +121,34 @@ class ScoringController:
 
         cx_eq_c = (c_real is not None and c_real == c_pred)
 
-        # Regras hierárquicas
         if cx_eq_c and pred_a == score_a and pred_b == score_b:
             return 1500 * odd_value
         elif cx_eq_c and saldo_palpite == saldo_real:
             return 800 * odd_value
-        elif cx_eq_c and is_pred_draw == is_real_draw: # Acertou se foi empate ou não no tempo normal
+        elif cx_eq_c and is_pred_draw == is_real_draw: 
             return 600 * odd_value
         elif cx_eq_c:
             return 500 * odd_value
         elif pred_a == score_a and pred_b == score_b:
             return 200
         elif saldo_palpite == saldo_real:
-            return 100 # Acertou o saldo, mas não o classificado
+            return 100 
         elif is_pred_draw == is_real_draw:
-            return 100 # Acertou se foi empate ou não no tempo normal, mas não o classificado
+            return 100 
         return 0
 
     def calculate_score_for_guess(self, guess):
-        """
-        Calcula e atualiza a pontuação de um palpite específico e a pontuação total do usuário.
-        """
-        # Este método não é mais usado diretamente após a refatoração para update_user_points
-        # que recalcula todos os palpites do usuário.
-        # Mantido por compatibilidade, mas pode ser removido se não houver chamadas externas.
         if guess and guess.user_id:
-            self.update_user_points(guess.user_id) # Garante que o usuário é atualizado
+            self.update_user_points(guess.user_id) 
 
     def get_odds_for_guess(self, guess, odds_map=None):
-        odds = Odds.query.filter_by(match_id=guess.match_id).first()
+        odds = None
+        if odds_map is not None:
+            odds = odds_map.get(guess.match_id)
+            
+        if not odds:
+            odds = Odds.query.filter_by(match_id=guess.match_id).first()
+            
         if not odds:
             return 2.0 
 
@@ -163,7 +157,7 @@ class ScoringController:
                 return odds.team_a_odds
             elif guess.winner_pred == 'B':
                 return odds.team_b_odds
-            return 1.0 # Se não houver winner_pred (erro ou não aplicável), retorna odd neutra
+            return 1.0 
         else:
             if guess.pred_a > guess.pred_b:
                 return odds.team_a_odds
@@ -173,8 +167,7 @@ class ScoringController:
                 return odds.draw_odds
 
     def update_user_points(self, user_id, commit=True, odds_map=None):
-        """Recalcula a pontuação total de um usuário com base em todos os seus palpites
-        ou em algum palpite específico."""
+        """Recalcula a pontuação total de um usuário com base em todos os seus palpites."""
         user = User.query.get(user_id)
         if not user:
             return
@@ -194,11 +187,13 @@ class ScoringController:
         """Atualiza a pontuação de todos os usuários que palpitaram em uma partida específica."""
         self.calculate_odds_for_match(match_id)
         
-        # Otimização: Carrega todas as Odds de uma vez para evitar N+1 queries no loop
         all_odds = Odds.query.all()
         odds_map = {o.match_id: o for o in all_odds}
         
         guesses = Guesses.query.filter_by(match_id=match_id).all()
-        for g in guesses:
-            self.update_user_points(g.user_id, commit=False, odds_map=odds_map)
+        unique_user_ids = {g.user_id for g in guesses}
+        
+        for user_id in unique_user_ids:
+            self.update_user_points(user_id, commit=False, odds_map=odds_map)
+            
         db.session.commit()
