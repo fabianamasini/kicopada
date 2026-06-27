@@ -45,6 +45,9 @@ ESPN_SCOREBOARD = (
 # Intervalo coberto pela Copa 2026 (abertura 11/06; margem após a final 19/07).
 WC_START = "20260611"
 WC_END = "20260720"
+# Timeout curto: roda no boot e a falha é não-fatal/idempotente (se a ESPN estiver
+# lenta, simplesmente cadastra no próximo boot) — não vale travar o deploy.
+REQUEST_TIMEOUT = 8
 
 HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
@@ -128,15 +131,20 @@ def _map_team(raw: str):
 def _phase_for_date(iso: str) -> str:
     """Fase da Copa a partir da data (YYYY-MM-DD), pelo calendário oficial 2026.
     Comparação lexicográfica de datas ISO. Fora dos intervalos = Fase de Grupos
-    (11–27/jun, e fallback seguro)."""
+    (11–27/jun, e fallback seguro).
+
+    Os rótulos espelham EXATAMENTE os de `phases` em src/utils.py (ex.: Round of
+    32 = '16-avos de Final'; semis = 'Semifinais'), pra um jogo cadastrado aqui
+    ser idêntico a um cadastrado à mão pelo admin. A disputa de 3º lugar não tem
+    rótulo canônico — usa um descritivo (e fica is_knockout=True mesmo assim)."""
     if "2026-06-28" <= iso <= "2026-07-03":
-        return "Rodada de 32"
+        return "16-avos de Final"
     if "2026-07-04" <= iso <= "2026-07-07":
         return "Oitavas de Final"
     if iso in ("2026-07-09", "2026-07-10", "2026-07-11"):
         return "Quartas de Final"
     if iso in ("2026-07-14", "2026-07-15"):
-        return "Semifinal"
+        return "Semifinais"
     if iso == "2026-07-18":
         return "Disputa do 3º Lugar"
     if iso == "2026-07-19":
@@ -159,7 +167,7 @@ def _fetch_events() -> list:
     """Uma chamada à ESPN cobrindo toda a Copa. Pode lançar (rede/JSON)."""
     url = f"{ESPN_SCOREBOARD}?dates={WC_START}-{WC_END}&limit=200"
     req = Request(url, headers=HEADERS)
-    with urlopen(req, timeout=20) as resp:
+    with urlopen(req, timeout=REQUEST_TIMEOUT) as resp:
         data = json.loads(resp.read().decode("utf-8"))
     return data.get("events", []) or []
 
@@ -239,7 +247,13 @@ def sync_matches(dry_run: bool = False, log=print) -> int:
             ))
 
     if inserted and not dry_run:
-        db.session.commit()
+        try:
+            db.session.commit()
+        except Exception:
+            # Rollback pra não deixar a sessão num estado quebrado — como isto roda
+            # no boot, uma sessão pendente poderia derrubar requisições seguintes.
+            db.session.rollback()
+            raise
     return inserted
 
 
