@@ -1,5 +1,6 @@
 /* Estilos das telas de autenticação (login, cadastro, recuperar senha).
    Tokens, reset e fonte ficam em tokens.css (carregado antes deste arquivo). */
+
 body {
     background: var(--grad-auth);
     display: flex;
@@ -11,7 +12,7 @@ body {
 .auth-container {
     width: 100%;
     max-width: 420px;
-    margin: 32px;
+    margin: var(--space-32);
     display: flex;
     justify-content: center;
 }
@@ -20,13 +21,13 @@ body {
     background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(255, 255, 255, 0.95));
     border-radius: var(--radius-lg);
     box-shadow: 0 10px 30px rgba(2, 6, 23, 0.5);
-    padding: 28px;
+    padding: var(--space-28);
     border: 1px solid rgba(15, 23, 42, 0.06);
 }
 
 .brand {
     text-align: center;
-    margin-bottom: 12px;
+    margin-bottom: var(--space-12);
 }
 
 .brand h1 {
@@ -38,14 +39,14 @@ body {
 .hint {
     font-size: 0.85rem;
     color: var(--muted);
-    margin-top: 6px
+    margin-top: var(--space-6)
 }
 
 form {
     display: flex;
     flex-direction: column;
-    gap: 12px;
-    margin-top: 8px
+    gap: var(--space-12);
+    margin-top: var(--space-8)
 }
 
 label {
@@ -56,7 +57,7 @@ label {
 input[type="text"],
 input[type="password"] {
     width: 100%;
-    padding: 12px 14px;
+    padding: var(--space-12) var(--space-14);
     border-radius: var(--radius);
     border: 1px solid var(--line);
     background: var(--surface);
@@ -64,8 +65,8 @@ input[type="password"] {
 }
 
 button[type="submit"] {
-    margin-top: 6px;
-    padding: 12px 14px;
+    margin-top: var(--space-6);
+    padding: var(--space-12) var(--space-14);
     border-radius: var(--radius);
     border: 0;
     background: var(--grad-coral);
@@ -83,7 +84,7 @@ button[type="submit"]:hover {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-top: 8px
+    margin-top: var(--space-8)
 }
 
 a.secondary {
@@ -93,7 +94,7 @@ a.secondary {
 }
 
 .flash {
-    padding: 10px;
+    padding: var(--space-10);
     border-radius: var(--radius);
     font-size: 0.95rem
 }
@@ -110,8 +111,15 @@ a.secondary {
     border: 1px solid rgba(20, 70, 32, 0.06)
 }
 
+.auth-wrap {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: var(--space-20);
+}
+
 @media (max-width:480px) {
     .card {
-        padding: 20px
+        padding: var(--space-20)
     }
 }

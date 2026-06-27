@@ -14,27 +14,27 @@ body {
     width: 220px;
     background: var(--grad-sidebar);
     color: var(--mist);
-    padding: 20px;
+    padding: var(--space-20);
     flex-shrink: 0
 }
 
 .sidebar .brand {
     font-weight: 700;
     font-size: 18px;
-    margin-bottom: 14px;
+    margin-bottom: var(--space-14);
     color: var(--surface)
 }
 
 .nav {
     display: flex;
     flex-direction: column;
-    gap: 6px
+    gap: var(--space-6)
 }
 
 .nav a {
     display: block;
     color: var(--nav-link);
-    padding: 10px;
+    padding: var(--space-10);
     border-radius: var(--radius);
     text-decoration: none;
     font-weight: 600
@@ -53,31 +53,31 @@ body {
 
 .content {
     flex: 1;
-    padding: 28px
+    padding: var(--space-28)
 }
 
 .topbar {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 18px
+    margin-bottom: var(--space-8)
 }
 
 .card {
     background: var(--surface-white);
     border-radius: var(--radius-lg);
-    padding: 20px;
+    padding: var(--space-10) var(--space-20);
     box-shadow: 0 6px 20px color-mix(in srgb, var(--slate) 6%, transparent)
 }
 
 h1 {
-    margin: 0 0 8px 0
+    margin: 0 0 var(--space-8) 0
 }
 
 .card form {
     display: flex;
     flex-direction: column;
-    gap: 12px
+    gap: var(--space-12)
 }
 
 .card label {
@@ -91,14 +91,14 @@ h1 {
 .card textarea,
 .card select {
     width: 100%;
-    padding: 10px;
+    padding: var(--space-10);
     border-radius: var(--radius);
     border: 1px solid var(--line);
     font-size: 1rem
 }
 
 .card button[type="submit"] {
-    padding: 10px 14px;
+    padding: var(--space-10) var(--space-14);
     border-radius: var(--radius);
     border: 0;
     background: var(--grad-coral);
@@ -110,7 +110,7 @@ h1 {
 
 .form-row {
     display: flex;
-    gap: 12px;
+    gap: var(--space-12);
     align-items: center
 }
 
@@ -139,7 +139,7 @@ h1 {
 }
 
 .card input[type="date"] {
-    padding: 10px 40px 10px 12px;
+    padding: var(--space-10) 40px var(--space-10) var(--space-12);
     background-color: var(--surface);
     background-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%239ca3af' d='M7 2h2v2h6V2h2v4H7V2zM5 7h14v13H5z'/%3E%3C/svg%3E");
     background-repeat: no-repeat;
@@ -158,20 +158,20 @@ h1 {
 .topbar .username {
     color: #000000;
     background: transparent;
-    padding: 6px 8px;
-    margin-right: 8px
+    padding: var(--space-6) var(--space-8);
+    margin-right: var(--space-8)
 }
 
 .topbar-actions {
     display: flex;
     align-items: center;
-    gap: 8px
+    gap: var(--space-8)
 }
 
 .btn-logout {
     background: var(--grad-coral);
     color: var(--surface);
-    padding: 8px 10px;
+    padding: var(--space-8) var(--space-10);
     border-radius: var(--radius);
     text-decoration: none;
     font-weight: 600
@@ -180,7 +180,7 @@ h1 {
 .link-muted {
     color: var(--muted);
     text-decoration: none;
-    padding: 6px 8px
+    padding: var(--space-6) var(--space-8)
 }
 
 @media (max-width:880px) {
@@ -190,10 +190,10 @@ h1 {
 
     .sidebar {
         width: 100%;
-        padding: 12px 14px;
+        padding: var(--space-12) var(--space-14);
         display: flex;
         flex-direction: column;
-        gap: 10px
+        gap: var(--space-10)
     }
 
     .sidebar .brand {
@@ -202,23 +202,26 @@ h1 {
 
     .nav {
         flex-direction: row;
-        flex-wrap: wrap;
-        gap: 8px
+        flex-wrap: nowrap;
+        gap: var(--space-2);
+        min-width: 0;
     }
 
     .nav a {
+        flex: 1 1 0.1;
+        min-width: 0;
         white-space: nowrap;
-        padding: 11px 14px;
+        padding: var(--space-8) var(--space-8);
         background: color-mix(in srgb, var(--surface-white) 6%, transparent)
     }
 
     .content {
-        padding: 16px 14px
+        padding: var(--space-16) var(--space-14)
     }
 }
 
 .ranking-section {
-    margin-top: 24px;
+    margin-top: var(--space-24);
 }
 
 .ranking-table {
@@ -227,12 +230,12 @@ h1 {
     background: var(--surface-white);
     border-radius: var(--radius-lg);
     overflow: hidden;
-    margin-top: 15px;
+    margin-top: var(--space-16);
 }
 
 .ranking-table th,
 .ranking-table td {
-    padding: 14px 20px;
+    padding: var(--space-14) var(--space-20);
     text-align: left;
     border-bottom: 1px solid var(--line);
 }
@@ -279,8 +282,8 @@ h1 {
 
 .home-content-layout {
     display: flex;
-    gap: 30px;
-    margin-top: 24px;
+    gap: var(--space-32);
+    margin-top: var(--space-24);
 }
 
 .home-content-layout>.card {
@@ -314,7 +317,7 @@ h1 {
 
 .odds-table th,
 .odds-table td {
-    padding: 12px 16px;
+    padding: var(--space-12) var(--space-16);
     text-align: center;
     border-bottom: 1px solid var(--line);
 }
@@ -330,18 +333,13 @@ h1 {
 .odds-table .match-info {
     text-align: left;
     font-weight: 600;
-    width: 26%;
-    overflow: hidden;
+    width: 40%;
+    overflow: auto;
     text-overflow: ellipsis;
-    white-space: nowrap;
 }
 
-.odds-table th:not(.match-info):not(.col-guess) {
-    width: 14%;
-}
-
-.odds-table .col-guess {
-    width: 18%;
+.odds-table th:not(.match-info) {
+    width: 15%;
 }
 
 .odds-table .odd-value {
@@ -349,7 +347,7 @@ h1 {
     color: var(--odd);
     font-weight: 600;
     background: var(--odd-bg);
-    padding: 6px 12px;
+    padding: var(--space-6) var(--space-12);
     border-radius: var(--radius-sm);
 }
 
@@ -387,7 +385,7 @@ h1 {
     display: inline-block;
     font-family: inherit;
     font-weight: 600;
-    padding: 5px 14px;
+    padding: var(--space-4) var(--space-14);
     border-radius: var(--radius-sm);
     white-space: nowrap;
     background: var(--bg);
@@ -424,24 +422,24 @@ h1 {
     font-size: 0.8rem;
     font-weight: 500;
     opacity: 0.8;
-    margin-top: 2px;
-    padding-top: 2px;
+    margin-top: var(--space-2);
+    padding-top: var(--space-2);
     border-top: 1px solid color-mix(in srgb, var(--slate) 12%, transparent);
 }
 
 .tabs-container {
-    margin-top: 20px;
+    margin-top: var(--space-20);
 }
 
 .tabs-header {
     display: flex;
-    gap: 10px;
+    gap: var(--space-10);
     border-bottom: 2px solid var(--mist);
-    margin-bottom: 20px;
+    margin-bottom: var(--space-20);
 }
 
 .tab-button {
-    padding: 10px 20px;
+    padding: var(--space-10) var(--space-20);
     border: none;
     background: none;
     cursor: pointer;
@@ -482,16 +480,16 @@ h1 {
     text-align: left;
     background: var(--surface);
     font-weight: 600;
-    padding: 12px;
+    padding: var(--space-12);
     color: var(--muted);
     border-bottom: 2px solid var(--line);
     font-size: 0.8rem;
 }
 
-/* ===== Mobile (≤640px) — tabelas legíveis no celular ===== */
+/* ===== Mobile (≤640px) tabelas legíveis no celular ===== */
 @media (max-width:640px) {
     .content {
-        padding: 14px 12px
+        padding: var(--space-14) var(--space-12)
     }
 
     h1 {
@@ -500,7 +498,7 @@ h1 {
 
     .ranking-table th,
     .ranking-table td {
-        padding: 10px 12px
+        padding: var(--space-10) var(--space-12)
     }
 
     .odds-table {
@@ -522,10 +520,10 @@ h1 {
     .odds-table .odds-row {
         display: grid;
         grid-template-columns: repeat(4, 1fr);
-        column-gap: 6px;
-        row-gap: 8px;
+        column-gap: var(--space-6);
+        row-gap: var(--space-8);
         align-items: stretch;
-        padding: 12px 10px;
+        padding: var(--space-12) var(--space-10);
         border-bottom: 1px solid var(--line)
     }
 
@@ -560,7 +558,7 @@ h1 {
         display: flex;
         align-items: center;
         justify-content: center;
-        gap: 4px;
+        gap: var(--space-4);
         min-height: 28px;
         border-radius: var(--radius-sm);
         font-size: 0.8rem
@@ -568,7 +566,7 @@ h1 {
 
     .odds-row .col-odd {
         background: color-mix(in srgb, var(--odd) 8%, transparent);
-        padding: 3px 4px
+        padding: var(--space-4)
     }
 
     .odds-row .col-odd.is-pick {
@@ -603,14 +601,199 @@ h1 {
     }
 
     .odds-row .col-guess-cell .score-pill {
-        padding: 0 4px
+        padding: 0 var(--space-4)
     }
 
     .odds-row .col-guess-cell .guess-cta {
         background: var(--coral-bg);
         color: var(--coral);
         border-radius: var(--radius-sm);
-        padding: 0 4px
+        padding: 0 var(--space-4)
     }
 
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.data-table thead tr {
+    text-align: left;
+    border-bottom: 2px solid var(--line);
+}
+
+.data-table th,
+.data-table td {
+    padding: var(--space-12) var(--space-8);
+}
+
+.data-table tbody tr {
+    border-bottom: 1px solid var(--line);
+}
+
+.data-table .center {
+    text-align: center;
+}
+
+.data-table .cell-muted {
+    color: var(--muted);
+}
+
+.data-table tbody tr.is-previous {
+    background-color: var(--surface);
+}
+
+.data-table tbody tr.is-pending {
+    background-color: var(--coral-bg);
+}
+
+.btn {
+    display: inline-block;
+    border: 0;
+    border-radius: var(--radius-sm);
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.btn-success {
+    background-color: var(--green-strong);
+    color: var(--surface);
+    padding: var(--space-8) var(--space-16);
+}
+
+.btn-sm {
+    padding: var(--space-6) var(--space-14);
+}
+
+.row-actions {
+    align-items: center;
+    display: flex;
+    gap: var(--space-12);
+    justify-content: center;
+}
+
+.action-edit {
+    background: var(--odd-bg);
+    border-radius: var(--radius-sm);
+    color: var(--odd);
+    font-family: inherit;
+    font-size: 0.9rem;
+    font-weight: 600;
+    padding: var(--space-8);
+    text-decoration: none;
+}
+
+.card button.action-delete,
+.action-delete {
+    background: var(--red-soft);
+    border-radius: var(--radius-sm);
+    color: var(--red-strong);
+    font-family: inherit;
+    font-size: 0.9rem;
+    padding: var(--space-8);
+}
+
+.form-inline {
+    display: inline;
+    margin: 0;
+}
+
+.link-add {
+    margin-left: var(--space-12);
+    color: var(--coral);
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.empty-state {
+    text-align: center;
+    color: var(--muted);
+    padding: var(--space-20);
+}
+
+.placeholder {
+    color: var(--muted-2);
+    font-style: italic;
+}
+
+.placeholder.is-small {
+    font-size: 0.75rem;
+}
+
+.badge-you {
+    font-size: 0.75rem;
+    color: var(--coral);
+    font-weight: 700;
+}
+
+.icon-muted {
+    color: var(--muted-2);
+    cursor: default;
+}
+
+.table-scroll {
+    overflow-x: auto;
+}
+
+.score-pill.is-help {
+    cursor: help;
+}
+
+.score-pill--lg {
+    font-size: 1.05rem;
+    padding: var(--space-8) var(--space-20);
+}
+
+.topbar h2 {
+    margin: 0;
+}
+
+.form-actions {
+    margin-top: var(--space-20);
+    display: flex;
+    gap: var(--space-12);
+    align-items: center;
+}
+
+.winner-section {
+    margin-top: var(--space-16);
+}
+
+.col-vs {
+    text-align: center;
+    align-self: flex-end;
+    padding-bottom: var(--space-10);
+    font-weight: 700;
+}
+
+.readonly-field {
+    padding: var(--space-10);
+    background: var(--surface);
+    border-radius: var(--radius);
+    border: 1px solid var(--line);
+    font-weight: 600;
+}
+
+.filter-block {
+    margin-bottom: var(--space-16);
+}
+
+.filter-label {
+    font-weight: 700;
+    margin-bottom: var(--space-8);
+    display: block;
+}
+
+.match-summary {
+    margin-bottom: var(--space-16);
+    text-align: center;
+}
+
+.summary-meta {
+    color: var(--muted);
+    font-size: 0.9rem;
+    margin-bottom: var(--space-8);
 }

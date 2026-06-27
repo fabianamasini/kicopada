@@ -16,7 +16,7 @@
                     {% endfor %}
                 </select>
             </div>
-            <div class="col-narrow" style="text-align: center; align-self: flex-end; padding-bottom: 10px; font-weight: bold;">VS</div>
+            <div class="col-narrow col-vs">VS</div>
             <div class="col">
                 <label for="team_b">Time B</label>
                 <select name="team_b" id="team_b" required onchange="updateTeamLabels()">
@@ -53,7 +53,7 @@
             </div>
         </div>
 
-        <div id="winner-section" style="display: none; margin-top: 15px;">
+        <div id="winner-section" class="winner-section" style="display: none;">
             <label for="winner">Quem se classificou nos pênaltis?</label>
             <select name="winner" id="winner">
                 <option value="" disabled {% if match.winner is none %}selected{% endif %}>Selecione o vencedor</option>
@@ -62,9 +62,9 @@
             </select>
         </div>
 
-        <div style="margin-top: 20px; display: flex; gap: 12px;">
+        <div class="form-actions">
             <button type="submit">Salvar Alterações</button>
-            <a href="{{ url_for('matches') }}" class="link-muted" style="align-self: center;">Cancelar</a>
+            <a href="{{ url_for('matches') }}" class="link-muted">Cancelar</a>
         </div>
     </form>
 </div>

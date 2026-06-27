@@ -13,7 +13,7 @@
 <div class="home-content-layout">
     <div class="card">
         <h2>Ranking Geral</h2>
-        <div style="overflow-x: auto;">
+        <div class="table-scroll">
             <table class="ranking-table">
                 <thead>
                     <tr>
@@ -29,7 +29,7 @@
                         <td>
                             {{ user.username }}
                             {% if user.id == current_user.id %}
-                            <span style="font-size: 0.75rem; color: var(--coral); font-weight: bold;">(Você)</span>
+                            <span class="badge-you">(Você)</span>
                             {% endif %}
                         </td>
                         <td class="pts">{{ user.points }}</td>
@@ -110,7 +110,7 @@
                         {% else %}
                         <span role="img" aria-label="Você não palpitou e o prazo encerrou"
                             title="Você não palpitou e o prazo encerrou"
-                            style="color: var(--muted-2); cursor: default;">🪰</span>
+                            class="icon-muted">🪰</span>
                         {% endif %}
                     </td>
                     </tr>

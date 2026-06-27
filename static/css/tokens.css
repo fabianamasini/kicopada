@@ -1,8 +1,7 @@
 /* ============================================================
-   Design tokens + reset compartilhados.
-   Carregado ANTES de app.css e auth.css (via base.html), então
-   todas as variáveis abaixo valem para o app inteiro.
-   Para mudar uma cor da marca, mude só aqui.
+   Carregado antes de app.css e auth.css (via base.html).
+   Todas as variáveis que devem ser padronizadas no layout
+   devem ser definidas neste arquivo.
    ============================================================ */
 :root {
     /* Tipografia */
@@ -55,6 +54,20 @@
     --radius-sm: 4px;
     --radius: 8px;
     --radius-lg: 12px;
+
+    /* Espaçamento (margin / padding / gap). */
+    --space-2: 2px;
+    --space-4: 4px;
+    --space-6: 6px;
+    --space-8: 8px;
+    --space-10: 10px;
+    --space-12: 12px;
+    --space-14: 14px;
+    --space-16: 16px;
+    --space-20: 20px;
+    --space-24: 24px;
+    --space-28: 28px;
+    --space-32: 32px;
 }
 
 * {
