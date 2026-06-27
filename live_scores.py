@@ -36,6 +36,7 @@ import json
 import time
 import argparse
 from datetime import datetime, timezone
+from concurrent.futures import ThreadPoolExecutor
 
 try:
     sys.stdout.reconfigure(encoding="utf-8")   # emojis das bandeiras no Windows
@@ -63,6 +64,7 @@ HEADERS = {
 }
 
 DEFAULT_INTERVAL = 30   # segundos entre cada atualização no modo --watch
+HTTP_TIMEOUT = 8        # timeout curto por chamada; falha rápido p/ não prender o worker
 
 # ─── Nomes dos times no formato do app (emoji + português) ────────────────────
 # Espelha o TEAM_MAP de seed_matches.py. Times fora do mapa caem no nome cru da
@@ -162,7 +164,7 @@ def round_name(competition: dict) -> str:
 def http_json(url: str, params: dict = None):
     """GET → dict JSON, ou None em caso de erro (logado no stderr)."""
     try:
-        r = requests.get(url, headers=HEADERS, params=params, timeout=20)
+        r = requests.get(url, headers=HEADERS, params=params, timeout=HTTP_TIMEOUT)
         r.raise_for_status()
         return r.json()
     except Exception as e:
@@ -380,20 +382,24 @@ def snapshot(date: str = None, include_goals: bool = True) -> dict:
           "matches": [ ...ver build_match()... ]
         }
     """
-    if date is None:
+    if not date:
         now = datetime.now(SAO_PAULO) if SAO_PAULO else datetime.now()
         date = now.strftime("%Y%m%d")
 
     data = http_json(SCOREBOARD, params={"dates": date, "limit": 50})
     events = (data or {}).get("events", []) or []
 
+    # Cada jogo ao vivo/encerrado faz 1 GET no summary (gols/cartões). Em série
+    # isso prenderia o worker por N×latência; busca em paralelo e reordena no fim.
     matches = []
-    for ev in events:
-        try:
-            matches.append(build_match(ev, include_goals=include_goals))
-        except Exception as e:
-            event_id = ev.get("id") if ev else "desconhecido"
-            warn(f"[live_scores] erro ao montar jogo {event_id}: {e}")
+    with ThreadPoolExecutor(max_workers=10) as executor:
+        futures = [executor.submit(build_match, ev, include_goals) for ev in events]
+        for ev, future in zip(events, futures):
+            try:
+                matches.append(future.result())
+            except Exception as e:
+                event_id = ev.get("id") if ev else "desconhecido"
+                warn(f"[live_scores] erro ao montar jogo {event_id}: {e}")
 
     matches.sort(key=lambda m: m["date"])
     now = datetime.now(SAO_PAULO) if SAO_PAULO else datetime.now(timezone.utc)

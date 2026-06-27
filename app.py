@@ -150,7 +150,7 @@ def create_guess():
         return guesses_controller.add_guess(request, current_user)
     matches_list = matches_controller.get_available_matches_for_user(current_user.id)
     # Agrupa os jogos disponíveis por dia para montar a lista (optgroup) por data.
-    editable = [m for m in matches_list if m.is_editable()]
+    editable = [m for m in matches_list if m.is_editable() and m.date]
     match_groups = []
     # groupby agrupa só elementos adjacentes — ordena por data antes (a query já
     # vem ordenada, mas deixamos explícito p/ não depender disso silenciosamente).
@@ -193,7 +193,7 @@ def api_ao_vivo():
     # ?date=YYYYMMDD é opcional — útil pra testar fora da Copa apontando pra um dia
     # de jogos passado. Valida o formato; qualquer coisa fora dele usa o dia de hoje.
     date = request.args.get('date')
-    if date and not re.fullmatch(r'\d{8}', date):
+    if not date or not re.fullmatch(r'\d{8}', date):
         date = None
     return jsonify(_cached_aovivo(date))
 
