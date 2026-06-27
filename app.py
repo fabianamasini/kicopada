@@ -1,4 +1,6 @@
 import os
+import re
+import time
 import pytz
 import locale
 
@@ -150,7 +152,9 @@ def create_guess():
     # Agrupa os jogos disponíveis por dia para montar a lista (optgroup) por data.
     editable = [m for m in matches_list if m.is_editable()]
     match_groups = []
-    for _day, grp in groupby(editable, key=lambda m: m.date[:10]):
+    # groupby agrupa só elementos adjacentes — ordena por data antes (a query já
+    # vem ordenada, mas deixamos explícito p/ não depender disso silenciosamente).
+    for _day, grp in groupby(sorted(editable, key=lambda m: m.date), key=lambda m: m.date[:10]):
         items = list(grp)
         match_groups.append({'label': items[0].date_header,
                              'date': items[0].date[:10], 'matches': items})
@@ -161,6 +165,23 @@ def create_guess():
                            calendar_months=calendar_months)
 
 ### Ao Vivo (placares em tempo real via ESPN) ###
+# Cache curto do snapshot: o front faz poll a cada 5s e vários usuários batem na
+# mesma rota — sem isso, cada request dispara 1+N chamadas à ESPN e prende o
+# worker. Com TTL curto, todos compartilham a mesma busca (dado ~no máximo 10s
+# velho, ok para placar ao vivo). Processo único (gunicorn 1 worker) → dict local serve.
+_AOVIVO_TTL = 10  # segundos
+_aovivo_cache = {}  # 'hoje'|'YYYYMMDD' -> (timestamp, snapshot)
+
+def _cached_aovivo(date):
+    key = date or 'hoje'
+    now = time.time()
+    hit = _aovivo_cache.get(key)
+    if hit and now - hit[0] < _AOVIVO_TTL:
+        return hit[1]
+    data = snapshot(date=date)
+    _aovivo_cache[key] = (now, data)
+    return data
+
 @app.route('/ao-vivo')
 @login_required
 def ao_vivo():
@@ -169,9 +190,12 @@ def ao_vivo():
 @app.route('/api/ao-vivo')
 @login_required
 def api_ao_vivo():
-    # ?date=YYYYMMDD é opcional — útil pra testar fora da Copa apontando
-    # pra um dia de jogos passado. Sem o parâmetro, usa o dia de hoje.
-    return jsonify(snapshot(date=request.args.get('date')))
+    # ?date=YYYYMMDD é opcional — útil pra testar fora da Copa apontando pra um dia
+    # de jogos passado. Valida o formato; qualquer coisa fora dele usa o dia de hoje.
+    date = request.args.get('date')
+    if date and not re.fullmatch(r'\d{8}', date):
+        date = None
+    return jsonify(_cached_aovivo(date))
 
 @app.route('/delete_guess/<int:guess_id>', methods=['POST'])
 @login_required

@@ -170,39 +170,57 @@ def http_json(url: str, params: dict = None):
         return None
 
 
-# ─── Gols (endpoint summary) ──────────────────────────────────────────────────
+# ─── Gols e cartões (endpoint summary) ────────────────────────────────────────
 
-def fetch_goals(event_id: str, home_id: str, away_id: str) -> list:
+def fetch_events(event_id: str, home_id: str, away_id: str) -> dict:
     """
-    Lista de gols de uma partida, em ordem cronológica.
-    Cada gol:
-        {
-          "minute": "36'",          # minuto exibido
-          "minute_value": 36,       # minuto numérico (para ordenar/filtrar)
-          "side": "A" | "B",        # qual time marcou (A = mandante)
-          "team": "🇦🇷 Argentina",  # nome do time que marcou
-          "scorer": "Ángel Di María",
-          "assist": "Alexis Mac Allister" | None,
-          "kind": "goal" | "penalty" | "own_goal",
-          "text": "Goal! Argentina 2, France 0. ..."   # descrição completa
-        }
+    Gols e cartões de uma partida (uma única chamada ao summary).
+    Retorno: {"goals": [...], "cards": [...]}, cada lista em ordem cronológica.
+
+    Gol:    {minute, minute_value, side('A'|'B'), team, scorer, assist,
+             kind('goal'|'penalty'|'own_goal'), text}
+    Cartão: {minute, minute_value, side('A'|'B'), team, player, kind('yellow'|'red')}
     """
     data = http_json(f"{SUMMARY}", params={"event": event_id})
     if not data:
-        return []
+        return {"goals": [], "cards": []}
 
-    goals = []
+    def side_of(ev):
+        tid = str((ev.get("team", {}) or {}).get("id", ""))
+        if tid == str(home_id):
+            return "A"
+        if tid == str(away_id):
+            return "B"
+        return None
+
+    goals, cards = [], []
     for ev in data.get("keyEvents", []) or []:
         if not ev:
             continue
-        # Só gols de fato; ignora pênaltis perdidos e a disputa de pênaltis.
-        if not ev.get("scoringPlay"):
-            continue
-        if ev.get("shootout"):
-            continue
-
         type_text = (ev.get("type", {}) or {}).get("text", "") or ""
         low = type_text.lower()
+        clock = (ev.get("clock", {}) or {}).get("displayValue", "")
+        team_name = map_team((ev.get("team", {}) or {}).get("displayName", ""))
+        participants = ev.get("participants", []) or []
+
+        # ── Cartões ──
+        if "card" in low:
+            player = None
+            if participants and participants[0]:
+                player = (participants[0].get("athlete", {}) or {}).get("displayName")
+            cards.append({
+                "minute": clock,
+                "minute_value": parse_minute(clock),
+                "side": side_of(ev),
+                "team": team_name,
+                "player": player,
+                "kind": "red" if "red" in low else "yellow",
+            })
+            continue
+
+        # ── Gols ── (ignora pênaltis perdidos e a disputa de pênaltis)
+        if not ev.get("scoringPlay") or ev.get("shootout"):
+            continue
         if "own" in low:
             kind = "own_goal"
         elif "penalty" in low:
@@ -210,7 +228,6 @@ def fetch_goals(event_id: str, home_id: str, away_id: str) -> list:
         else:
             kind = "goal"
 
-        participants = ev.get("participants", []) or []
         scorer = assist = None
         if participants and participants[0]:
             scorer = (participants[0].get("athlete", {}) or {}).get("displayName")
@@ -219,28 +236,21 @@ def fetch_goals(event_id: str, home_id: str, away_id: str) -> list:
         if not scorer:
             scorer = (ev.get("shortText") or "").replace(" Goal", "").strip() or None
 
-        team_id = str((ev.get("team", {}) or {}).get("id", ""))
-        if team_id == str(home_id):
-            side = "A"
-        elif team_id == str(away_id):
-            side = "B"
-        else:
-            side = None
-
-        clock = (ev.get("clock", {}) or {}).get("displayValue", "")
         goals.append({
             "minute": clock,
             "minute_value": parse_minute(clock),
-            "side": side,
-            "team": map_team((ev.get("team", {}) or {}).get("displayName", "")),
+            "side": side_of(ev),
+            "team": team_name,
             "scorer": scorer,
             "assist": assist,
             "kind": kind,
             "text": ev.get("text", ""),
         })
 
-    goals.sort(key=lambda g: (g["minute_value"] is None, g["minute_value"] or 0))
-    return goals
+    keyfn = lambda x: (x["minute_value"] is None, x["minute_value"] or 0)
+    goals.sort(key=keyfn)
+    cards.sort(key=keyfn)
+    return {"goals": goals, "cards": cards}
 
 
 # ─── Construção de um jogo ────────────────────────────────────────────────────
@@ -290,7 +300,8 @@ def build_match(event: dict, include_goals: bool = True) -> dict:
           "team_a": {"name": "🇦🇷 Argentina", "raw": "Argentina", "score": 3},
           "team_b": {"name": "🇫🇷 França",     "raw": "France",    "score": 3},
           "penalties": {"a": 4, "b": 2} | None,   # só se houve disputa
-          "goals": [ ...ver fetch_goals()... ]    # [] se --no-goals ou sem gols
+          "goals": [ ...ver fetch_events()... ],  # [] se --no-goals ou sem gols
+          "cards": [ ...ver fetch_events()... ]   # cartões amarelos/vermelhos
         }
     """
     comp = (event.get("competitions") or [{}])[0] or {}
@@ -327,14 +338,16 @@ def build_match(event: dict, include_goals: bool = True) -> dict:
     shootout = pen_a is not None and pen_b is not None
 
     state = status_type.get("state", "")
-    goals = []
+    goals, cards = [], []
     if include_goals and state in ("in", "post"):
-        goals = fetch_goals(event.get("id", ""), home_id, away_id)
+        evs = fetch_events(event.get("id", ""), home_id, away_id)
+        goals, cards = evs["goals"], evs["cards"]
 
     return {
         "id": event.get("id", ""),
         "round": round_name(comp),
         "date": to_sao_paulo(event.get("date", "")),
+        "date_utc": event.get("date", ""),   # ISO UTC cru (ex.: 2026-06-25T19:00Z) p/ o front localizar no fuso do usuário
         "status": status_block(status_type, clock, shootout, detail),
         "team_a": {"name": map_team(home_team.get("displayName", "")),
                    "raw": home_team.get("displayName", ""), "score": score(home)},
@@ -342,6 +355,7 @@ def build_match(event: dict, include_goals: bool = True) -> dict:
                    "raw": away_team.get("displayName", ""), "score": score(away)},
         "penalties": {"a": pen_a, "b": pen_b} if shootout else None,
         "goals": goals,
+        "cards": cards,
     }
 
 
