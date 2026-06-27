@@ -8,36 +8,114 @@
         <div></div>
     </div>
 
-    <div class="card">
+    {% if calendar_months %}
+    <div class="card cal-card">
+        <div class="cal-head">
+            <h2>Calendário de palpites</h2>
+            <p class="cal-sub">Junho e julho de 2026 — veja em que dias tem jogo e onde ainda falta palpitar.</p>
+        </div>
+
+        <div class="cal-carousel">
+            <div class="cal-nav">
+                <button type="button" class="cal-arrow" data-dir="-1" aria-label="Mês anterior">‹</button>
+                <span class="cal-nav-label"></span>
+                <button type="button" class="cal-arrow" data-dir="1" aria-label="Próximo mês">›</button>
+            </div>
+            <div class="cal-panels">
+            {% for month in calendar_months %}
+            <div class="cal-month" data-label="{{ month.label }}"{% if month.is_current %} data-current="1"{% endif %}>
+                <h3 class="cal-month-title">{{ month.label }}</h3>
+                {% if month.has_games %}
+                <div class="cal-grid cal-dow-row">
+                    {% for d in ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'] %}
+                        <div class="cal-dow">{{ d }}</div>
+                    {% endfor %}
+                </div>
+                {% for week in month.weeks %}
+                <div class="cal-grid">
+                    {% for day in week %}
+                        {% if day is none or (not day.is_cup_day and not day.is_folga) %}
+                            <div class="cal-day is-blank"></div>
+                        {% elif day.is_folga %}
+                            <div class="cal-day is-folga" title="Folga">
+                                <span class="cal-num">{{ day.num }}</span>
+                            </div>
+                        {% elif day.clickable %}
+                            <button type="button"
+                                    class="cal-day is-open{{ ' is-final' if day.is_final }}{{ ' is-today' if day.is_today }}"
+                                    data-date="{{ day.iso }}"
+                                    data-match-id="{{ day.target_match_id }}"
+                                    title="{% if day.is_final %}Final — {% endif %}{{ day.guessed_count }}/{{ day.match_count }} palpitados — clique para palpitar">
+                                <span class="cal-num">{{ day.num }}</span>
+                                <span class="cal-count">{% if day.is_final %}🏆{% else %}{{ day.match_count }}{% endif %}</span>
+                            </button>
+                        {% else %}
+                            <div class="cal-day is-{{ day.state }}{{ ' is-final' if day.is_final }}{{ ' is-today' if day.is_today }}"
+                                 title="{% if day.is_final %}Final{% elif day.tag %}{{ day.phase }}{% else %}{{ day.guessed_count }}/{{ day.match_count }} palpitados{% endif %}">
+                                <span class="cal-num">{{ day.num }}</span>
+                                <span class="cal-count">{% if day.is_final %}🏆{% elif day.complete %}✓{% elif day.tag %}{{ day.tag }}{% else %}{{ day.match_count }}{% endif %}</span>
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+                {% endfor %}
+                {% else %}
+                <p class="cal-empty-month">Nenhum jogo da Copa neste mês ainda.</p>
+                {% endif %}
+            </div>
+            {% endfor %}
+            </div>
+        </div>
+
+        <div class="cal-legend">
+            <span class="cal-legend-item"><span class="cal-dot is-complete"></span>Tudo palpitado</span>
+            <span class="cal-legend-item"><span class="cal-dot is-open"></span>Falta palpitar</span>
+            <span class="cal-legend-item"><span class="cal-dot is-past"></span>Prazo encerrado</span>
+            <span class="cal-legend-item"><span class="cal-dot is-fixture"></span>Jogo agendado</span>
+            <span class="cal-legend-item"><span class="cal-dot is-final"></span>Final</span>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="card" id="guess-form-card">
         <form action="{{ url_for('create_guess') }}" method="POST">
             <div class="form-row">
                 <div class="col">
                     <label for="match">Jogo</label>
                     <select name="match_id" id="match" required onchange="updateMatchDetails(this)">
                         <option value="" disabled {% if not selected_match_id %}selected{% endif %}>Selecione o jogo</option>
-                        {% for m in matches %}
-                            {% if m.is_editable() %}
-                                <option value="{{ m.id }}"
-                                        data-knockout="{{ 'true' if m.is_knockout else 'false' }}"
-                                        data-team-a="{{ m.team_a }}"
-                                        data-team-b="{{ m.team_b }}"
-                                        {% if m.id == selected_match_id %}selected{% endif %}>
-                                    {{ m.team_a }} vs {{ m.team_b }} — {{ m.formatted_date }}
-                                </option>
-                            {% endif %}
+                        {% for group in match_groups %}
+                            <optgroup label="{{ group.label }}" data-date="{{ group.date }}">
+                                {% for m in group.matches %}
+                                    <option value="{{ m.id }}"
+                                            data-knockout="{{ 'true' if m.is_knockout else 'false' }}"
+                                            data-team-a="{{ m.team_a }}"
+                                            data-team-b="{{ m.team_b }}"
+                                            data-date="{{ m.date[:10] }}"
+                                            {% if m.id == selected_match_id %}selected{% endif %}>
+                                        {{ m.team_a }} vs {{ m.team_b }} — {{ m.time_label }}
+                                    </option>
+                                {% endfor %}
+                            </optgroup>
                         {% endfor %}
                     </select>
                 </div>
             </div>
 
-            <div class="form-row">
-                <div class="col">
-                    <label for="pred_a" id="label-pred-a">Placar Time A</label>
-                    <input type="number" name="pred_a" id="pred_a" min="0" step="1" required oninput="toggleWinnerSection()">
+            <label class="sb-caption">Seu placar</label>
+            <div class="scoreboard">
+                <div class="sb-side">
+                    <span class="sb-name" id="sb-name-a">Time A</span>
+                    <input type="number" name="pred_a" id="pred_a" class="sb-input" min="0" step="1"
+                           inputmode="numeric" placeholder="0" required oninput="toggleWinnerSection()"
+                           aria-label="Gols Time A">
                 </div>
-                <div class="col">
-                    <label for="pred_b" id="label-pred-b">Placar Time B</label>
-                    <input type="number" name="pred_b" id="pred_b" min="0" step="1" required oninput="toggleWinnerSection()">
+                <span class="sb-x" aria-hidden="true">×</span>
+                <div class="sb-side">
+                    <span class="sb-name" id="sb-name-b">Time B</span>
+                    <input type="number" name="pred_b" id="pred_b" class="sb-input" min="0" step="1"
+                           inputmode="numeric" placeholder="0" required oninput="toggleWinnerSection()"
+                           aria-label="Gols Time B">
                 </div>
             </div>
 
@@ -75,8 +153,10 @@ function updateMatchDetails(select) {
     const teamA = option.getAttribute('data-team-a') || 'Time A';
     const teamB = option.getAttribute('data-team-b') || 'Time B';
 
-    document.getElementById('label-pred-a').textContent = 'Placar ' + teamA;
-    document.getElementById('label-pred-b').textContent = 'Placar ' + teamB;    
+    document.getElementById('sb-name-a').textContent = teamA;
+    document.getElementById('sb-name-b').textContent = teamB;
+    document.getElementById('pred_a').setAttribute('aria-label', 'Gols ' + teamA);
+    document.getElementById('pred_b').setAttribute('aria-label', 'Gols ' + teamB);
     document.getElementById('winner-option-a').textContent = teamA;
     document.getElementById('winner-option-b').textContent = teamB;
 
@@ -114,6 +194,85 @@ function toggleWinnerSection() {
 (function () {
     const select = document.getElementById('match');
     if (select && select.value) updateMatchDetails(select);
+})();
+
+// Calendário: clicar num dia filtra o seletor para os jogos daquele dia,
+// pré-seleciona o primeiro e rola até o formulário.
+// Reconstrói o <select> (clona só o grupo do dia) em vez de usar `hidden`,
+// que o Safari do iOS ignora em <option>/<optgroup>.
+(function () {
+    const select = document.getElementById('match');
+    if (!select) return;
+
+    const originalGroups = Array.from(select.querySelectorAll('optgroup'));
+    const placeholder = select.querySelector('option[value=""]');
+
+    document.querySelectorAll('.cal-day.is-open').forEach(function (cell) {
+        cell.addEventListener('click', function () {
+            const date = cell.getAttribute('data-date');
+
+            select.innerHTML = '';
+            if (placeholder) select.appendChild(placeholder);
+
+            let firstOption = null;
+            originalGroups.forEach(function (g) {
+                if (g.getAttribute('data-date') !== date) return;
+                const clone = g.cloneNode(true);
+                select.appendChild(clone);
+                if (firstOption === null) firstOption = clone.querySelector('option');
+            });
+
+            if (firstOption) {
+                select.value = firstOption.value;
+                updateMatchDetails(select);
+            }
+
+            const card = document.getElementById('guess-form-card');
+            if (card) card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+    });
+})();
+
+// Calendário: um mês por vez, navegável por setas e swipe. Abre no mês de hoje.
+(function () {
+    const carousel = document.querySelector('.cal-carousel');
+    if (!carousel) return;
+
+    const panels = Array.from(carousel.querySelectorAll('.cal-month'));
+    const label = carousel.querySelector('.cal-nav-label');
+    const arrows = carousel.querySelectorAll('.cal-arrow');
+    if (!panels.length) return;
+
+    let active = panels.findIndex(p => p.hasAttribute('data-current'));
+    if (active < 0) active = panels.findIndex(p => p.querySelector('.is-today'));
+    if (active < 0) active = 0;
+
+    function render() {
+        panels.forEach((p, i) => p.classList.toggle('is-active', i === active));
+        label.textContent = panels[active].getAttribute('data-label');
+        arrows[0].disabled = active === 0;
+        arrows[1].disabled = active === panels.length - 1;
+    }
+
+    function move(dir) {
+        active = Math.min(panels.length - 1, Math.max(0, active + dir));
+        render();
+    }
+
+    arrows.forEach(a => a.addEventListener('click', () => move(parseInt(a.getAttribute('data-dir'), 10))));
+
+    // Swipe horizontal no toque
+    const panelWrap = carousel.querySelector('.cal-panels');
+    let startX = null;
+    panelWrap.addEventListener('touchstart', e => { startX = e.touches[0].clientX; }, { passive: true });
+    panelWrap.addEventListener('touchend', e => {
+        if (startX === null) return;
+        const dx = e.changedTouches[0].clientX - startX;
+        if (Math.abs(dx) > 40) move(dx < 0 ? 1 : -1);
+        startX = null;
+    }, { passive: true });
+
+    render();
 })();
 </script>
 {% endblock %}
