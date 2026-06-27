@@ -14,74 +14,74 @@ body {
     width: 220px;
     background: var(--grad-sidebar);
     color: var(--mist);
-    padding: 20px;
+    padding: var(--space-20);
     flex-shrink: 0
 }
 
 .sidebar .brand {
     font-weight: 700;
     font-size: 18px;
-    margin-bottom: 14px;
+    margin-bottom: var(--space-14);
     color: var(--surface)
 }
 
 .nav {
     display: flex;
     flex-direction: column;
-    gap: 6px
+    gap: var(--space-6)
 }
 
 .nav a {
     display: block;
     color: var(--nav-link);
-    padding: 10px;
+    padding: var(--space-10);
     border-radius: var(--radius);
     text-decoration: none;
     font-weight: 600
 }
 
 .nav a:hover {
-    background: rgba(255, 255, 255, 0.03);
+    background: color-mix(in srgb, var(--surface-white) 3%, transparent);
     color: var(--surface)
 }
 
 .nav a.active {
     background: var(--grad-coral);
     color: var(--surface);
-    box-shadow: 0 6px 14px rgba(203, 67, 53, 0.12)
+    box-shadow: 0 6px 14px color-mix(in srgb, var(--coral) 12%, transparent)
 }
 
 .content {
     flex: 1;
-    padding: 28px
+    padding: var(--space-28)
 }
 
 .topbar {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 18px
+    margin-bottom: var(--space-8)
 }
 
 .card {
-    background: var(--surface);
+    background: var(--surface-white);
     border-radius: var(--radius-lg);
-    padding: 20px;
-    box-shadow: 0 6px 20px rgba(2, 6, 23, 0.06)
+    padding: var(--space-10) var(--space-20);
+    box-shadow: 0 6px 20px color-mix(in srgb, var(--slate) 6%, transparent)
 }
 
 h1 {
-    margin: 0 0 8px 0
+    margin: 0 0 var(--space-8) 0
 }
 
 .card form {
     display: flex;
     flex-direction: column;
-    gap: 12px
+    gap: var(--space-12)
 }
 
 .card label {
-    font-size: 0.95rem;
+    font-size: 0.9rem;
     color: var(--ink)
 }
 
@@ -91,14 +91,14 @@ h1 {
 .card textarea,
 .card select {
     width: 100%;
-    padding: 10px;
+    padding: var(--space-10);
     border-radius: var(--radius);
     border: 1px solid var(--line);
     font-size: 1rem
 }
 
 .card button[type="submit"] {
-    padding: 10px 14px;
+    padding: var(--space-10) var(--space-14);
     border-radius: var(--radius);
     border: 0;
     background: var(--grad-coral);
@@ -108,10 +108,9 @@ h1 {
     align-self: flex-start
 }
 
-/* Form row helpers to place fields side-by-side */
 .form-row {
     display: flex;
-    gap: 12px;
+    gap: var(--space-12);
     align-items: center
 }
 
@@ -139,10 +138,8 @@ h1 {
     }
 }
 
-/* Estilização personalizada para input de data/hora */
 .card input[type="date"] {
-    /* espaço extra à direita para o ícone */
-    padding: 10px 40px 10px 12px;
+    padding: var(--space-10) 40px var(--space-10) var(--space-12);
     background-color: var(--surface);
     background-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%239ca3af' d='M7 2h2v2h6V2h2v4H7V2zM5 7h14v13H5z'/%3E%3C/svg%3E");
     background-repeat: no-repeat;
@@ -161,20 +158,20 @@ h1 {
 .topbar .username {
     color: #000000;
     background: transparent;
-    padding: 6px 8px;
-    margin-right: 8px
+    padding: var(--space-6) var(--space-8);
+    margin-right: var(--space-8)
 }
 
 .topbar-actions {
     display: flex;
     align-items: center;
-    gap: 8px
+    gap: var(--space-8)
 }
 
 .btn-logout {
     background: var(--grad-coral);
     color: var(--surface);
-    padding: 8px 10px;
+    padding: var(--space-8) var(--space-10);
     border-radius: var(--radius);
     text-decoration: none;
     font-weight: 600
@@ -183,7 +180,7 @@ h1 {
 .link-muted {
     color: var(--muted);
     text-decoration: none;
-    padding: 6px 8px
+    padding: var(--space-6) var(--space-8)
 }
 
 @media (max-width:880px) {
@@ -193,40 +190,54 @@ h1 {
 
     .sidebar {
         width: 100%;
+        padding: var(--space-12) var(--space-14);
         display: flex;
-        flex-direction: row;
-        gap: 12px;
-        overflow: auto
+        flex-direction: column;
+        gap: var(--space-10)
+    }
+
+    .sidebar .brand {
+        margin-bottom: 0
     }
 
     .nav {
-        flex-direction: row
+        flex-direction: row;
+        flex-wrap: nowrap;
+        gap: var(--space-2);
+        min-width: 0;
     }
 
     .nav a {
-        white-space: nowrap
+        flex: 1 1 0.1;
+        min-width: 0;
+        white-space: nowrap;
+        padding: var(--space-8) var(--space-8);
+        background: color-mix(in srgb, var(--surface-white) 6%, transparent)
+    }
+
+    .content {
+        padding: var(--space-16) var(--space-14)
     }
 }
 
-/* Estilos para a Tabela de Ranking */
 .ranking-section {
-    margin-top: 24px;
+    margin-top: var(--space-24);
 }
 
 .ranking-table {
     width: 100%;
     border-collapse: collapse;
-    background: var(--surface);
+    background: var(--surface-white);
     border-radius: var(--radius-lg);
     overflow: hidden;
-    margin-top: 15px;
+    margin-top: var(--space-16);
 }
 
 .ranking-table th,
 .ranking-table td {
-    padding: 14px 20px;
+    padding: var(--space-14) var(--space-20);
     text-align: left;
-    border-bottom: 1px solid var(--bg);
+    border-bottom: 1px solid var(--line);
 }
 
 .ranking-table th {
@@ -234,7 +245,7 @@ h1 {
     color: var(--muted);
     font-size: 0.8rem;
     text-transform: uppercase;
-    font-weight: 700;
+    font-weight: 600;
 }
 
 .ranking-table tr:last-child td {
@@ -269,12 +280,10 @@ h1 {
     border-bottom-color: var(--red-soft);
 }
 
-/* Layout para as tabelas na Home */
 .home-content-layout {
     display: flex;
-    gap: 30px;
-    /* Espaçamento entre as tabelas */
-    margin-top: 24px;
+    gap: var(--space-32);
+    margin-top: var(--space-24);
 }
 
 .home-content-layout>.card {
@@ -291,7 +300,6 @@ h1 {
     }
 }
 
-/* Estilos para a Tabela de Odds na Home */
 .odds-section {
     margin-top: 0;
 }
@@ -299,44 +307,39 @@ h1 {
 .odds-table {
     width: 100%;
     border-collapse: collapse;
-    background: var(--surface);
+    background: var(--surface-white);
     border-radius: var(--radius-lg);
     overflow: hidden;
-    margin-top: 0px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    margin-top: 0;
+    box-shadow: 0 4px 12px color-mix(in srgb, var(--slate) 5%, transparent);
     table-layout: fixed;
 }
 
 .odds-table th,
 .odds-table td {
-    padding: 12px 16px;
+    padding: var(--space-12) var(--space-16);
     text-align: center;
-    border-bottom: 1px solid var(--bg);
+    border-bottom: 1px solid var(--line);
 }
 
 .odds-table th {
     background: var(--surface);
     color: var(--muted);
-    font-size: 0.75rem;
+    font-size: 0.8rem;
     text-transform: uppercase;
-    font-weight: 700;
+    font-weight: 600;
 }
 
 .odds-table .match-info {
     text-align: left;
     font-weight: 600;
-    width: 26%;
-    overflow: hidden;
+    width: 40%;
+    overflow: auto;
     text-overflow: ellipsis;
-    white-space: nowrap;
 }
 
-.odds-table th:not(.match-info):not(.col-guess) {
-    width: 14%;
-}
-
-.odds-table .col-guess {
-    width: 18%;
+.odds-table th:not(.match-info) {
+    width: 15%;
 }
 
 .odds-table .odd-value {
@@ -344,16 +347,19 @@ h1 {
     color: var(--odd);
     font-weight: 600;
     background: var(--odd-bg);
-    padding: 6px 12px;
+    padding: var(--space-6) var(--space-12);
     border-radius: var(--radius-sm);
 }
 
-.odds-table tr:hover {
-    background: var(--surface);
+@media (hover: hover) {
+    .odds-table .odds-row:hover {
+        background: var(--surface);
+
+    }
 }
 
 .odds-table .no-odds {
-    color: var(--muted-2);
+    color: var(--muted);
     font-size: 0.85rem;
     font-style: italic;
 }
@@ -370,24 +376,19 @@ h1 {
     text-decoration: underline;
 }
 
-/* Odd destacada = resultado que o usuário palpitou (liga visualmente ao palpite coral) */
 .odds-table .odd-picked {
-    box-shadow: 0 0 0 1px var(--coral);
+    box-shadow: inset 0 0 0 2px var(--coral);
+    font-weight: 700;
 }
 
-/* ===== Pílula de placar — padrão ÚNICO em todo o app =====
-   Mesmo tamanho, fonte (não-monoespaçada, herdada do app), padding e raio em
-   Home, Partidas e Palpites. As variações mudam APENAS a cor conforme o significado. */
 .score-pill {
     display: inline-block;
     font-family: inherit;
-    /* herda a fonte do app — sem monoespaçada */
     font-weight: 600;
-    padding: 5px 14px;
+    padding: var(--space-4) var(--space-14);
     border-radius: var(--radius-sm);
     white-space: nowrap;
     background: var(--bg);
-    /* neutro: palpite/placar sem avaliação */
     color: var(--slate);
 }
 
@@ -396,58 +397,49 @@ h1 {
     color: var(--ink);
 }
 
-/* "Você" (identidade coral) */
-/* Avaliação do palpite (aba "Palpites Anteriores") — cor = acerto, mesma fórmula do
-   scoring (group_phase_result): exato > saldo > vencedor > erro. */
-/* placar exato → verde forte */
 .score-pill.is-exact {
     background: var(--green-strong);
     color: var(--green-soft);
 }
 
-/* saldo de gols → verde fraco */
 .score-pill.is-diff {
     background: var(--green-soft);
     color: var(--green-deep);
 }
 
-/* só o vencedor → amarelo */
 .score-pill.is-winner {
     background: var(--yellow-soft);
     color: var(--brown-deep);
 }
 
-/* errou tudo → vermelho */
 .score-pill.is-miss {
     background: var(--red-soft);
     color: var(--red-deep);
 }
 
-/* Sub-linha de pênaltis dentro da pílula (mata-mata) */
 .score-pill .penalty-line {
     display: block;
-    font-size: 0.72rem;
+    font-size: 0.8rem;
     font-weight: 500;
     opacity: 0.8;
-    margin-top: 2px;
-    padding-top: 2px;
-    border-top: 1px solid rgba(0, 0, 0, 0.12);
+    margin-top: var(--space-2);
+    padding-top: var(--space-2);
+    border-top: 1px solid color-mix(in srgb, var(--slate) 12%, transparent);
 }
 
-/* Estilos para Abas de Palpites */
 .tabs-container {
-    margin-top: 20px;
+    margin-top: var(--space-20);
 }
 
 .tabs-header {
     display: flex;
-    gap: 10px;
+    gap: var(--space-10);
     border-bottom: 2px solid var(--mist);
-    margin-bottom: 20px;
+    margin-bottom: var(--space-20);
 }
 
 .tab-button {
-    padding: 10px 20px;
+    padding: var(--space-10) var(--space-20);
     border: none;
     background: none;
     cursor: pointer;
@@ -480,6 +472,331 @@ h1 {
     background-color: var(--coral-bg);
 }
 
+.odds-table .chip-sym {
+    display: none;
+}
+
+.odds-table .day-header-cell {
+    text-align: left;
+    background: var(--surface);
+    font-weight: 600;
+    padding: var(--space-12);
+    color: var(--muted);
+    border-bottom: 2px solid var(--line);
+    font-size: 0.8rem;
+}
+
+/* ===== Mobile (≤640px) tabelas legíveis no celular ===== */
+@media (max-width:640px) {
+    .content {
+        padding: var(--space-14) var(--space-12)
+    }
+
+    h1 {
+        font-size: 1.4rem
+    }
+
+    .ranking-table th,
+    .ranking-table td {
+        padding: var(--space-10) var(--space-12)
+    }
+
+    .odds-table {
+        box-shadow: none;
+        overflow: visible
+    }
+
+    .odds-table thead {
+        display: none
+    }
+
+    .odds-table tbody,
+    .odds-table tr,
+    .odds-table td {
+        display: block;
+        width: 100%
+    }
+
+    .odds-table .odds-row {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        column-gap: var(--space-6);
+        row-gap: var(--space-8);
+        align-items: stretch;
+        padding: var(--space-12) var(--space-10);
+        border-bottom: 1px solid var(--line)
+    }
+
+    .odds-row td {
+        border: none;
+        padding: 0;
+        width: auto
+    }
+
+    .odds-row .match-info {
+        grid-column: 1 / 4;
+        grid-row: 1;
+        align-self: baseline;
+        width: auto;
+        min-width: 0;
+        font-size: 0.9rem;
+        font-weight: 600
+    }
+
+    .odds-row .col-time {
+        grid-column: 4;
+        grid-row: 1;
+        align-self: baseline;
+        text-align: right;
+        color: var(--muted);
+        font-size: 0.8rem
+    }
+
+    .odds-row .col-odd,
+    .odds-row .col-guess-cell {
+        grid-row: 2;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: var(--space-4);
+        min-height: 28px;
+        border-radius: var(--radius-sm);
+        font-size: 0.8rem
+    }
+
+    .odds-row .col-odd {
+        background: color-mix(in srgb, var(--odd) 8%, transparent);
+        padding: var(--space-4)
+    }
+
+    .odds-row .col-odd.is-pick {
+        box-shadow: inset 0 0 0 2px var(--coral);
+        font-weight: 700
+    }
+
+    .odds-row .chip-sym {
+        display: inline;
+        font-size: 0.9rem;
+        line-height: 1
+    }
+
+    .odds-row .col-odd .odd-value {
+        background: none;
+        padding: 0;
+        box-shadow: none
+    }
+
+    .odds-row .col-odd .no-odds {
+        font-size: 0.8rem
+    }
+
+    .odds-row .col-guess-cell>* {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        min-height: 28px;
+        margin: 0;
+        font-size: 0.8rem
+    }
+
+    .odds-row .col-guess-cell .score-pill {
+        padding: 0 var(--space-4)
+    }
+
+    .odds-row .col-guess-cell .guess-cta {
+        background: var(--coral-bg);
+        color: var(--coral);
+        border-radius: var(--radius-sm);
+        padding: 0 var(--space-4)
+    }
+
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.data-table thead tr {
+    text-align: left;
+    border-bottom: 2px solid var(--line);
+}
+
+.data-table th,
+.data-table td {
+    padding: var(--space-12) var(--space-8);
+}
+
+.data-table tbody tr {
+    border-bottom: 1px solid var(--line);
+}
+
+.data-table .center {
+    text-align: center;
+}
+
+.data-table .cell-muted {
+    color: var(--muted);
+}
+
+.data-table tbody tr.is-previous {
+    background-color: var(--surface);
+}
+
+.data-table tbody tr.is-pending {
+    background-color: var(--coral-bg);
+}
+
+.btn {
+    display: inline-block;
+    border: 0;
+    border-radius: var(--radius-sm);
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.btn-success {
+    background-color: var(--green-strong);
+    color: var(--surface);
+    padding: var(--space-8) var(--space-16);
+}
+
+.btn-sm {
+    padding: var(--space-6) var(--space-14);
+}
+
+.row-actions {
+    align-items: center;
+    display: flex;
+    gap: var(--space-12);
+    justify-content: center;
+}
+
+.action-edit {
+    background: var(--odd-bg);
+    border-radius: var(--radius-sm);
+    color: var(--odd);
+    font-family: inherit;
+    font-size: 0.9rem;
+    font-weight: 600;
+    padding: var(--space-8);
+    text-decoration: none;
+}
+
+.card button.action-delete,
+.action-delete {
+    background: var(--red-soft);
+    border-radius: var(--radius-sm);
+    color: var(--red-strong);
+    font-family: inherit;
+    font-size: 0.9rem;
+    padding: var(--space-8);
+}
+
+.form-inline {
+    display: inline;
+    margin: 0;
+}
+
+.link-add {
+    margin-left: var(--space-12);
+    color: var(--coral);
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.empty-state {
+    text-align: center;
+    color: var(--muted);
+    padding: var(--space-20);
+}
+
+.placeholder {
+    color: var(--muted-2);
+    font-style: italic;
+}
+
+.placeholder.is-small {
+    font-size: 0.75rem;
+}
+
+.badge-you {
+    font-size: 0.75rem;
+    color: var(--coral);
+    font-weight: 700;
+}
+
+.icon-muted {
+    color: var(--muted-2);
+    cursor: default;
+}
+
+.table-scroll {
+    overflow-x: auto;
+}
+
+.score-pill.is-help {
+    cursor: help;
+}
+
+.score-pill--lg {
+    font-size: 1.05rem;
+    padding: var(--space-8) var(--space-20);
+}
+
+.topbar h2 {
+    margin: 0;
+}
+
+.form-actions {
+    margin-top: var(--space-20);
+    display: flex;
+    gap: var(--space-12);
+    align-items: center;
+}
+
+.winner-section {
+    margin-top: var(--space-16);
+}
+
+.col-vs {
+    text-align: center;
+    align-self: flex-end;
+    padding-bottom: var(--space-10);
+    font-weight: 700;
+}
+
+.readonly-field {
+    padding: var(--space-10);
+    background: var(--surface);
+    border-radius: var(--radius);
+    border: 1px solid var(--line);
+    font-weight: 600;
+}
+
+.filter-block {
+    margin-bottom: var(--space-16);
+}
+
+.filter-label {
+    font-weight: 700;
+    margin-bottom: var(--space-8);
+    display: block;
+}
+
+.match-summary {
+    margin-bottom: var(--space-16);
+    text-align: center;
+}
+
+.summary-meta {
+    color: var(--muted);
+    font-size: 0.9rem;
+    margin-bottom: var(--space-8);
+}
 /* ─── Calendário de palpites (tela cadastrar palpite) ───────────────────── */
 .cal-card {
     margin-bottom: 20px;

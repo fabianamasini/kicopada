@@ -6,8 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cores</title>
 
-    <!-- Lê os valores reais direto da fonte de verdade.
-         Caminho relativo a templates/_cores.html -> static/css/tokens.css -->
+    <!-- Amostra de cores para facilitar a manutenção -->
     <link rel="stylesheet" href="../static/css/tokens.css">
 
     <style>
@@ -68,7 +67,6 @@
             border-bottom: 1px solid #eef2f6;
         }
 
-        /* Grade de cores */
         .grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
@@ -84,7 +82,6 @@
 
         .swatch {
             height: 70px;
-            /* anel sutil pra cores claras (branco, off-whites) aparecerem */
             box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.06);
         }
 
@@ -113,7 +110,6 @@
             word-break: break-all;
         }
 
-        /* Pílulas (componente real) */
         .pills {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
@@ -172,7 +168,8 @@
         <p class="sub">
             Espelha <code>static/css/tokens.css</code>, mostra o token, o valor e onde é usada.
         </p>
-        <button type="submit" style="background: none; border: none; color: var(--red-strong); cursor: pointer; font-size: 14px; font-weight: 600; padding: 0; font-family: inherit;">Deletar</button>
+        <button type="submit"
+            style="background: none; border: none; color: var(--red-strong); cursor: pointer; font-size: 14px; font-weight: 600; padding: 0; font-family: inherit;">Deletar</button>
     </header>
 
     <main id="app"></main>
