@@ -36,6 +36,10 @@ import pytz
 from dotenv import load_dotenv
 from werkzeug.security import generate_password_hash
 
+# Desliga o sync no boot do app: o seed dropa tudo e chama sync_matches() abaixo,
+# então a busca do boot seria jogada fora (e seriam duas chamadas à ESPN).
+os.environ["AUTO_SYNC_MATCHES"] = "0"
+
 from app import app
 from match_sync import sync_matches                          # mesma fonte de partidas do boot (ESPN)
 from models import db, User, Match, Guesses, Teams, Odds

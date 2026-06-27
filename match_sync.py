@@ -185,8 +185,8 @@ def _parse_event(event: dict):
     away = next((c for c in competitors if c.get("homeAway") == "away"), competitors[1])
     team_a = _map_team((home.get("team") or {}).get("displayName", ""))
     team_b = _map_team((away.get("team") or {}).get("displayName", ""))
-    if not team_a or not team_b:
-        return None                      # mata-mata ainda não definido → ignora
+    if not team_a or not team_b or team_a == team_b:
+        return None              # mata-mata ainda não definido (ou anomalia) → ignora
 
     date_sp = _utc_to_sp(event.get("date", ""))
     if not date_sp:
@@ -218,10 +218,11 @@ def sync_matches(dry_run: bool = False, log=print) -> int:
         return 0
 
     # Carrega os jogos já cadastrados de uma vez só (evita N+1 no boot — seriam
-    # ~100 SELECTs). Indexa por par de times SEM mando de campo: frozenset({A,B})
-    # == frozenset({B,A}), então não duplica um jogo já cadastrado à mão pelo admin
-    # mesmo com a ordem invertida.
-    seen = {frozenset((m.team_a, m.team_b)) for m in Match.query.all()}
+    # ~100 SELECTs). Chave de unicidade = par de times SEM mando de campo
+    # (frozenset({A,B}) == frozenset({B,A})) + a FASE — porque os mesmos times
+    # podem se enfrentar mais de uma vez na Copa (grupos e depois mata-mata, ex.:
+    # disputa de 3º lugar). Assim também não duplica um jogo já cadastrado à mão.
+    seen = {(frozenset((m.team_a, m.team_b)), m.round) for m in Match.query.all()}
 
     inserted = 0
     for event in events:
@@ -230,7 +231,7 @@ def sync_matches(dry_run: bool = False, log=print) -> int:
             continue
 
         a, b = parsed["team_a"], parsed["team_b"]
-        key = frozenset((a, b))
+        key = (frozenset((a, b)), parsed["round"])
         if key in seen:
             continue
         seen.add(key)   # evita duplicar na mesma execução se a API repetir o jogo
