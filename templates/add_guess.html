@@ -119,7 +119,7 @@
             </div>
 
             <div id="knockout-section" style="display: none;">
-                <div id="winner-section" style="display: none; margin-top: 15px;">
+                <div id="winner-section" class="winner-section" style="display: none;">
                     <label for="winner_pred">Quem se classifica?</label>
                     <select name="winner_pred" id="winner_pred">
                         <option value="" disabled selected>Selecione</option>
@@ -132,9 +132,9 @@
                 </div>
             </div>
 
-            <div style="margin-top: 20px; display: flex; gap: 12px;">
+            <div class="form-actions">
                 <button type="submit">Cadastrar Palpite</button>
-                <a href="{{ url_for('guesses') }}" class="link-muted" style="align-self: center;">
+                <a href="{{ url_for('guesses') }}" class="link-muted">
                     <span class="material-symbols-outlined">
                         Cancelar
                     </span>
