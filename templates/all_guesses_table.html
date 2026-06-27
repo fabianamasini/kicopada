@@ -1,9 +1,9 @@
 <div class="card">
-    <table style="width: 100%; border-collapse: collapse;" id="table-{{ tab_type }}">
+    <table class="data-table" id="table-{{ tab_type }}">
         <thead>
-            <tr style="text-align: left; border-bottom: 2px solid var(--line);">
-                <th style="padding: 12px 8px;">Usuário</th>
-                <th style="padding: 12px 8px; text-align: center;">Palpite</th>
+            <tr>
+                <th>Usuário</th>
+                <th class="center">Palpite</th>
             </tr>
         </thead>
         <tbody>
@@ -11,16 +11,16 @@
                 {# Cor da pílula reflete o acerto, mesma hierarquia do scoring: exato > saldo > vencedor > erro #}
                 {% set sa = guess.match.score_a %}
                 {% set sb = guess.match.score_b %}
-                <tr class="guess-row-{{ tab_type }}" data-match-id="{{ guess.match_id }}" style="border-bottom: 1px solid var(--line); display: none;">
-                    <td style="padding: 12px 8px;"><strong>{{ guess.user.username }}</strong></td>
-                    <td style="padding: 12px 8px; text-align: center;">
+                <tr class="guess-row-{{ tab_type }}" data-match-id="{{ guess.match_id }}" style="display: none;">
+                    <td><strong>{{ guess.user.username }}</strong></td>
+                    <td class="center">
                         {% if sa is not none and sb is not none %}
                             {% set tier = 'is-miss' %}
                             {% set tier_label = 'Errou' %}
                             {% if sa == guess.pred_a and sb == guess.pred_b %}{% set tier = 'is-exact' %}{% set tier_label = 'Acertou o placar exato' %}
                             {% elif (sa - sb) == (guess.pred_a - guess.pred_b) %}{% set tier = 'is-diff' %}{% set tier_label = 'Acertou o saldo de gols' %}
                             {% elif ((sa - sb) > 0) == ((guess.pred_a - guess.pred_b) > 0) and ((sa - sb) < 0) == ((guess.pred_a - guess.pred_b) < 0) %}{% set tier = 'is-winner' %}{% set tier_label = 'Acertou o vencedor' %}{% endif %}
-                            <span class="score-pill {{ tier }}" title="{{ tier_label }}" style="cursor: help;">
+                            <span class="score-pill {{ tier }} is-help" title="{{ tier_label }}">
                                 {{ guess.pred_a }} x {{ guess.pred_b }}
                                 {% if guess.match.is_knockout and guess.pred_a == guess.pred_b and guess.winner_pred %}
                                     <span class="penalty-line">Classificado: {{ guess.match.team_a if guess.winner_pred == 'A' else guess.match.team_b }}</span>
@@ -39,5 +39,5 @@
             {% endfor %}
         </tbody>
     </table>
-    <p id="no-results-{{ tab_type }}" style="text-align: center; color: var(--muted); padding: 20px; display: none;">Nenhum palpite para esta partida.</p>
+    <p id="no-results-{{ tab_type }}" class="empty-state" style="display: none;">Nenhum palpite para esta partida.</p>
 </div>
