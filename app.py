@@ -116,7 +116,12 @@ def signup():
 def home():
     ranking = user_controller.get_ranked_users()
     upcoming_matches = matches_controller.get_upcoming_matches()
-    return render_template('home.html', ranking=ranking, upcoming_matches=upcoming_matches)
+
+    # Busca os palpites do usuário logado para mapear nos jogos
+    user_guesses = Guesses.query.filter_by(user_id=current_user.id).all()
+    guesses_dict = {guess.match_id: guess for guess in user_guesses}
+
+    return render_template('home.html', ranking=ranking, upcoming_matches=upcoming_matches, user_guesses=guesses_dict)
 
 @app.route('/matches', methods=['GET'])
 @login_required
@@ -128,7 +133,11 @@ def matches():
 @login_required
 def guesses():
     categorized_guesses = guesses_controller.get_user_guesses(current_user.id)
-    return render_template('guesses.html', active_guesses=categorized_guesses['active'], previous_guesses=categorized_guesses['previous'])
+    pending_matches = guesses_controller.get_pending_matches_tomorrow(current_user.id)
+    return render_template('guesses.html',
+                           active_guesses=categorized_guesses['active'],
+                           previous_guesses=categorized_guesses['previous'],
+                           pending_matches=pending_matches)
 
 @app.route('/add_guess', methods=['GET', 'POST'])
 @login_required
@@ -136,7 +145,8 @@ def create_guess():
     if request.method == 'POST':
         return guesses_controller.add_guess(request, current_user)
     matches_list = matches_controller.get_available_matches_for_user(current_user.id)
-    return render_template('add_guess.html', matches=matches_list)
+    selected_match_id = request.args.get('match_id', type=int)
+    return render_template('add_guess.html', matches=matches_list, selected_match_id=selected_match_id)
 
 @app.route('/delete_guess/<int:guess_id>', methods=['POST'])
 @login_required
@@ -151,19 +161,17 @@ def edit_guess(guess_id):
                                              user_id=current_user.id,
                                              pred_a=request.form.get('pred_a'),
                                              pred_b=request.form.get('pred_b'),
-                                             winner_pred=request.form.get('winner_pred'),
-                                         penalty_a=request.form.get('penalty_a'),
-                                         penalty_b=request.form.get('penalty_b'))
+                                             winner_pred=request.form.get('winner_pred'))
 
     guess = Guesses.query.filter_by(id=guess_id, user_id=current_user.id).options(joinedload(Guesses.match)).first()
     if not guess:
         flash('Palpite não encontrado.', 'error')
         return redirect(url_for('guesses'))
-    
+
     if not guess.match.is_editable():
         flash('O prazo para editar este palpite expirou.', 'error')
         return redirect(url_for('guesses'))
-        
+
     return render_template('edit_guess.html', guess=guess)
 
 # Admin required route
@@ -176,8 +184,9 @@ def create_match():
                                             match_date = request.form.get('match_date'),
                                             round = request.form.get('round'),
                                             score_a = request.form.get('score_a'),
-                                            score_b = request.form.get('score_b'))
-    
+                                            score_b = request.form.get('score_b'),
+                                            winner = request.form.get('winner'))
+
     teams_list = [team[0] for team in Teams.query.with_entities(Teams.name).order_by(Teams.name.asc()).all()]
 
     return render_template('add_match.html', phases=phases, teams=teams_list)
@@ -192,7 +201,7 @@ def delete_match(match_id):
 
     # Recalcula a pontuação de todos os usuários afetados
     for uid in set(user_ids):
-        guesses_controller.update_user_points(uid, recalculate_all=True)
+        scoring_controller.update_user_points(uid)
 
     return response
 
@@ -200,55 +209,89 @@ def delete_match(match_id):
 @admin_required
 def edit_match(match_id):
     if request.method == 'POST':
-        response = matches_controller.edit_match(match_id, 
+        response = matches_controller.edit_match(match_id,
                                           team_a=request.form.get('team_a'),
                                           team_b=request.form.get('team_b'),
                                           match_date=request.form.get('match_date'),
                                           round=request.form.get('round'),
                                           score_a=request.form.get('score_a'),
-                                          score_b=request.form.get('score_b'))
+                                          score_b=request.form.get('score_b'),
+                                          winner=request.form.get('winner'))
         scoring_controller.update_all_scores_for_match(match_id)
         return response
     else:
         match = Match.query.get(match_id)
         teams_list = [team[0] for team in Teams.query.with_entities(Teams.name).order_by(Teams.name.asc()).all()]
         return render_template('edit_match.html', match=match, phases=phases, teams=teams_list)
-    
-@app.route('/all_guesses', methods=['GET'])
-@admin_required
-def all_guesses():
-    categorized_matches = matches_controller.get_categorized_matches()
-    guesses = Guesses.query.options(joinedload(Guesses.match)).all()
 
-    # Lógica para encontrar a partida mais próxima (filtro padrão)
+@app.route('/all_guesses', methods=['GET'])
+@login_required
+def all_guesses():
+    # "Partidas Anteriores" é visível para todos; "Próximos Jogos" só para admin
+    # (esconde os palpites de jogos futuros para evitar cópia).
+    is_admin = current_user.is_admin
+
+    categorized_matches = matches_controller.get_categorized_matches()
+    previous_matches = categorized_matches['previous']
+    active_matches = categorized_matches['active'] if is_admin else []
+    previous_ids = {m.id for m in previous_matches}
+
+    # Carrega só os palpites que serão exibidos (não-admin não recebe palpites de jogos futuros).
+    base_query = Guesses.query.options(joinedload(Guesses.match), joinedload(Guesses.user))
+    if is_admin:
+        all_guesses_list = base_query.all()
+    elif previous_ids:
+        all_guesses_list = base_query.filter(Guesses.match_id.in_(previous_ids)).all()
+    else:
+        all_guesses_list = []
+
+    # Ordenação dos palpites:
+    #  - Próximos Jogos: alfabético por usuário
+    #  - Partidas Anteriores: por acerto (exato > saldo > vencedor > erro) e então alfabético
+    def acerto_rank(g):
+        return scoring_controller.group_phase_result(
+            g.match.score_a, g.match.score_b, g.pred_a, g.pred_b)
+
+    active_guesses = sorted(
+        (g for g in all_guesses_list if g.match_id not in previous_ids),
+        key=lambda g: g.user.username.lower()
+    ) if is_admin else []
+    previous_guesses = sorted(
+        (g for g in all_guesses_list if g.match_id in previous_ids),
+        key=lambda g: (-acerto_rank(g), g.user.username.lower()))
+
+    # Filtro padrão: primeira partida futura; senão a primeira ativa; senão a primeira anterior
     saopaulo_tz = pytz.timezone('America/Sao_Paulo')
     now_sp = datetime.now(saopaulo_tz)
-    
+
     default_match_id = None
     is_default_in_active = True
 
-    # Tenta encontrar a primeira partida futura na lista de ativos
-    for m in categorized_matches['active']:
+    for m in active_matches:
         if m.date:
             m_dt = saopaulo_tz.localize(datetime.strptime(m.date, "%Y-%m-%dT%H:%M"))
             if m_dt >= now_sp:
                 default_match_id = m.id
                 break
-    
-    # Se não houver partidas futuras hoje/frente, pega a última ativa ou a primeira anterior
+
     if not default_match_id:
-        if categorized_matches['active']:
-            default_match_id = categorized_matches['active'][0].id
-        elif categorized_matches['previous']:
-            default_match_id = categorized_matches['previous'][0].id
+        if active_matches:
+            default_match_id = active_matches[0].id
+        elif previous_matches:
+            default_match_id = previous_matches[0].id
             is_default_in_active = False
 
-    return render_template('all_guesses.html', 
-                           active_matches=categorized_matches['active'],
-                           previous_matches=categorized_matches['previous'],
-                           guesses=guesses,
+    # Não-admin só tem a aba de Partidas Anteriores
+    if not is_admin:
+        is_default_in_active = False
+
+    return render_template('all_guesses.html',
+                           active_matches=active_matches,
+                           previous_matches=previous_matches,
+                           active_guesses=active_guesses,
+                           previous_guesses=previous_guesses,
                            default_match_id=default_match_id,
                            is_default_in_active=is_default_in_active)
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host='0.0.0.0', debug=False, port=int(os.getenv('PORT', 5000)))

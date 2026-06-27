@@ -1,82 +1,296 @@
-/* Shared layout styles for main app pages */
-*{box-sizing:border-box}
-html,body{height:100%;margin:0;font-family:Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;background:#f3f4f6;color:#0f172a}
-.layout{display:flex;min-height:100vh}
-.sidebar{width:220px;background:linear-gradient(180deg,#0f172a,#111827);color:#e6eef6;padding:20px;flex-shrink:0}
-.sidebar .brand{font-weight:700;font-size:18px;margin-bottom:14px;color:#fff}
-.nav{display:flex;flex-direction:column;gap:6px}
-.nav a{display:block;color:#cbd5e1;padding:10px;border-radius:8px;text-decoration:none;font-weight:600}
-.nav a:hover{background:rgba(255,255,255,0.03);color:#fff}
-.nav a.active{background:linear-gradient(90deg,#ff6b6b,#ff8a65);color:#fff;box-shadow:0 6px 14px rgba(203,67,53,0.12)}
-.content{flex:1;padding:28px}
-.topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}
-.card{background:#fff;border-radius:12px;padding:20px;box-shadow:0 6px 20px rgba(2,6,23,0.06)}
-h1{margin:0 0 8px 0}
-.card form{display:flex;flex-direction:column;gap:12px}
-.card label{font-size:0.95rem;color:#0f172a}
-.card input[type="text"], .card input[type="datetime-local"], .card input[type="number"], .card textarea, .card select{width:100%;padding:10px;border-radius:8px;border:1px solid #e6e9ee;font-size:1rem}
-.card button[type="submit"]{padding:10px 14px;border-radius:8px;border:0;background:linear-gradient(90deg,#ff6b6b,#ff8a65);color:#fff;font-weight:600;cursor:pointer;align-self:flex-start}
-
-/* Form row helpers to place fields side-by-side */
-.form-row{display:flex;gap:12px;align-items:center}
-.form-row .col{flex:1}
-.form-row .col-narrow{width:120px}
-.form-row .col input, .form-row .col select, .form-row .col textarea{width:100%}
-
-@media (max-width:720px){
-  .form-row{flex-direction:column}
-  .form-row .col-narrow{width:100%}
+/* Estilos de layout das páginas internas do app.
+   Tokens, reset e fonte ficam em tokens.css (carregado antes deste arquivo). */
+body {
+    background: var(--bg);
+    color: var(--ink)
 }
 
-/* Estilização personalizada para input de data/hora */
-.card input[type="date"]{
-  /* espaço extra à direita para o ícone */
-  padding:10px 40px 10px 12px;
-  background-color:#fff;
-  background-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%239ca3af' d='M7 2h2v2h6V2h2v4H7V2zM5 7h14v13H5z'/%3E%3C/svg%3E");
-  background-repeat:no-repeat;
-  background-position:right 10px center;
-  background-size:20px 20px;
-  -webkit-appearance:none;
-  appearance:none;
-}
-.card input[type="datetime-local"]:focus{outline:none;box-shadow:0 0 0 4px rgba(255,107,107,0.08);border-color:#ff6b6b}
-.topbar .username{color:#000000;background:transparent;padding:6px 8px;margin-right:8px}
-.topbar-actions{display:flex;align-items:center;gap:8px}
-.btn-logout{background:linear-gradient(90deg,#ff6b6b,#ff8a65);color:#fff;padding:8px 10px;border-radius:8px;text-decoration:none;font-weight:600}
-.link-muted{color:#6b7280;text-decoration:none;padding:6px 8px}
-@media (max-width:880px){
-  .layout{flex-direction:column}
-  .sidebar{width:100%;display:flex;flex-direction:row;gap:12px;overflow:auto}
-  .nav{flex-direction:row}
-  .nav a{white-space:nowrap}
+.layout {
+    display: flex;
+    min-height: 100vh
 }
 
-/* Estilos para a Tabela de Ranking */
-.ranking-section { margin-top: 24px; }
-.ranking-table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 12px; overflow: hidden; margin-top: 15px; }
-.ranking-table th, .ranking-table td { padding: 14px 20px; text-align: left; border-bottom: 1px solid #f1f5f9; }
-.ranking-table th { background: #f8fafc; color: #64748b; font-size: 0.8rem; text-transform: uppercase; font-weight: 700; }
-.ranking-table tr:last-child td { border-bottom: none; }
-.ranking-table tr:hover { background: #f8fafc; }
-.ranking-table .pos { font-weight: 700; color: #1e293b; width: 40px; }
-.ranking-table .pts { font-weight: 700; color: #ff6b6b; text-align: right; }
-.ranking-table th.pts { text-align: right; }
-.ranking-table .is-current-user { background: #fff1f2; }
-.ranking-table .is-current-user td { border-bottom-color: #fecaca; }
+.sidebar {
+    width: 220px;
+    background: var(--grad-sidebar);
+    color: var(--mist);
+    padding: var(--space-20);
+    flex-shrink: 0
+}
 
-/* Layout para as tabelas na Home */
+.sidebar .brand {
+    font-weight: 700;
+    font-size: 18px;
+    margin-bottom: var(--space-14);
+    color: var(--surface)
+}
+
+.nav {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-6)
+}
+
+.nav a {
+    display: block;
+    color: var(--nav-link);
+    padding: var(--space-10);
+    border-radius: var(--radius);
+    text-decoration: none;
+    font-weight: 600
+}
+
+.nav a:hover {
+    background: color-mix(in srgb, var(--surface-white) 3%, transparent);
+    color: var(--surface)
+}
+
+.nav a.active {
+    background: var(--grad-coral);
+    color: var(--surface);
+    box-shadow: 0 6px 14px color-mix(in srgb, var(--coral) 12%, transparent)
+}
+
+.content {
+    flex: 1;
+    padding: var(--space-28)
+}
+
+.topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-8)
+}
+
+.card {
+    background: var(--surface-white);
+    border-radius: var(--radius-lg);
+    padding: var(--space-10) var(--space-20);
+    box-shadow: 0 6px 20px color-mix(in srgb, var(--slate) 6%, transparent)
+}
+
+h1 {
+    margin: 0 0 var(--space-8) 0
+}
+
+.card form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-12)
+}
+
+.card label {
+    font-size: 0.9rem;
+    color: var(--ink)
+}
+
+.card input[type="text"],
+.card input[type="datetime-local"],
+.card input[type="number"],
+.card textarea,
+.card select {
+    width: 100%;
+    padding: var(--space-10);
+    border-radius: var(--radius);
+    border: 1px solid var(--line);
+    font-size: 1rem
+}
+
+.card button[type="submit"] {
+    padding: var(--space-10) var(--space-14);
+    border-radius: var(--radius);
+    border: 0;
+    background: var(--grad-coral);
+    color: var(--surface);
+    font-weight: 600;
+    cursor: pointer;
+    align-self: flex-start
+}
+
+.form-row {
+    display: flex;
+    gap: var(--space-12);
+    align-items: center
+}
+
+.form-row .col {
+    flex: 1
+}
+
+.form-row .col-narrow {
+    width: 120px
+}
+
+.form-row .col input,
+.form-row .col select,
+.form-row .col textarea {
+    width: 100%
+}
+
+@media (max-width:720px) {
+    .form-row {
+        flex-direction: column
+    }
+
+    .form-row .col-narrow {
+        width: 100%
+    }
+}
+
+.card input[type="date"] {
+    padding: var(--space-10) 40px var(--space-10) var(--space-12);
+    background-color: var(--surface);
+    background-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%239ca3af' d='M7 2h2v2h6V2h2v4H7V2zM5 7h14v13H5z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    background-size: 20px 20px;
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+.card input[type="datetime-local"]:focus {
+    outline: none;
+    box-shadow: 0 0 0 4px rgba(255, 107, 107, 0.08);
+    border-color: var(--coral)
+}
+
+.topbar .username {
+    color: #000000;
+    background: transparent;
+    padding: var(--space-6) var(--space-8);
+    margin-right: var(--space-8)
+}
+
+.topbar-actions {
+    display: flex;
+    align-items: center;
+    gap: var(--space-8)
+}
+
+.btn-logout {
+    background: var(--grad-coral);
+    color: var(--surface);
+    padding: var(--space-8) var(--space-10);
+    border-radius: var(--radius);
+    text-decoration: none;
+    font-weight: 600
+}
+
+.link-muted {
+    color: var(--muted);
+    text-decoration: none;
+    padding: var(--space-6) var(--space-8)
+}
+
+@media (max-width:880px) {
+    .layout {
+        flex-direction: column
+    }
+
+    .sidebar {
+        width: 100%;
+        padding: var(--space-12) var(--space-14);
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-10)
+    }
+
+    .sidebar .brand {
+        margin-bottom: 0
+    }
+
+    .nav {
+        flex-direction: row;
+        flex-wrap: nowrap;
+        gap: var(--space-2);
+        min-width: 0;
+    }
+
+    .nav a {
+        flex: 1 1 0.1;
+        min-width: 0;
+        white-space: nowrap;
+        padding: var(--space-8) var(--space-8);
+        background: color-mix(in srgb, var(--surface-white) 6%, transparent)
+    }
+
+    .content {
+        padding: var(--space-16) var(--space-14)
+    }
+}
+
+.ranking-section {
+    margin-top: var(--space-24);
+}
+
+.ranking-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--surface-white);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    margin-top: var(--space-16);
+}
+
+.ranking-table th,
+.ranking-table td {
+    padding: var(--space-14) var(--space-20);
+    text-align: left;
+    border-bottom: 1px solid var(--line);
+}
+
+.ranking-table th {
+    background: var(--surface);
+    color: var(--muted);
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    font-weight: 600;
+}
+
+.ranking-table tr:last-child td {
+    border-bottom: none;
+}
+
+.ranking-table tr:hover {
+    background: var(--surface);
+}
+
+.ranking-table .pos {
+    font-weight: 700;
+    color: var(--ink);
+    width: 40px;
+}
+
+.ranking-table .pts {
+    font-weight: 700;
+    color: var(--coral);
+    text-align: right;
+}
+
+.ranking-table th.pts {
+    text-align: right;
+}
+
+.ranking-table .is-current-user {
+    background: var(--coral-bg);
+}
+
+.ranking-table .is-current-user td {
+    border-bottom-color: var(--red-soft);
+}
+
 .home-content-layout {
     display: flex;
-    gap: 30px; /* Espaçamento entre as tabelas */
-    margin-top: 24px;
+    gap: var(--space-32);
+    margin-top: var(--space-24);
 }
 
-.home-content-layout > .card {
+.home-content-layout>.card {
     flex: 3;
 }
 
-.home-content-layout > .odds-section {
+.home-content-layout>.odds-section {
     flex: 7;
 }
 
@@ -86,40 +300,500 @@ h1{margin:0 0 8px 0}
     }
 }
 
-/* Estilos para a Tabela de Odds na Home */
-.odds-section { margin-top: 0; }
-.odds-table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 12px; overflow: hidden; margin-top: 0px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); table-layout: fixed; }
-.odds-table th, .odds-table td { padding: 12px 16px; text-align: center; border-bottom: 1px solid #f1f5f9; }
-.odds-table th { background: #f8fafc; color: #64748b; font-size: 0.75rem; text-transform: uppercase; font-weight: 700; }
-.odds-table .match-info { text-align: left; font-weight: 600; width: 32%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.odds-table th:not(.match-info) { width: 17%; }
-.odds-table .odd-value { font-family: 'Courier New', Courier, monospace; color: #2563eb; font-weight: 700; background: #eff6ff; padding: 4px 8px; border-radius: 4px; }
-.odds-table tr:hover { background: #fdfdfd; }
-.odds-table .no-odds { color: #94a3b8; font-size: 0.85rem; font-style: italic; }
+.odds-section {
+    margin-top: 0;
+}
 
-/* Estilos para Abas de Palpites */
-.tabs-container { margin-top: 20px; }
-.tabs-header { display: flex; gap: 10px; border-bottom: 2px solid #e2e8f0; margin-bottom: 20px; }
-.tab-button { 
-    padding: 10px 20px; 
-    border: none; 
-    background: none; 
-    cursor: pointer; 
-    font-weight: 600; 
-    color: #64748b; 
+.odds-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--surface-white);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    margin-top: 0;
+    box-shadow: 0 4px 12px color-mix(in srgb, var(--slate) 5%, transparent);
+    table-layout: fixed;
+}
+
+.odds-table th,
+.odds-table td {
+    padding: var(--space-12) var(--space-16);
+    text-align: center;
+    border-bottom: 1px solid var(--line);
+}
+
+.odds-table th {
+    background: var(--surface);
+    color: var(--muted);
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    font-weight: 600;
+}
+
+.odds-table .match-info {
+    text-align: left;
+    font-weight: 600;
+    width: 40%;
+    overflow: auto;
+    text-overflow: ellipsis;
+}
+
+.odds-table th:not(.match-info) {
+    width: 15%;
+}
+
+.odds-table .odd-value {
+    font-family: 'Courier New', Courier, monospace;
+    color: var(--odd);
+    font-weight: 600;
+    background: var(--odd-bg);
+    padding: var(--space-6) var(--space-12);
+    border-radius: var(--radius-sm);
+}
+
+@media (hover: hover) {
+    .odds-table .odds-row:hover {
+        background: var(--surface);
+
+    }
+}
+
+.odds-table .no-odds {
+    color: var(--muted);
+    font-size: 0.85rem;
+    font-style: italic;
+}
+
+.odds-table .guess-cta {
+    color: var(--coral);
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.odds-table .guess-cta:hover {
+    text-decoration: underline;
+}
+
+.odds-table .odd-picked {
+    box-shadow: inset 0 0 0 2px var(--coral);
+    font-weight: 700;
+}
+
+.score-pill {
+    display: inline-block;
+    font-family: inherit;
+    font-weight: 600;
+    padding: var(--space-4) var(--space-14);
+    border-radius: var(--radius-sm);
+    white-space: nowrap;
+    background: var(--bg);
+    color: var(--slate);
+}
+
+.score-pill--result {
+    background: var(--mist);
+    color: var(--ink);
+}
+
+.score-pill.is-exact {
+    background: var(--green-strong);
+    color: var(--green-soft);
+}
+
+.score-pill.is-diff {
+    background: var(--green-soft);
+    color: var(--green-deep);
+}
+
+.score-pill.is-winner {
+    background: var(--yellow-soft);
+    color: var(--brown-deep);
+}
+
+.score-pill.is-miss {
+    background: var(--red-soft);
+    color: var(--red-deep);
+}
+
+.score-pill .penalty-line {
+    display: block;
+    font-size: 0.8rem;
+    font-weight: 500;
+    opacity: 0.8;
+    margin-top: var(--space-2);
+    padding-top: var(--space-2);
+    border-top: 1px solid color-mix(in srgb, var(--slate) 12%, transparent);
+}
+
+.tabs-container {
+    margin-top: var(--space-20);
+}
+
+.tabs-header {
+    display: flex;
+    gap: var(--space-10);
+    border-bottom: 2px solid var(--mist);
+    margin-bottom: var(--space-20);
+}
+
+.tab-button {
+    padding: var(--space-10) var(--space-20);
+    border: none;
+    background: none;
+    cursor: pointer;
+    font-weight: 600;
+    color: var(--muted);
     border-bottom: 2px solid transparent;
     margin-bottom: -2px;
     transition: all 0.2s;
 }
-.tab-button:hover { color: #0f172a; }
-.tab-button.active { 
-    color: #ff6b6b; 
-    border-bottom-color: #ff6b6b; 
+
+.tab-button:hover {
+    color: var(--ink);
 }
-.tab-content { display: none; }
-.tab-content.active { display: block; }
+
+.tab-button.active {
+    color: var(--coral);
+    border-bottom-color: var(--coral);
+}
+
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
+}
 
 .match-today-highlight {
-    border-left: 4px solid #ff6b6b;
-    background-color: #fffafb;
+    border-left: 4px solid var(--coral);
+    background-color: var(--coral-bg);
+}
+
+.odds-table .chip-sym {
+    display: none;
+}
+
+.odds-table .day-header-cell {
+    text-align: left;
+    background: var(--surface);
+    font-weight: 600;
+    padding: var(--space-12);
+    color: var(--muted);
+    border-bottom: 2px solid var(--line);
+    font-size: 0.8rem;
+}
+
+/* ===== Mobile (≤640px) tabelas legíveis no celular ===== */
+@media (max-width:640px) {
+    .content {
+        padding: var(--space-14) var(--space-12)
+    }
+
+    h1 {
+        font-size: 1.4rem
+    }
+
+    .ranking-table th,
+    .ranking-table td {
+        padding: var(--space-10) var(--space-12)
+    }
+
+    .odds-table {
+        box-shadow: none;
+        overflow: visible
+    }
+
+    .odds-table thead {
+        display: none
+    }
+
+    .odds-table tbody,
+    .odds-table tr,
+    .odds-table td {
+        display: block;
+        width: 100%
+    }
+
+    .odds-table .odds-row {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        column-gap: var(--space-6);
+        row-gap: var(--space-8);
+        align-items: stretch;
+        padding: var(--space-12) var(--space-10);
+        border-bottom: 1px solid var(--line)
+    }
+
+    .odds-row td {
+        border: none;
+        padding: 0;
+        width: auto
+    }
+
+    .odds-row .match-info {
+        grid-column: 1 / 4;
+        grid-row: 1;
+        align-self: baseline;
+        width: auto;
+        min-width: 0;
+        font-size: 0.9rem;
+        font-weight: 600
+    }
+
+    .odds-row .col-time {
+        grid-column: 4;
+        grid-row: 1;
+        align-self: baseline;
+        text-align: right;
+        color: var(--muted);
+        font-size: 0.8rem
+    }
+
+    .odds-row .col-odd,
+    .odds-row .col-guess-cell {
+        grid-row: 2;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: var(--space-4);
+        min-height: 28px;
+        border-radius: var(--radius-sm);
+        font-size: 0.8rem
+    }
+
+    .odds-row .col-odd {
+        background: color-mix(in srgb, var(--odd) 8%, transparent);
+        padding: var(--space-4)
+    }
+
+    .odds-row .col-odd.is-pick {
+        box-shadow: inset 0 0 0 2px var(--coral);
+        font-weight: 700
+    }
+
+    .odds-row .chip-sym {
+        display: inline;
+        font-size: 0.9rem;
+        line-height: 1
+    }
+
+    .odds-row .col-odd .odd-value {
+        background: none;
+        padding: 0;
+        box-shadow: none
+    }
+
+    .odds-row .col-odd .no-odds {
+        font-size: 0.8rem
+    }
+
+    .odds-row .col-guess-cell>* {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        min-height: 28px;
+        margin: 0;
+        font-size: 0.8rem
+    }
+
+    .odds-row .col-guess-cell .score-pill {
+        padding: 0 var(--space-4)
+    }
+
+    .odds-row .col-guess-cell .guess-cta {
+        background: var(--coral-bg);
+        color: var(--coral);
+        border-radius: var(--radius-sm);
+        padding: 0 var(--space-4)
+    }
+
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.data-table thead tr {
+    text-align: left;
+    border-bottom: 2px solid var(--line);
+}
+
+.data-table th,
+.data-table td {
+    padding: var(--space-12) var(--space-8);
+}
+
+.data-table tbody tr {
+    border-bottom: 1px solid var(--line);
+}
+
+.data-table .center {
+    text-align: center;
+}
+
+.data-table .cell-muted {
+    color: var(--muted);
+}
+
+.data-table tbody tr.is-previous {
+    background-color: var(--surface);
+}
+
+.data-table tbody tr.is-pending {
+    background-color: var(--coral-bg);
+}
+
+.btn {
+    display: inline-block;
+    border: 0;
+    border-radius: var(--radius-sm);
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.btn-success {
+    background-color: var(--green-strong);
+    color: var(--surface);
+    padding: var(--space-8) var(--space-16);
+}
+
+.btn-sm {
+    padding: var(--space-6) var(--space-14);
+}
+
+.row-actions {
+    align-items: center;
+    display: flex;
+    gap: var(--space-12);
+    justify-content: center;
+}
+
+.action-edit {
+    background: var(--odd-bg);
+    border-radius: var(--radius-sm);
+    color: var(--odd);
+    font-family: inherit;
+    font-size: 0.9rem;
+    font-weight: 600;
+    padding: var(--space-8);
+    text-decoration: none;
+}
+
+.card button.action-delete,
+.action-delete {
+    background: var(--red-soft);
+    border-radius: var(--radius-sm);
+    color: var(--red-strong);
+    font-family: inherit;
+    font-size: 0.9rem;
+    padding: var(--space-8);
+}
+
+.form-inline {
+    display: inline;
+    margin: 0;
+}
+
+.link-add {
+    margin-left: var(--space-12);
+    color: var(--coral);
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.empty-state {
+    text-align: center;
+    color: var(--muted);
+    padding: var(--space-20);
+}
+
+.placeholder {
+    color: var(--muted-2);
+    font-style: italic;
+}
+
+.placeholder.is-small {
+    font-size: 0.75rem;
+}
+
+.badge-you {
+    font-size: 0.75rem;
+    color: var(--coral);
+    font-weight: 700;
+}
+
+.icon-muted {
+    color: var(--muted-2);
+    cursor: default;
+}
+
+.table-scroll {
+    overflow-x: auto;
+}
+
+.score-pill.is-help {
+    cursor: help;
+}
+
+.score-pill--lg {
+    font-size: 1.05rem;
+    padding: var(--space-8) var(--space-20);
+}
+
+.topbar h2 {
+    margin: 0;
+}
+
+.form-actions {
+    margin-top: var(--space-20);
+    display: flex;
+    gap: var(--space-12);
+    align-items: center;
+}
+
+.winner-section {
+    margin-top: var(--space-16);
+}
+
+.col-vs {
+    text-align: center;
+    align-self: flex-end;
+    padding-bottom: var(--space-10);
+    font-weight: 700;
+}
+
+.readonly-field {
+    padding: var(--space-10);
+    background: var(--surface);
+    border-radius: var(--radius);
+    border: 1px solid var(--line);
+    font-weight: 600;
+}
+
+.filter-block {
+    margin-bottom: var(--space-16);
+}
+
+.filter-label {
+    font-weight: 700;
+    margin-bottom: var(--space-8);
+    display: block;
+}
+
+.match-summary {
+    margin-bottom: var(--space-16);
+    text-align: center;
+}
+
+.summary-meta {
+    color: var(--muted);
+    font-size: 0.9rem;
+    margin-bottom: var(--space-8);
 }

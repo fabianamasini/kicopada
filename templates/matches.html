@@ -9,7 +9,7 @@
         <h1>Partidas</h1>
         {% if current_user.is_admin %}
             <div class="topbar-actions">
-                <a href="{{ url_for('create_match') }}" style="text-decoration: none; background-color: #28a745; color: white; padding: 8px 16px; border-radius: 4px; font-size: 14px;">+ Cadastrar Jogo</a>
+                <a href="{{ url_for('create_match') }}" class="btn btn-success">+ Cadastrar Jogo</a>
             </div>
         {% endif %}
     </div>
@@ -24,37 +24,41 @@
         <div id="active-matches" class="tab-content active">
             <div class="card">
                 {% if active_matches %}
-                    <table style="width: 100%; border-collapse: collapse;">
+                    <table class="data-table">
                         <thead>
-                            <tr style="text-align: left; border-bottom: 2px solid #eee;">
-                                <th style="padding: 12px 8px;">Data</th>
-                                <th style="padding: 12px 8px;">Fase</th>
-                                <th style="padding: 12px 8px;">Confronto</th>
-                                <th style="padding: 12px 8px; text-align: center;">Placar</th>
+                            <tr>
+                                <th>Data</th>
+                                <th>Fase</th>
+                                <th>Confronto</th>
+                                <th class="center">Placar</th>
                                 {% if current_user.is_admin %}
-                                    <th style="padding: 12px 8px; text-align: center;">Ações</th>
+                                    <th class="center">Ações</th>
                                 {% endif %}
                             </tr>
                         </thead>
                         <tbody>
                             {% for match in active_matches %}
-                                <tr style="border-bottom: 1px solid #eee;">
-                                    <td style="padding: 12px 8px;">{{ match.formatted_date }}</td>
-                                    <td style="padding: 12px 8px;">{{ match.round }}</td>
-                                    <td style="padding: 12px 8px;"><strong>{{ match.team_a }}</strong> vs <strong>{{ match.team_b }}</strong></td>
-                                    <td style="padding: 12px 8px; text-align: center;">
+                                <tr>
+                                    <td><time datetime="{{ match.date }}">{{ match.formatted_date }}</time></td>
+                                    <td>{{ match.round }}</td>
+                                    <td><strong>{{ match.team_a }}</strong> vs <strong>{{ match.team_b }}</strong></td>
+                                    <td class="center">
                                         {% if match.score_a is not none and match.score_b is not none %}
-                                            <span style="background: #f0f0f0; padding: 4px 10px; border-radius: 4px; font-weight: bold;">{{ match.score_a }} x {{ match.score_b }}</span>
+                                            <span class="score-pill">{{ match.score_a }} x {{ match.score_b }}
+                                                {% if match.is_knockout and match.score_a == match.score_b and match.winner %}
+                                                    <span class="penalty-line">Classificado: {{ match.team_a if match.winner == 'A' else match.team_b }}</span>
+                                                {% endif %}
+                                            </span>
                                         {% else %}
-                                            <span style="color: #999; font-style: italic;">Agendado</span>
+                                            <span class="placeholder">Agendado</span>
                                         {% endif %}
                                     </td>
                                     {% if current_user.is_admin %}
-                                        <td style="padding: 12px 8px; text-align: center;">
-                                            <div style="display: flex; gap: 12px; justify-content: center; align-items: center;">
-                                                <a href="{{ url_for('edit_match', match_id=match.id) }}" style="color: #4f46e5; text-decoration: none; font-size: 14px; font-weight: 600;">Editar</a>
-                                                <form action="{{ url_for('delete_match', match_id=match.id) }}" method="POST" style="display: inline; margin: 0;" onsubmit="return confirm('Tem certeza que deseja excluir esta partida?');">
-                                                    <button type="submit" style="background: none; border: none; color: #dc3545; cursor: pointer; font-size: 14px; font-weight: 600; padding: 0; font-family: inherit;">Deletar</button>
+                                        <td class="center">
+                                            <div class="row-actions">
+                                                <a href="{{ url_for('edit_match', match_id=match.id) }}" class="action-edit">Editar</a>
+                                                <form action="{{ url_for('delete_match', match_id=match.id) }}" method="POST" class="form-inline" onsubmit="return confirm('Tem certeza que deseja excluir esta partida?');">
+                                                    <button type="submit" class="action-delete">Deletar</button>
                                                 </form>
                                             </div>
                                         </td>
@@ -64,7 +68,7 @@
                         </tbody>
                     </table>
                 {% else %}
-                    <p style="text-align: center; color: #666; padding: 20px;">Nenhuma partida agendada no momento.</p>
+                    <p class="empty-state">Nenhuma partida agendada no momento.</p>
                 {% endif %}
             </div>
         </div>
@@ -73,31 +77,39 @@
         <div id="previous-matches" class="tab-content">
             <div class="card">
                 {% if previous_matches %}
-                    <table style="width: 100%; border-collapse: collapse;">
+                    <table class="data-table">
                         <thead>
-                            <tr style="text-align: left; border-bottom: 2px solid #eee;">
-                                <th style="padding: 12px 8px;">Data</th>
-                                <th style="padding: 12px 8px;">Fase</th>
-                                <th style="padding: 12px 8px;">Confronto</th>
-                                <th style="padding: 12px 8px; text-align: center;">Resultado</th>
+                            <tr>
+                                <th>Data</th>
+                                <th>Fase</th>
+                                <th>Confronto</th>
+                                <th class="center">Placar</th>
                                 {% if current_user.is_admin %}
-                                    <th style="padding: 12px 8px; text-align: center;">Ações</th>
+                                    <th class="center">Ações</th>
                                 {% endif %}
                             </tr>
                         </thead>
                         <tbody>
                             {% for match in previous_matches %}
-                                <tr style="border-bottom: 1px solid #eee; background-color: #fcfcfc;">
-                                    <td style="padding: 12px 8px; color: #64748b;">{{ match.formatted_date }}</td>
-                                    <td style="padding: 12px 8px;">{{ match.round }}</td>
-                                    <td style="padding: 12px 8px;"><strong>{{ match.team_a }}</strong> vs <strong>{{ match.team_b }}</strong></td>
-                                    <td style="padding: 12px 8px; text-align: center;">
-                                        <span style="background: #e2e8f0; padding: 4px 10px; border-radius: 4px; font-weight: bold;">{{ match.score_a }} x {{ match.score_b }}</span>
+                                <tr class="is-previous">
+                                    <td class="cell-muted"><time datetime="{{ match.date }}">{{ match.formatted_date }}</time></td>
+                                    <td>{{ match.round }}</td>
+                                    <td><strong>{{ match.team_a }}</strong> vs <strong>{{ match.team_b }}</strong></td>
+                                    <td class="center">
+                                        {% if match.score_a is not none and match.score_b is not none %}
+                                            <span class="score-pill score-pill--result">{{ match.score_a }} x {{ match.score_b }}
+                                                {% if match.is_knockout and match.score_a == match.score_b and match.winner %}
+                                                    <span class="penalty-line">Classificado: {{ match.team_a if match.winner == 'A' else match.team_b }}</span>
+                                                {% endif %}
+                                            </span>
+                                        {% else %}
+                                            <span class="placeholder">Aguardando...</span>
+                                        {% endif %}
                                     </td>
                                     {% if current_user.is_admin %}
-                                        <td style="padding: 12px 8px; text-align: center;">
-                                            <div style="display: flex; gap: 12px; justify-content: center; align-items: center;">
-                                                <a href="{{ url_for('edit_match', match_id=match.id) }}" style="color: #4f46e5; text-decoration: none; font-size: 14px; font-weight: 600;">Editar</a>
+                                        <td class="center">
+                                            <div class="row-actions">
+                                                <a href="{{ url_for('edit_match', match_id=match.id) }}" class="action-edit">Editar</a>
                                             </div>
                                         </td>
                                     {% endif %}
@@ -106,7 +118,7 @@
                         </tbody>
                     </table>
                 {% else %}
-                    <p style="text-align: center; color: #666; padding: 20px;">Nenhuma partida anterior encontrada.</p>
+                    <p class="empty-state">Nenhuma partida anterior encontrada.</p>
                 {% endif %}
             </div>
         </div>

@@ -1,0 +1,85 @@
+/* ============================================================
+   Carregado antes de app.css e auth.css (via base.html).
+   Todas as variáveis que devem ser padronizadas no layout
+   devem ser definidas neste arquivo.
+   ============================================================ */
+:root {
+    /* Tipografia */
+    --font: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+
+    /* Coral */
+    --coral: #ff6b6b;
+    --coral-2: #ff8a65;
+    --coral-bg: #fff1f2;
+    --grad-coral: linear-gradient(90deg, var(--coral), var(--coral-2));
+
+    /* Texto e cinzas */
+    --ink: #0f172a;
+    --slate: #334155;
+    --muted: #64748b;
+    --muted-2: #94a3b8;
+    --nav-link: #cbd5e1;
+
+    /* Superfícies */
+    --bg: #f1f5f9;
+    --surface: #f8fafc;
+    --surface-white: #ffffff;
+    --mist: #e6eef6;
+    --line: #e6e9ee;
+
+    /* Sidebar */
+    --grad-sidebar: linear-gradient(180deg, #0f172a, #111827);
+
+    /* Odds */
+    --odd: #2563eb;
+    --odd-bg: #eff6ff;
+
+    /* Avaliação do palpite (exato / saldo / vencedor / erro) */
+    --green-strong: #28a745;
+    --green-soft: #cef2ce;
+    --green-deep: #204020;
+    --yellow-soft: #f2ecaa;
+    --brown-deep: #4d3422;
+    --red-soft: #fecaca;
+    --red-strong: #b32424;
+    --red-deep: #661414;
+
+    /* Autenticação (telas de login) */
+    --grad-auth: linear-gradient(135deg, #0f2027, #2c5364);
+    --error-text: #9b1c1c;
+    --success-bg: #f0fff4;
+    --success-fg: #144620;
+
+    /* Forma */
+    --radius-sm: 4px;
+    --radius: 8px;
+    --radius-lg: 12px;
+
+    /* Espaçamento (margin / padding / gap). */
+    --space-2: 2px;
+    --space-4: 4px;
+    --space-6: 6px;
+    --space-8: 8px;
+    --space-10: 10px;
+    --space-12: 12px;
+    --space-14: 14px;
+    --space-16: 16px;
+    --space-20: 20px;
+    --space-24: 24px;
+    --space-28: 28px;
+    --space-32: 32px;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    height: 100%;
+    margin: 0;
+}
+
+body {
+    font-family: var(--font);
+}

@@ -14,14 +14,15 @@
                 <div class="col">
                     <label for="match">Jogo</label>
                     <select name="match_id" id="match" required onchange="updateMatchDetails(this)">
-                        <option value="" disabled selected>Selecione o jogo</option>
+                        <option value="" disabled {% if not selected_match_id %}selected{% endif %}>Selecione o jogo</option>
                         {% for m in matches %}
                             {% if m.is_editable() %}
-                                <option value="{{ m.id }}" 
+                                <option value="{{ m.id }}"
                                         data-knockout="{{ 'true' if m.is_knockout else 'false' }}"
-                                        data-team-a="{{ m.team_a }}" 
-                                        data-team-b="{{ m.team_b }}">
-                                    {{ m.team_a }} vs {{ m.team_b }} ({{ m.date }})
+                                        data-team-a="{{ m.team_a }}"
+                                        data-team-b="{{ m.team_b }}"
+                                        {% if m.id == selected_match_id %}selected{% endif %}>
+                                    {{ m.team_a }} vs {{ m.team_b }} — {{ m.formatted_date }}
                                 </option>
                             {% endif %}
                         {% endfor %}
@@ -32,40 +33,35 @@
             <div class="form-row">
                 <div class="col">
                     <label for="pred_a" id="label-pred-a">Placar Time A</label>
-                    <input type="number" name="pred_a" id="pred_a" min="0" step="1" required>
+                    <input type="number" name="pred_a" id="pred_a" min="0" step="1" required oninput="toggleWinnerSection()">
                 </div>
                 <div class="col">
                     <label for="pred_b" id="label-pred-b">Placar Time B</label>
-                    <input type="number" name="pred_b" id="pred_b" min="0" step="1" required>
+                    <input type="number" name="pred_b" id="pred_b" min="0" step="1" required oninput="toggleWinnerSection()">
                 </div>
             </div>
 
             <div id="knockout-section" style="display: none;">
-                <div class="card" style="margin-top: 15px; border: 1px dashed #ff6b6b;">
-                    <div class="form-row">
-                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: bold;">
-                            <input type="checkbox" id="check-penalty" name="decided_by_penalty" 
-                                onchange="togglePenaltyFields(this.checked)">
-                            🏆 Decidido nos Pênaltis?
-                        </label>
-                    </div>
-
-                    <div id="penalty-inputs" style="display: none; gap: 12px; margin-top: 10px;">
-                        <div class="col">
-                            <label id="label-penalty-a">Pênaltis Time A</label>
-                            <input type="number" name="penalty_a" placeholder="0">
-                        </div>
-                        <div class="col">
-                            <label id="label-penalty-b">Pênaltis Time B</label>
-                            <input type="number" name="penalty_b" placeholder="0">
-                        </div>
+                <div id="winner-section" class="winner-section" style="display: none;">
+                    <label for="winner_pred">Quem se classifica?</label>
+                    <select name="winner_pred" id="winner_pred">
+                        <option value="" disabled selected>Selecione</option>
+                        <option value="A" id="winner-option-a">Time A</option>
+                        <option value="B" id="winner-option-b">Time B</option>
+                    </select>
+                    <div class="form-text">
+                        Se o jogo for para os pênaltis, selecione o time que você acha que vai se classificar.
                     </div>
                 </div>
             </div>
 
-            <div style="margin-top: 20px; display: flex; gap: 12px;">
+            <div class="form-actions">
                 <button type="submit">Cadastrar Palpite</button>
-                <a href="{{ url_for('guesses') }}" class="link-muted" style="align-self: center;">Cancelar</a>
+                <a href="{{ url_for('guesses') }}" class="link-muted">
+                    <span class="material-symbols-outlined">
+                        Cancelar
+                    </span>
+                </a>
             </div>
         </form>
     </div>
@@ -80,19 +76,44 @@ function updateMatchDetails(select) {
     const teamB = option.getAttribute('data-team-b') || 'Time B';
 
     document.getElementById('label-pred-a').textContent = 'Placar ' + teamA;
-    document.getElementById('label-pred-b').textContent = 'Placar ' + teamB;
-    document.getElementById('label-penalty-a').textContent = 'Pênaltis ' + teamA;
-    document.getElementById('label-penalty-b').textContent = 'Pênaltis ' + teamB;
+    document.getElementById('label-pred-b').textContent = 'Placar ' + teamB;    
+    document.getElementById('winner-option-a').textContent = teamA;
+    document.getElementById('winner-option-b').textContent = teamB;
 
     document.getElementById('knockout-section').style.display = isKnockout ? 'block' : 'none';
+    toggleWinnerSection(); // Chama para ajustar a visibilidade da seção de vencedor
 }
 
-function togglePenaltyFields(isChecked) {
-    const container = document.getElementById('penalty-inputs');
-    container.style.display = isChecked ? 'flex' : 'none';
-    if (!isChecked) {
-        container.querySelectorAll('input').forEach(i => i.value = '');
+function toggleWinnerSection() {
+    const knockoutSection = document.getElementById('knockout-section');
+    const winnerSection = document.getElementById('winner-section');
+    const predAInput = document.getElementById('pred_a');
+    const predBInput = document.getElementById('pred_b');
+    const winnerPredSelect = document.getElementById('winner_pred');
+
+    if (knockoutSection.style.display === 'block') { // Apenas se for mata-mata
+        const predA = parseInt(predAInput.value);
+        const predB = parseInt(predBInput.value);
+
+        if (!isNaN(predA) && !isNaN(predB) && predA === predB) {
+            winnerSection.style.display = 'block';
+            winnerPredSelect.setAttribute('required', 'required');
+        } else {
+            winnerSection.style.display = 'none';
+            winnerPredSelect.removeAttribute('required');
+            winnerPredSelect.value = ''; // Limpa a seleção se não for empate
+        }
+    } else {
+        winnerSection.style.display = 'none';
+        winnerPredSelect.removeAttribute('required');
+        winnerPredSelect.value = '';
     }
 }
+
+// Pré-seleção via URL (?match_id=...): aplica os labels dos times e a seção de pênaltis ao carregar
+(function () {
+    const select = document.getElementById('match');
+    if (select && select.value) updateMatchDetails(select);
+})();
 </script>
 {% endblock %}

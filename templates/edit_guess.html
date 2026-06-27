@@ -10,52 +10,50 @@
         <div class="form-row">
             <div class="col">
                 <label>Jogo</label>
-                <div style="padding: 10px; background: #f8fafc; border-radius: 8px; border: 1px solid #e6e9ee; font-weight: 600;">
+                <div class="readonly-field">
                     {{ guess.match.team_a }} vs {{ guess.match.team_b }}
                 </div>
             </div>
         </div>
 
-        <div class="form-row" style="margin-top: 10px;">
+        <div class="form-row">
             <div class="col">
                 <label for="pred_a">Placar {{ guess.match.team_a }}</label>
-                <input type="number" name="pred_a" id="pred_a" min="0" step="1" value="{{ guess.pred_a }}" required>
+                <input type="number" name="pred_a" id="pred_a" min="0" step="1" value="{{ guess.pred_a }}" required oninput="toggleWinnerSection()">
             </div>
             <div class="col">
                 <label for="pred_b">Placar {{ guess.match.team_b }}</label>
-                <input type="number" name="pred_b" id="pred_b" min="0" step="1" value="{{ guess.pred_b }}" required>
+                <input type="number" name="pred_b" id="pred_b" min="0" step="1" value="{{ guess.pred_b }}" required oninput="toggleWinnerSection()">
             </div>
         </div>
 
         {% if guess.match.is_knockout %}
-        <div id="knockout-section">
-            <div class="card" style="margin-top: 15px; border: 1px dashed #ff6b6b;">
-                <div class="form-row">
-                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: bold;">
-                        <input type="checkbox" id="check-penalty" name="decided_by_penalty" 
-                            {% if guess.penalty_pred_a is not none %}checked{% endif %}
-                            onchange="togglePenaltyFields(this.checked)">
-                        🏆 Decidido nos Pênaltis?
-                    </label>
-                </div>
-
-                <div id="penalty-inputs" style="display: {% if guess.penalty_pred_a is not none %}flex{% else %}none{% endif %}; gap: 12px; margin-top: 10px;">
-                    <div class="col">
-                        <label>Pênaltis {{ guess.match.team_a }}</label>
-                        <input type="number" name="penalty_a" value="{% if guess.penalty_pred_a is not none %}{{ guess.penalty_pred_a }}{% endif %}" placeholder="0">
-                    </div>
-                    <div class="col">
-                        <label>Pênaltis {{ guess.match.team_b }}</label>
-                        <input type="number" name="penalty_b" value="{% if guess.penalty_pred_b is not none %}{{ guess.penalty_pred_b }}{% endif %}" placeholder="0">
-                    </div>
+        <div id="knockout-section" style="display: block;">
+            <div id="winner-section" class="winner-section">
+                <label for="winner_pred">Quem se classifica?</label>
+                <select name="winner_pred" id="winner_pred">
+                    <option value="" disabled {% if guess.winner_pred is none %}selected{% endif %}>Selecione</option>
+                    <option value="A" id="winner-option-a" {% if guess.winner_pred == 'A' %}selected{% endif %}>{{ guess.match.team_a }}</option>
+                    <option value="B" id="winner-option-b" {% if guess.winner_pred == 'B' %}selected{% endif %}>{{ guess.match.team_b }}</option>
+                </select>
+                <div class="form-text">
+                    Se o jogo for para os pênaltis, selecione o time que você acha que vai se classificar.
                 </div>
             </div>
         </div>
         {% endif %}
 
-        <div style="margin-top: 20px; display: flex; gap: 12px;">
-            <button type="submit">Salvar Alterações</button>
-            <a href="{{ url_for('guesses') }}" class="link-muted" style="align-self: center;">Cancelar</a>
+        <div class="form-actions">
+            <button type="submit">
+                <span class="material-symbols-outlined">
+                    Salvar Alterações
+                </span>
+            </button>
+            <a href="{{ url_for('guesses') }}" class="link-muted">
+                <span class="material-symbols-outlined">
+                    Cancelar
+                </span>
+            </a>
         </div>
     </form>
 </div>
@@ -63,13 +61,35 @@
 
 {% block scripts %}
 <script>
-function togglePenaltyFields(isChecked) {
-    const container = document.getElementById('penalty-inputs');
-    if (container) {
-        container.style.display = isChecked ? 'flex' : 'none';
-        if (!isChecked) {
-            container.querySelectorAll('input').forEach(i => i.value = '');
+document.addEventListener('DOMContentLoaded', function() {
+    toggleWinnerSection(); // Chama ao carregar a página para definir o estado inicial
+});
+
+function toggleWinnerSection() {
+    const knockoutSection = document.getElementById('knockout-section');
+    const winnerSection = document.getElementById('winner-section');
+    const predAInput = document.getElementById('pred_a');
+    const predBInput = document.getElementById('pred_b');
+    const winnerPredSelect = document.getElementById('winner_pred');
+
+    // A seção de knockout só existe se for um jogo de mata-mata
+    if (knockoutSection) {
+        const predA = parseInt(predAInput.value);
+        const predB = parseInt(predBInput.value);
+
+        if (!isNaN(predA) && !isNaN(predB) && predA === predB) {
+            winnerSection.style.display = 'block';
+            winnerPredSelect.setAttribute('required', 'required');
+        } else {
+            winnerSection.style.display = 'none';
+            winnerPredSelect.removeAttribute('required');
+            // Não limpa o valor aqui para manter a seleção se o usuário mudar e voltar
+            // winnerPredSelect.value = '';
         }
+    } else {
+        // Se não for mata-mata, garante que a seção de vencedor está oculta
+        if (winnerSection) winnerSection.style.display = 'none';
+        if (winnerPredSelect) winnerPredSelect.removeAttribute('required');
     }
 }
 </script>
