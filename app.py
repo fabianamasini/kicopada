@@ -11,8 +11,9 @@ from sqlalchemy.orm import joinedload
 from models import db, User, Teams, Match, Guesses
 from werkzeug.security import generate_password_hash
 from flask_login import LoginManager, login_required, current_user
-from flask import Flask, render_template, request, redirect, url_for, flash
+from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
 
+from live_scores import snapshot
 from src.controllers.auth import AuthController
 from src.controllers.user import UserController
 from src.controllers.signup import SignupController
@@ -158,6 +159,19 @@ def create_guess():
     return render_template('add_guess.html', match_groups=match_groups,
                            selected_match_id=selected_match_id,
                            calendar_months=calendar_months)
+
+### Ao Vivo (placares em tempo real via ESPN) ###
+@app.route('/ao-vivo')
+@login_required
+def ao_vivo():
+    return render_template('ao_vivo.html')
+
+@app.route('/api/ao-vivo')
+@login_required
+def api_ao_vivo():
+    # ?date=YYYYMMDD é opcional — útil pra testar fora da Copa apontando
+    # pra um dia de jogos passado. Sem o parâmetro, usa o dia de hoje.
+    return jsonify(snapshot(date=request.args.get('date')))
 
 @app.route('/delete_guess/<int:guess_id>', methods=['POST'])
 @login_required
