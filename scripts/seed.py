@@ -3,19 +3,22 @@ Script para popular o banco de dados com dados mockados (volume realista).
 Execute com: python scripts/seed.py
 
 Segue as MESMAS regras do front-end, para os dados ficarem o mais próximos do real:
+  - As PARTIDAS NÃO são inventadas: vêm da mesma fonte que o app usa no boot —
+    o calendário oficial da Copa puxado da ESPN por match_sync.sync_matches().
+    O seed só cuida dos dados de teste construídos POR CIMA delas.
   - Times vêm da fonte canônica (src/utils.teams): nomes oficiais com bandeira + grupo.
-  - Confrontos são intra-grupo (como na fase de grupos de verdade).
-  - Fase vem de src/utils.phases; is_knockout é DERIVADO (round != 'Fase de Grupos').
   - Senhas respeitam is_password_strong e usuários são is_admin=False (como no signup).
+  - Partidas já começadas (antes de agora) recebem um placar aleatório para
+    simular jogos finalizados e gerar pontuação — só elas; as demais ficam em aberto.
   - Odds NÃO são inventadas: são calculadas pelo ScoringController a partir da
     distribuição dos palpites — exatamente como o app faz ao cadastrar um palpite,
     e só existem para partidas que receberam ao menos 1 palpite.
-  - Pontos são DERIVADOS pelo scoring a partir dos resultados reais.
+  - Pontos são DERIVADOS pelo scoring a partir dos resultados.
 
 Volume gerado:
   - 20 usuários.
-  - ~24 partidas distribuídas entre anteriores, de hoje e posteriores à data atual.
-  - Partidas ANTERIORES já vêm com resultado (placar) e odds; geram pontuação real.
+  - Partidas: as que a ESPN devolver (precisa de rede; sem rede, nenhuma é criada).
+  - Partidas já começadas: placar aleatório (finalizadas) + odds; geram pontuação.
   - Partidas de hoje/futuras: placar em aberto; futuras podem ter ou não palpites.
   - Quantidade de palpites por partida e os placares palpitados são aleatórios.
 """
@@ -27,33 +30,26 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import random
-from collections import defaultdict
-from datetime import datetime, timedelta
-from itertools import combinations
+from datetime import datetime
 
 import pytz
 from dotenv import load_dotenv
 from werkzeug.security import generate_password_hash
 
 from app import app
+from match_sync import sync_matches                          # mesma fonte de partidas do boot (ESPN)
 from models import db, User, Match, Guesses, Teams, Odds
-from src.utils import teams as CANONICAL_TEAMS, phases       # fonte canônica usada pelo front-end
+from src.utils import teams as CANONICAL_TEAMS              # fonte canônica usada pelo front-end
 from src.controllers.scoring import ScoringController         # mesma lógica de odds/pontos do app
 from src.controllers.utils import is_password_strong          # mesma regra de senha do signup
 
 load_dotenv()
 
 DATE_FMT = "%Y-%m-%dT%H:%M"        # formato canônico (igual ao input datetime-local do form)
-GROUP_PHASE = phases[0]            # 'Fase de Grupos'
 DEFAULT_PASSWORD = "Senha@123"     # precisa passar em is_password_strong
 
 NUM_USERS = 20
 NAMED_USERS = ["mario", "megu", "fabs", "diabo", "mbappe", "dembele"]
-
-# Quantas partidas em cada janela de tempo (total >= 20)
-NUM_PAST = 9       # anteriores a hoje  -> finalizadas (resultado + odds)
-NUM_TODAY = 3      # hoje               -> prazo encerrado, sem resultado
-NUM_FUTURE = 12    # posteriores a hoje -> em aberto, palpite opcional
 
 
 def seed_database():
@@ -93,46 +89,42 @@ def seed_database():
         db.session.commit()
         print(f"⚽ {len(CANONICAL_TEAMS)} times criados a partir da lista canônica")
 
-        # Confrontos da fase de grupos acontecem entre seleções do MESMO grupo.
-        by_group = defaultdict(list)
-        for name, group in CANONICAL_TEAMS.items():
-            by_group[group].append(name)
-        matchup_pool = [(g, a, b) for g, names in by_group.items() for a, b in combinations(names, 2)]
-        random.shuffle(matchup_pool)
+        # ==================== PARTIDAS (fonte real: ESPN, igual ao boot) ====================
+        # Não inventamos jogos: puxamos o calendário oficial da Copa pela mesma função
+        # que o app roda no boot. Precisa de rede; se a ESPN falhar, nenhuma partida é
+        # criada (e o resto do seed simplesmente não terá palpites/odds/pontos).
+        inserted = sync_matches(log=lambda _m: None)
+        all_matches = Match.query.all()
+        if not all_matches:
+            print("⚠️  Nenhuma partida disponível (ESPN indisponível?). "
+                  "Sem partidas não há palpites, odds nem pontuação.")
 
-        # ==================== PARTIDAS (passado / hoje / futuro) ====================
-        # Offsets em dias relativos a hoje: negativos=anteriores, 0=hoje, positivos=futuros.
-        offsets = (
-            [random.randint(-14, -1) for _ in range(NUM_PAST)] +
-            [0] * NUM_TODAY +
-            [random.randint(1, 14) for _ in range(NUM_FUTURE)]
-        )
-        chosen = matchup_pool[:len(offsets)]
+        def _kickoff(m):
+            """datetime da partida no fuso de São Paulo, ou None se data inválida."""
+            try:
+                return saopaulo_tz.localize(datetime.strptime(m.date, DATE_FMT))
+            except (ValueError, TypeError):
+                return None
 
+        # Classifica cada partida em relação a AGORA: já começou / hoje / futura.
         matches = []  # tuplas (Match, is_past, is_future)
-        for (group, team_a, team_b), off in zip(chosen, offsets):
-            kickoff = (now + timedelta(days=off)).replace(
-                hour=random.randint(13, 21), minute=random.choice([0, 30]), second=0, microsecond=0
-            )
-            is_past = kickoff.date() < today
-            is_future = kickoff.date() > today
-            m = Match(
-                team_a=team_a,
-                team_b=team_b,
-                date=kickoff.strftime(DATE_FMT),
-                round=GROUP_PHASE,
-                is_knockout=(GROUP_PHASE != 'Fase de Grupos'),      # mesma derivação do app
-                # anteriores já estão finalizadas -> têm resultado real
-                score_a=random.randint(0, 4) if is_past else None,
-                score_b=random.randint(0, 4) if is_past else None,
-            )
-            db.session.add(m)
+        for m in all_matches:
+            ko = _kickoff(m)
+            is_past = bool(ko) and ko < now
+            is_future = bool(ko) and ko.date() > today
+            # Partidas já começadas viram "finalizadas" com placar aleatório, para
+            # gerar pontuação real (a ESPN não traz placar pelo sync). Só fase de
+            # grupos — não há mata-mata no passado neste momento da Copa.
+            if is_past and not m.is_knockout:
+                m.score_a = random.randint(0, 4)
+                m.score_b = random.randint(0, 4)
             matches.append((m, is_past, is_future))
         db.session.commit()
         n_past = sum(1 for _, p, _ in matches if p)
         n_future = sum(1 for _, _, f in matches if f)
         n_today = len(matches) - n_past - n_future
-        print(f"🎮 {len(matches)} partidas criadas — {n_past} anteriores, {n_today} hoje, {n_future} futuras")
+        print(f"🎮 {len(matches)} partidas da ESPN ({inserted} inseridas agora) — "
+              f"{n_past} já começaram, {n_today} hoje, {n_future} futuras")
 
         # ==================== PALPITES (quantidade e placares aleatórios) ====================
         matches_with_guesses = set()

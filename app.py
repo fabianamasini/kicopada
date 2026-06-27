@@ -1,5 +1,6 @@
 import os
 import re
+import sys
 import time
 import pytz
 import locale
@@ -16,6 +17,7 @@ from flask_login import LoginManager, login_required, current_user
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
 
 from live_scores import snapshot
+from match_sync import sync_matches
 from src.controllers.auth import AuthController
 from src.controllers.user import UserController
 from src.controllers.signup import SignupController
@@ -94,6 +96,20 @@ with app.app_context():
             db.session.add(new_team)
             db.session.commit()
             print(f'Time {team_name} criado com sucesso.')
+
+    # Cadastro automático das partidas da Copa (idempotente: só insere o que falta;
+    # nunca mexe em placar/edição manual). Pulado na suíte de testes (sem rede no CI)
+    # e desligável com AUTO_SYNC_MATCHES=0.
+    _running_tests = 'pytest' in sys.modules or 'unittest' in sys.modules
+    if os.getenv('AUTO_SYNC_MATCHES', '1') != '0' and not _running_tests:
+        try:
+            # log silencioso no boot (nomes têm emoji; evita UnicodeEncodeError em
+            # console não-UTF-8). A contagem abaixo não tem emoji e é segura.
+            _inserted = sync_matches(log=lambda _m: None)
+            if _inserted:
+                print(f'{_inserted} partida(s) cadastrada(s) automaticamente.')
+        except Exception as e:
+            print(f'Aviso: cadastro automático de partidas falhou ({e}).')
 
 ### App routes ###
 ### Auth ###
