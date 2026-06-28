@@ -97,7 +97,7 @@ def seed_database():
         # Não inventamos jogos: puxamos o calendário oficial da Copa pela mesma função
         # que o app roda no boot. Precisa de rede; se a ESPN falhar, nenhuma partida é
         # criada (e o resto do seed simplesmente não terá palpites/odds/pontos).
-        inserted = sync_matches(log=lambda _m: None)
+        inserted = sync_matches(log=lambda _m: None)["inserted"]
         all_matches = Match.query.all()
         if not all_matches:
             print("⚠️  Nenhuma partida disponível (ESPN indisponível?). "

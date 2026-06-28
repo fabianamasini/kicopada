@@ -172,6 +172,13 @@ def _fetch_events() -> list:
     return data.get("events", []) or []
 
 
+def _to_int(v):
+    try:
+        return int(v)
+    except (TypeError, ValueError):
+        return None
+
+
 def _parse_event(event: dict):
     """Evento da ESPN → dict pronto p/ Match, ou None se algum time não está definido."""
     if not event:
@@ -193,38 +200,65 @@ def _parse_event(event: dict):
         return None
 
     phase = _phase_for_date(date_sp[:10])
+    is_knockout = phase != "Fase de Grupos"
+
+    # Placar: o próprio scoreboard já traz o placar dos jogos ENCERRADOS
+    # (state == 'post'); não precisa do endpoint summary. Mata-mata: o classificado
+    # vem do placar; empate no tempo normal → pênaltis (shootoutScore).
+    status = ((comp.get("status") or {}).get("type") or {}).get("state", "")
+    finished = status == "post"
+    score_a, score_b = _to_int(home.get("score")), _to_int(away.get("score"))
+    winner = None
+    if is_knockout and finished and score_a is not None and score_b is not None:
+        if score_a > score_b:
+            winner = "A"
+        elif score_b > score_a:
+            winner = "B"
+        else:
+            pa, pb = _to_int(home.get("shootoutScore")), _to_int(away.get("shootoutScore"))
+            if pa is not None and pb is not None and pa != pb:
+                winner = "A" if pa > pb else "B"
+
     return {
         "team_a": team_a,
         "team_b": team_b,
         "date": date_sp,
         "round": phase,
-        "is_knockout": phase != "Fase de Grupos",
+        "is_knockout": is_knockout,
+        "finished": finished,
+        "score_a": score_a,
+        "score_b": score_b,
+        "winner": winner,
     }
 
 
 # ─── Sincronização (a função chamada no boot do app) ──────────────────────────
 
-def sync_matches(dry_run: bool = False, log=print) -> int:
-    """Cadastra os jogos que ainda não existem no banco. Idempotente.
+def sync_matches(dry_run: bool = False, log=print) -> dict:
+    """Sincroniza as partidas com a ESPN (fonte ÚNICA — não há cadastro manual):
+      • insere os jogos que ainda não existem;
+      • atualiza o placar/classificado dos jogos JÁ ENCERRADOS.
+    Idempotente. Deve rodar dentro de um app_context (boot/request já fornecem um).
 
-    Deve ser chamada dentro de um app_context (o boot do app já fornece um).
-    Retorna a quantidade de partidas inseridas. Falha de rede não lança: apenas
-    registra um aviso e retorna 0, para o app subir normalmente.
+    Retorna {'inserted': int, 'updated': [match_id, ...]} — `updated` são os jogos
+    cujo placar mudou (o chamador recalcula a pontuação deles). Falha de rede não
+    lança: registra um aviso e retorna tudo zerado, pro app subir/responder normal.
     """
+    empty = {"inserted": 0, "updated": []}
     try:
         events = _fetch_events()
     except Exception as e:
-        log(f"[match_sync] API indisponível; nenhum jogo cadastrado neste boot ({e}).")
-        return 0
+        log(f"[match_sync] API indisponível; nada sincronizado agora ({e}).")
+        return empty
 
-    # Carrega os jogos já cadastrados de uma vez só (evita N+1 no boot — seriam
-    # ~100 SELECTs). Chave de unicidade = par de times SEM mando de campo
-    # (frozenset({A,B}) == frozenset({B,A})) + a FASE — porque os mesmos times
-    # podem se enfrentar mais de uma vez na Copa (grupos e depois mata-mata, ex.:
-    # disputa de 3º lugar). Assim também não duplica um jogo já cadastrado à mão.
-    seen = {(frozenset((m.team_a, m.team_b)), m.round) for m in Match.query.all()}
+    # Carrega os jogos já cadastrados de uma vez só (evita N+1 — seriam ~100 SELECTs).
+    # Chave de unicidade = par de times SEM mando de campo (frozenset({A,B}) ==
+    # frozenset({B,A})) + a FASE — porque os mesmos times podem se enfrentar mais de
+    # uma vez na Copa (grupos e depois mata-mata, ex.: disputa de 3º lugar).
+    by_key = {(frozenset((m.team_a, m.team_b)), m.round): m for m in Match.query.all()}
 
     inserted = 0
+    updated = []
     for event in events:
         parsed = _parse_event(event)
         if not parsed:
@@ -232,30 +266,39 @@ def sync_matches(dry_run: bool = False, log=print) -> int:
 
         a, b = parsed["team_a"], parsed["team_b"]
         key = (frozenset((a, b)), parsed["round"])
-        if key in seen:
-            continue
-        seen.add(key)   # evita duplicar na mesma execução se a API repetir o jogo
+        existing = by_key.get(key)
+        has_score = (parsed["finished"]
+                     and parsed["score_a"] is not None and parsed["score_b"] is not None)
 
-        log(f"[match_sync] + {a} x {b}  {parsed['date']}  [{parsed['round']}]")
-        inserted += 1
-        if not dry_run:
-            db.session.add(Match(
-                team_a=a,
-                team_b=b,
-                date=parsed["date"],
-                round=parsed["round"],
-                is_knockout=parsed["is_knockout"],
-            ))
+        if existing is None:
+            log(f"[match_sync] + {a} x {b}  {parsed['date']}  [{parsed['round']}]")
+            inserted += 1
+            m = Match(team_a=a, team_b=b, date=parsed["date"],
+                      round=parsed["round"], is_knockout=parsed["is_knockout"])
+            if has_score:                       # já entra com placar se o jogo encerrou
+                m.score_a, m.score_b, m.winner = parsed["score_a"], parsed["score_b"], parsed["winner"]
+            if not dry_run:
+                db.session.add(m)
+            by_key[key] = m                     # evita reinserir na mesma execução
+        elif has_score and (existing.score_a != parsed["score_a"]
+                            or existing.score_b != parsed["score_b"]
+                            or existing.winner != parsed["winner"]):
+            # Atualiza placar/classificado só de jogo encerrado e só se mudou.
+            log(f"[match_sync] ~ {a} {parsed['score_a']}x{parsed['score_b']} {b}  [placar]")
+            existing.score_a, existing.score_b, existing.winner = (
+                parsed["score_a"], parsed["score_b"], parsed["winner"])
+            if existing.id is not None:
+                updated.append(existing.id)
 
-    if inserted and not dry_run:
+    if (inserted or updated) and not dry_run:
         try:
             db.session.commit()
         except Exception:
             # Rollback pra não deixar a sessão num estado quebrado — como isto roda
-            # no boot, uma sessão pendente poderia derrubar requisições seguintes.
+            # no boot/request, uma sessão pendente poderia derrubar respostas seguintes.
             db.session.rollback()
             raise
-    return inserted
+    return {"inserted": inserted, "updated": updated}
 
 
 # ─── CLI ──────────────────────────────────────────────────────────────────────
@@ -280,7 +323,8 @@ if __name__ == "__main__":
     from app import app
 
     with app.app_context():
-        n = sync_matches(dry_run=args.dry_run)
+        result = sync_matches(dry_run=args.dry_run)
 
     verb = "seriam cadastrada(s) (dry-run)" if args.dry_run else "cadastrada(s)"
-    print(f"\n✓ {n} partida(s) {verb}.")
+    print(f"\n✓ {result['inserted']} partida(s) {verb}; "
+          f"{len(result['updated'])} placar(es) atualizado(s).")

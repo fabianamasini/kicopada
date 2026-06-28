@@ -7,11 +7,6 @@
 {% block content %}
     <div class="topbar">
         <h1>Partidas</h1>
-        {% if current_user.is_admin %}
-            <div class="topbar-actions">
-                <a href="{{ url_for('create_match') }}" class="btn btn-success">+ Cadastrar Jogo</a>
-            </div>
-        {% endif %}
     </div>
 
     <div class="tabs-container">
@@ -31,9 +26,6 @@
                                 <th>Fase</th>
                                 <th>Confronto</th>
                                 <th class="center">Placar</th>
-                                {% if current_user.is_admin %}
-                                    <th class="center">Ações</th>
-                                {% endif %}
                             </tr>
                         </thead>
                         <tbody>
@@ -53,16 +45,6 @@
                                             <span class="placeholder">Agendado</span>
                                         {% endif %}
                                     </td>
-                                    {% if current_user.is_admin %}
-                                        <td class="center">
-                                            <div class="row-actions">
-                                                <a href="{{ url_for('edit_match', match_id=match.id) }}" class="action-edit">Editar</a>
-                                                <form action="{{ url_for('delete_match', match_id=match.id) }}" method="POST" class="form-inline" onsubmit="return confirm('Tem certeza que deseja excluir esta partida?');">
-                                                    <button type="submit" class="action-delete">Deletar</button>
-                                                </form>
-                                            </div>
-                                        </td>
-                                    {% endif %}
                                 </tr>
                             {% endfor %}
                         </tbody>
@@ -84,9 +66,6 @@
                                 <th>Fase</th>
                                 <th>Confronto</th>
                                 <th class="center">Placar</th>
-                                {% if current_user.is_admin %}
-                                    <th class="center">Ações</th>
-                                {% endif %}
                             </tr>
                         </thead>
                         <tbody>
@@ -106,13 +85,6 @@
                                             <span class="placeholder">Aguardando...</span>
                                         {% endif %}
                                     </td>
-                                    {% if current_user.is_admin %}
-                                        <td class="center">
-                                            <div class="row-actions">
-                                                <a href="{{ url_for('edit_match', match_id=match.id) }}" class="action-edit">Editar</a>
-                                            </div>
-                                        </td>
-                                    {% endif %}
                                 </tr>
                             {% endfor %}
                         </tbody>
