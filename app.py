@@ -1,12 +1,13 @@
 import os
 import sys
+import time
 import pytz
 import locale
 
 from functools import wraps
 from datetime import datetime
 from dotenv import load_dotenv
-from src.utils import phases, teams
+from src.utils import teams
 from sqlalchemy.orm import joinedload
 from models import db, User, Teams, Match, Guesses
 from werkzeug.security import generate_password_hash
@@ -72,6 +73,36 @@ def admin_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
+# Sincronização automática das partidas com a ESPN (cadastro + placar). A ESPN é a
+# ÚNICA fonte — não há cadastro manual. Roda no boot e também a cada acesso, mas no
+# máximo uma busca por minuto (_SYNC_TTL), pra o placar não ficar preso a restart.
+_SYNC_TTL = 60          # segundos entre buscas (cache p/ não martelar a API)
+_last_sync = [0.0]
+
+def _sync_matches_and_scores(force=False):
+    now = time.time()
+    if not force and now - _last_sync[0] < _SYNC_TTL:
+        return
+    _last_sync[0] = now
+    try:
+        result = sync_matches(log=lambda _m: None)
+        for match_id in result.get('updated', []):
+            scoring_controller.update_all_scores_for_match(match_id)
+        if result.get('inserted'):
+            print(f"{result['inserted']} partida(s) cadastrada(s) automaticamente.")
+    except Exception as e:
+        print(f"Aviso: sincronização automática de partidas falhou ({e}).")
+
+@app.before_request
+def _auto_sync_before_request():
+    # Atualiza jogos/placar ao acessar o app (cacheado). Pulado em testes e quando
+    # desligado por env; ignora estáticos e requisições sem rota.
+    if app.config.get('TESTING') or os.getenv('AUTO_SYNC_MATCHES', '1') == '0':
+        return
+    if request.endpoint in (None, 'static'):
+        return
+    _sync_matches_and_scores()
+
 with app.app_context():
     """"
     Database initialization. Currently local.
@@ -93,19 +124,11 @@ with app.app_context():
             db.session.commit()
             print(f'Time {team_name} criado com sucesso.')
 
-    # Cadastro automático das partidas da Copa (idempotente: só insere o que falta;
-    # nunca mexe em placar/edição manual). Pulado na suíte de testes (sem rede no CI)
-    # e desligável com AUTO_SYNC_MATCHES=0.
+    # Sincroniza as partidas (cadastro + placar) já no boot. Pulado na suíte de
+    # testes (sem rede no CI) e desligável com AUTO_SYNC_MATCHES=0.
     _running_tests = 'pytest' in sys.modules or 'unittest' in sys.modules
     if os.getenv('AUTO_SYNC_MATCHES', '1') != '0' and not _running_tests:
-        try:
-            # log silencioso no boot (nomes têm emoji; evita UnicodeEncodeError em
-            # console não-UTF-8). A contagem abaixo não tem emoji e é segura.
-            _inserted = sync_matches(log=lambda _m: None)
-            if _inserted:
-                print(f'{_inserted} partida(s) cadastrada(s) automaticamente.')
-        except Exception as e:
-            print(f'Aviso: cadastro automático de partidas falhou ({e}).')
+        _sync_matches_and_scores(force=True)
 
 ### App routes ###
 ### Auth ###
@@ -189,56 +212,6 @@ def edit_guess(guess_id):
         return redirect(url_for('guesses'))
 
     return render_template('edit_guess.html', guess=guess)
-
-# Admin required route
-@app.route('/add_match', methods=['GET', 'POST'])
-@admin_required
-def create_match():
-    if request.method == 'POST':
-        return matches_controller.add_new_match(team_a = request.form.get('team_a'),
-                                            team_b = request.form.get('team_b'),
-                                            match_date = request.form.get('match_date'),
-                                            round = request.form.get('round'),
-                                            score_a = request.form.get('score_a'),
-                                            score_b = request.form.get('score_b'),
-                                            winner = request.form.get('winner'))
-
-    teams_list = [team[0] for team in Teams.query.with_entities(Teams.name).order_by(Teams.name.asc()).all()]
-
-    return render_template('add_match.html', phases=phases, teams=teams_list)
-
-@app.route('/delete_match/<int:match_id>', methods=['POST'])
-@admin_required
-def delete_match(match_id):
-    # Captura os IDs dos usuários que tinham palpites nesta partida para recalcular o ranking depois
-    user_ids = [g.user_id for g in Guesses.query.filter_by(match_id=match_id).all()]
-
-    response = matches_controller.delete_match(match_id)
-
-    # Recalcula a pontuação de todos os usuários afetados
-    for uid in set(user_ids):
-        scoring_controller.update_user_points(uid)
-
-    return response
-
-@app.route('/edit_match/<int:match_id>', methods=['GET', 'POST'])
-@admin_required
-def edit_match(match_id):
-    if request.method == 'POST':
-        response = matches_controller.edit_match(match_id,
-                                          team_a=request.form.get('team_a'),
-                                          team_b=request.form.get('team_b'),
-                                          match_date=request.form.get('match_date'),
-                                          round=request.form.get('round'),
-                                          score_a=request.form.get('score_a'),
-                                          score_b=request.form.get('score_b'),
-                                          winner=request.form.get('winner'))
-        scoring_controller.update_all_scores_for_match(match_id)
-        return response
-    else:
-        match = Match.query.get(match_id)
-        teams_list = [team[0] for team in Teams.query.with_entities(Teams.name).order_by(Teams.name.asc()).all()]
-        return render_template('edit_match.html', match=match, phases=phases, teams=teams_list)
 
 @app.route('/all_guesses', methods=['GET'])
 @login_required

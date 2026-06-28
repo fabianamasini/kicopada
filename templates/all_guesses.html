@@ -130,9 +130,6 @@ function updateMatchSummary(type, matchId) {
         result = `<span class="score-pill score-pill--result score-pill--lg">${sa} x ${sb}</span>`;
     } else if (type === 'previous') {
         result = `<span class="placeholder">⚠️ sem placar</span>`;
-        if (IS_ADMIN) {
-            result += `<a href="/edit_match/${matchId}" class="link-add">+ adicionar placar</a>`;
-        }
     } else {
         result = `<span class="placeholder">Agendado</span>`;
     }
