@@ -1,9 +1,13 @@
 import os
+import re
 import sys
+import time
+import threading
 import pytz
 import locale
 
 from functools import wraps
+from itertools import groupby
 from datetime import datetime
 from dotenv import load_dotenv
 from src.utils import phases, teams
@@ -11,8 +15,9 @@ from sqlalchemy.orm import joinedload
 from models import db, User, Teams, Match, Guesses
 from werkzeug.security import generate_password_hash
 from flask_login import LoginManager, login_required, current_user
-from flask import Flask, render_template, request, redirect, url_for, flash
+from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
 
+from live_scores import snapshot
 from match_sync import sync_matches
 from src.controllers.auth import AuthController
 from src.controllers.user import UserController
@@ -161,8 +166,60 @@ def create_guess():
     if request.method == 'POST':
         return guesses_controller.add_guess(request, current_user)
     matches_list = matches_controller.get_available_matches_for_user(current_user.id)
+    # Agrupa os jogos disponíveis por dia para montar a lista (optgroup) por data.
+    editable = [m for m in matches_list if m.is_editable() and m.date]
+    match_groups = []
+    # groupby agrupa só elementos adjacentes — ordena por data antes (a query já
+    # vem ordenada, mas deixamos explícito p/ não depender disso silenciosamente).
+    for _day, grp in groupby(sorted(editable, key=lambda m: m.date), key=lambda m: m.date[:10]):
+        items = list(grp)
+        match_groups.append({'label': items[0].date_header,
+                             'date': items[0].date[:10], 'matches': items})
     selected_match_id = request.args.get('match_id', type=int)
-    return render_template('add_guess.html', matches=matches_list, selected_match_id=selected_match_id)
+    calendar_months = matches_controller.get_guess_calendar(current_user.id)
+    return render_template('add_guess.html', match_groups=match_groups,
+                           selected_match_id=selected_match_id,
+                           calendar_months=calendar_months)
+
+### Ao Vivo (placares em tempo real via ESPN) ###
+# Cache curto do snapshot: o front faz poll a cada 5s e vários usuários batem na
+# mesma rota — sem isso, cada request dispara 1+N chamadas à ESPN e prende o
+# worker. Com TTL curto, todos compartilham a mesma busca (dado ~no máximo 10s
+# velho, ok para placar ao vivo). Processo único (gunicorn 1 worker) → dict local serve.
+_AOVIVO_TTL = 10  # segundos
+_aovivo_cache = {}  # 'hoje'|'YYYYMMDD' -> (timestamp, snapshot)
+_aovivo_lock = threading.Lock()
+
+def _cached_aovivo(date):
+    key = date or 'hoje'
+    hit = _aovivo_cache.get(key)
+    if hit and time.time() - hit[0] < _AOVIVO_TTL:
+        return hit[1]
+    # Dupla checagem sob lock: se vários polls chegam com o cache vencido, só um
+    # busca na ESPN; os outros esperam e reaproveitam o resultado fresquinho
+    # (evita "cache stampede" — N chamadas simultâneas à API).
+    with _aovivo_lock:
+        hit = _aovivo_cache.get(key)
+        if hit and time.time() - hit[0] < _AOVIVO_TTL:
+            return hit[1]
+        data = snapshot(date=date)
+        _aovivo_cache[key] = (time.time(), data)
+        return data
+
+@app.route('/ao-vivo')
+@login_required
+def ao_vivo():
+    return render_template('ao_vivo.html')
+
+@app.route('/api/ao-vivo')
+@login_required
+def api_ao_vivo():
+    # ?date=YYYYMMDD é opcional — útil pra testar fora da Copa apontando pra um dia
+    # de jogos passado. Valida o formato; qualquer coisa fora dele usa o dia de hoje.
+    date = request.args.get('date')
+    if not date or not re.fullmatch(r'\d{8}', date):
+        date = None
+    return jsonify(_cached_aovivo(date))
 
 @app.route('/delete_guess/<int:guess_id>', methods=['POST'])
 @login_required
