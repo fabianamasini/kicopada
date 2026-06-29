@@ -976,6 +976,12 @@ h1 {
     box-shadow: 0 0 0 2px var(--coral);
 }
 
+/* Dia selecionado no filtro do calendário — anel coral mais forte (clicar de novo limpa) */
+.cal-day.is-selected {
+    box-shadow: 0 0 0 3px var(--coral), 0 4px 10px color-mix(in srgb, var(--coral) 25%, transparent);
+    transform: translateY(-1px);
+}
+
 /* Dia da final — dourado da paleta (vence as demais cores de estado) */
 .cal-day.is-final {
     background: var(--yellow-soft);

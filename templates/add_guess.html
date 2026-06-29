@@ -207,9 +207,31 @@ function toggleWinnerSection() {
     const originalGroups = Array.from(select.querySelectorAll('optgroup'));
     const placeholder = select.querySelector('option[value=""]');
 
+    let activeCell = null;
+
+    function clearFilter() {
+        // Restaura todos os grupos (mostra todos os jogos) e zera a seleção.
+        if (activeCell) activeCell.classList.remove('is-selected');
+        activeCell = null;
+        select.innerHTML = '';
+        if (placeholder) select.appendChild(placeholder);
+        originalGroups.forEach(function (g) { select.appendChild(g.cloneNode(true)); });
+        select.value = '';
+        updateMatchDetails(select);
+    }
+
     document.querySelectorAll('.cal-day.is-open').forEach(function (cell) {
         cell.addEventListener('click', function () {
+            // Clicar de novo no dia já selecionado limpa o filtro.
+            if (activeCell === cell) {
+                clearFilter();
+                return;
+            }
+
             const date = cell.getAttribute('data-date');
+            if (activeCell) activeCell.classList.remove('is-selected');
+            cell.classList.add('is-selected');   // indicação visual do dia selecionado
+            activeCell = cell;
 
             select.innerHTML = '';
             if (placeholder) select.appendChild(placeholder);

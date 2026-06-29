@@ -110,9 +110,18 @@ class MatchesController:
             db.session.query(Guesses.match_id).filter(Guesses.user_id == user_id)
         }
 
-        # Agrupa as partidas por dia (YYYY-MM-DD)
+        # Agrupa as partidas por dia (YYYY-MM-DD). Carrega só o intervalo dos meses
+        # pedidos (não o banco inteiro): Match.date é string ISO, então dá pra
+        # filtrar direto no banco com 'YYYY-MM-01' .. 'YYYY-MM-31T23:59'.
         by_day = {}
-        for m in Match.query.all():
+        if months:
+            ms = sorted(months)
+            start = f"{ms[0][0]:04d}-{ms[0][1]:02d}-01"
+            end = f"{ms[-1][0]:04d}-{ms[-1][1]:02d}-31T23:59"
+            matches_q = Match.query.filter(Match.date >= start, Match.date <= end)
+        else:
+            matches_q = Match.query
+        for m in matches_q.all():
             if not m.date:
                 continue
             by_day.setdefault(m.date[:10], []).append(m)

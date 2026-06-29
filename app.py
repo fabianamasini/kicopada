@@ -2,6 +2,7 @@ import os
 import re
 import sys
 import time
+import threading
 import pytz
 import locale
 
@@ -187,16 +188,23 @@ def create_guess():
 # velho, ok para placar ao vivo). Processo único (gunicorn 1 worker) → dict local serve.
 _AOVIVO_TTL = 10  # segundos
 _aovivo_cache = {}  # 'hoje'|'YYYYMMDD' -> (timestamp, snapshot)
+_aovivo_lock = threading.Lock()
 
 def _cached_aovivo(date):
     key = date or 'hoje'
-    now = time.time()
     hit = _aovivo_cache.get(key)
-    if hit and now - hit[0] < _AOVIVO_TTL:
+    if hit and time.time() - hit[0] < _AOVIVO_TTL:
         return hit[1]
-    data = snapshot(date=date)
-    _aovivo_cache[key] = (now, data)
-    return data
+    # Dupla checagem sob lock: se vários polls chegam com o cache vencido, só um
+    # busca na ESPN; os outros esperam e reaproveitam o resultado fresquinho
+    # (evita "cache stampede" — N chamadas simultâneas à API).
+    with _aovivo_lock:
+        hit = _aovivo_cache.get(key)
+        if hit and time.time() - hit[0] < _AOVIVO_TTL:
+            return hit[1]
+        data = snapshot(date=date)
+        _aovivo_cache[key] = (time.time(), data)
+        return data
 
 @app.route('/ao-vivo')
 @login_required

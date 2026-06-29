@@ -161,10 +161,12 @@ def round_name(competition: dict) -> str:
     return "Fase de Grupos"
 
 
-def http_json(url: str, params: dict = None):
-    """GET → dict JSON, ou None em caso de erro (logado no stderr)."""
+def http_json(url: str, params: dict = None, session=None):
+    """GET → dict JSON, ou None em caso de erro (logado no stderr).
+    Reaproveita a requests.Session passada (Keep-Alive) quando houver."""
     try:
-        r = requests.get(url, headers=HEADERS, params=params, timeout=HTTP_TIMEOUT)
+        caller = session if session is not None else requests
+        r = caller.get(url, headers=HEADERS, params=params, timeout=HTTP_TIMEOUT)
         r.raise_for_status()
         return r.json()
     except Exception as e:
@@ -174,7 +176,7 @@ def http_json(url: str, params: dict = None):
 
 # ─── Gols e cartões (endpoint summary) ────────────────────────────────────────
 
-def fetch_events(event_id: str, home_id: str, away_id: str) -> dict:
+def fetch_events(event_id: str, home_id: str, away_id: str, session=None) -> dict:
     """
     Gols e cartões de uma partida (uma única chamada ao summary).
     Retorno: {"goals": [...], "cards": [...]}, cada lista em ordem cronológica.
@@ -183,7 +185,7 @@ def fetch_events(event_id: str, home_id: str, away_id: str) -> dict:
              kind('goal'|'penalty'|'own_goal'), text}
     Cartão: {minute, minute_value, side('A'|'B'), team, player, kind('yellow'|'red')}
     """
-    data = http_json(f"{SUMMARY}", params={"event": event_id})
+    data = http_json(f"{SUMMARY}", params={"event": event_id}, session=session)
     if not data:
         return {"goals": [], "cards": []}
 
@@ -289,7 +291,7 @@ def status_block(status_type: dict, clock: str, shootout: bool, detail: str) -> 
     }
 
 
-def build_match(event: dict, include_goals: bool = True) -> dict:
+def build_match(event: dict, include_goals: bool = True, session=None) -> dict:
     """
     Converte 1 evento da ESPN no formato JSON do feed.
 
@@ -342,7 +344,7 @@ def build_match(event: dict, include_goals: bool = True) -> dict:
     state = status_type.get("state", "")
     goals, cards = [], []
     if include_goals and state in ("in", "post"):
-        evs = fetch_events(event.get("id", ""), home_id, away_id)
+        evs = fetch_events(event.get("id", ""), home_id, away_id, session=session)
         goals, cards = evs["goals"], evs["cards"]
 
     return {
@@ -386,20 +388,24 @@ def snapshot(date: str = None, include_goals: bool = True) -> dict:
         now = datetime.now(SAO_PAULO) if SAO_PAULO else datetime.now()
         date = now.strftime("%Y%m%d")
 
-    data = http_json(SCOREBOARD, params={"dates": date, "limit": 50})
-    events = (data or {}).get("events", []) or []
-
-    # Cada jogo ao vivo/encerrado faz 1 GET no summary (gols/cartões). Em série
-    # isso prenderia o worker por N×latência; busca em paralelo e reordena no fim.
+    # Uma única requests.Session pro snapshot inteiro: reaproveita a conexão
+    # TCP/TLS (Keep-Alive) nas N chamadas paralelas ao summary, em vez de abrir e
+    # fechar uma conexão por jogo. (Session é thread-safe pra requests.)
     matches = []
-    with ThreadPoolExecutor(max_workers=10) as executor:
-        futures = [executor.submit(build_match, ev, include_goals) for ev in events]
-        for ev, future in zip(events, futures):
-            try:
-                matches.append(future.result())
-            except Exception as e:
-                event_id = ev.get("id") if ev else "desconhecido"
-                warn(f"[live_scores] erro ao montar jogo {event_id}: {e}")
+    with requests.Session() as session:
+        data = http_json(SCOREBOARD, params={"dates": date, "limit": 50}, session=session)
+        events = (data or {}).get("events", []) or []
+
+        # Cada jogo ao vivo/encerrado faz 1 GET no summary (gols/cartões). Em série
+        # isso prenderia o worker por N×latência; busca em paralelo e reordena no fim.
+        with ThreadPoolExecutor(max_workers=10) as executor:
+            futures = [executor.submit(build_match, ev, include_goals, session) for ev in events]
+            for ev, future in zip(events, futures):
+                try:
+                    matches.append(future.result())
+                except Exception as e:
+                    event_id = ev.get("id") if ev else "desconhecido"
+                    warn(f"[live_scores] erro ao montar jogo {event_id}: {e}")
 
     matches.sort(key=lambda m: m["date"])
     now = datetime.now(SAO_PAULO) if SAO_PAULO else datetime.now(timezone.utc)
